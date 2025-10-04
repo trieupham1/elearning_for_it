@@ -5,14 +5,22 @@ const authMiddleware = (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
   
   if (!token) {
+    console.log('Auth middleware: No token provided');
     return res.status(401).json({ message: 'No token provided' });
+  }
+  
+  if (!process.env.JWT_SECRET) {
+    console.error('Auth middleware: JWT_SECRET not configured');
+    return res.status(500).json({ message: 'Server configuration error' });
   }
   
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(`Auth middleware: Token verified for user ${decoded.userId}`);
     req.user = decoded;
     next();
   } catch (error) {
+    console.log(`Auth middleware: Token verification failed - ${error.message}`);
     res.status(401).json({ message: 'Invalid token' });
   }
 };

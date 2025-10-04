@@ -110,4 +110,50 @@ router.delete('/:id', authMiddleware, instructorOnly, async (req, res) => {
   }
 });
 
+// Enroll student in course (adds student to default group)
+router.post('/:id/enroll', authMiddleware, instructorOnly, async (req, res) => {
+  try {
+    const { studentId } = req.body;
+    const courseId = req.params.id;
+    
+    // Find or create default group for this course
+    let group = await Group.findOne({ courseId, name: 'Default Group' });
+    if (!group) {
+      group = new Group({
+        name: 'Default Group',
+        courseId,
+        studentIds: []
+      });
+    }
+    
+    // Add student if not already enrolled
+    if (!group.studentIds.includes(studentId)) {
+      group.studentIds.push(studentId);
+      await group.save();
+    }
+    
+    res.json({ message: 'Student enrolled successfully' });
+  } catch (error) {
+    res.status(400).json({ message: 'Error enrolling student', error: error.message });
+  }
+});
+
+// Unenroll student from course
+router.post('/:id/unenroll', authMiddleware, instructorOnly, async (req, res) => {
+  try {
+    const { studentId } = req.body;
+    const courseId = req.params.id;
+    
+    // Remove student from all groups in this course
+    await Group.updateMany(
+      { courseId },
+      { $pull: { studentIds: studentId } }
+    );
+    
+    res.json({ message: 'Student unenrolled successfully' });
+  } catch (error) {
+    res.status(400).json({ message: 'Error unenrolling student', error: error.message });
+  }
+});
+
 module.exports = router;

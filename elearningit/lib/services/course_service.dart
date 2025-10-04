@@ -7,14 +7,26 @@ class CourseService extends ApiService {
   factory CourseService() => _instance;
   CourseService._internal();
 
-  Future<List<Course>> getCourses() async {
+  Future<List<Course>> getCourses({String? semesterId}) async {
     try {
-      final response = await get(ApiConfig.courses);
+      String endpoint = ApiConfig.courses;
+      if (semesterId != null) {
+        endpoint += '?semesterId=$semesterId';
+      }
+      
+      final response = await get(endpoint);
       final data = parseResponse(response);
 
-      return (data['courses'] as List)
-          .map((courseJson) => Course.fromJson(courseJson))
-          .toList();
+      // Backend returns courses directly as array
+      if (data is List) {
+        return (data as List).map((courseJson) => Course.fromJson(courseJson as Map<String, dynamic>)).toList();
+      } else if (data.containsKey('courses')) {
+        return (data['courses'] as List)
+            .map((courseJson) => Course.fromJson(courseJson as Map<String, dynamic>))
+            .toList();
+      } else {
+        return [];
+      }
     } catch (e) {
       throw ApiException('Failed to fetch courses: $e');
     }

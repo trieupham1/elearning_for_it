@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../models/user.dart';
+import '../config/api_config.dart';
 
 class ApiTestScreen extends StatefulWidget {
   const ApiTestScreen({super.key});
@@ -21,19 +22,63 @@ class _ApiTestScreenState extends State<ApiTestScreen> {
     });
 
     try {
+      // First test basic connectivity
+      setState(() => _status = '1. Testing server connectivity...');
+      final isConnected = await _authService.testConnection();
+      
+      if (!isConnected) {
+        setState(() {
+          _status = 'Server not reachable! Check if backend is running on port 5000';
+          _isLoading = false;
+        });
+        return;
+      }
+      
+      setState(() => _status = '2. Server connected! Testing authentication...');
+      
       // Test login with sample credentials
       final loginRequest = LoginRequest(username: 'test', password: 'test123');
-
       final response = await _authService.login(loginRequest);
 
+      setState(() => _status = '3. Testing user profile retrieval...');
+      
+      // Test getting current user
+      final currentUser = await _authService.getCurrentUser();
+
       setState(() {
-        _status =
-            'Connection successful! Logged in as: ${response.user.username}';
+        _status = '''✅ All tests passed!
+🌐 Server: Connected
+🔐 Login: Success (${response.user.username})
+👤 Profile: ${currentUser?.fullName ?? 'N/A'}
+🎭 Role: ${response.user.role}
+🔑 Token: ${response.token.substring(0, 20)}...''';
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _status = 'Connection failed: $e';
+        _status = '❌ Test failed: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _testInvalidLogin() async {
+    setState(() {
+      _isLoading = true;
+      _status = 'Testing invalid credentials...';
+    });
+
+    try {
+      final loginRequest = LoginRequest(username: 'invalid', password: 'invalid');
+      await _authService.login(loginRequest);
+      
+      setState(() {
+        _status = '❌ SECURITY ISSUE: Invalid credentials were accepted!';
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _status = '✅ Security test passed: Invalid credentials correctly rejected\nError: $e';
         _isLoading = false;
       });
     }
@@ -63,7 +108,7 @@ class _ApiTestScreenState extends State<ApiTestScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Base URL: http://localhost:5000/api',
+                      'Base URL: ${ApiConfig.getBaseUrl()}',
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 16),
@@ -72,15 +117,31 @@ class _ApiTestScreenState extends State<ApiTestScreen> {
                       style: const TextStyle(fontSize: 16),
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _testConnection,
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Test Connection'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _testConnection,
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Text('Test Valid Login'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _testInvalidLogin,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                            ),
+                            child: const Text('Test Invalid Login'),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

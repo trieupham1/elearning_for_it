@@ -14,6 +14,14 @@ class AuthService extends ApiService {
 
   Future<LoginResponse> login(LoginRequest request) async {
     try {
+      print('🔐 Attempting login for: ${request.username}');
+      
+      // Test connection first
+      final isConnected = await testConnection();
+      if (!isConnected) {
+        throw ApiException('Cannot connect to server. Please check if the backend is running on ${ApiConfig.getBaseUrl()}');
+      }
+      
       final response = await post(
         '${ApiConfig.auth}/login',
         body: request.toJson(),
@@ -21,14 +29,21 @@ class AuthService extends ApiService {
       );
 
       final data = parseResponse(response);
+      print('🔐 Login response data: $data');
+      
       final loginResponse = LoginResponse.fromJson(data);
 
       // Save token and user data
       await saveToken(loginResponse.token);
       _currentUser = loginResponse.user;
 
+      print('✅ Login successful for: ${loginResponse.user.username}');
       return loginResponse;
     } catch (e) {
+      print('❌ Login failed: $e');
+      if (e is ApiException) {
+        rethrow;
+      }
       throw ApiException('Login failed: $e');
     }
   }

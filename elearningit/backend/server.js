@@ -40,6 +40,7 @@ const semesterRoutes = require('./routes/semesters');
 const courseRoutes = require('./routes/courses');
 const groupRoutes = require('./routes/groups');
 const studentRoutes = require('./routes/students');
+const userRoutes = require('./routes/users');
 const announcementRoutes = require('./routes/announcements');
 const { router: fileRoutes } = require('./routes/files');
 
@@ -49,6 +50,7 @@ app.use('/api/semesters', semesterRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/files', fileRoutes);
 

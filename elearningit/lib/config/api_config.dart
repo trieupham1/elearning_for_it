@@ -1,6 +1,10 @@
+import 'dart:io' show Platform;
+
 class ApiConfig {
   // Development server URL - change this to your actual backend URL
-  static const String baseUrl = 'http://localhost:5000/api';
+  // Note: Android emulator cannot access host's localhost; use 10.0.2.2 instead.
+  static const String _localBase = 'http://localhost:5000/api';
+  static const String _androidEmulatorBase = 'http://10.0.2.2:5000/api';
 
   // API endpoints (based on your actual backend routes)
   static const String auth = '/auth';
@@ -33,7 +37,11 @@ class ApiConfig {
 
   // Helper method to get the correct base URL for different environments
   static String getBaseUrl() {
-    // You can add environment-specific logic here
-    return baseUrl;
+    try {
+      if (Platform.isAndroid) return _androidEmulatorBase;
+    } catch (_) {
+      // If Platform is not available (e.g., during tests), fall back to local
+    }
+    return _localBase;
   }
 }

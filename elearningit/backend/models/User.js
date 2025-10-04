@@ -17,6 +17,18 @@ const userSchema = new mongoose.Schema({
   gpa: Number
 }, { timestamps: true });
 
+// Virtual for full name
+userSchema.virtual('fullName').get(function() {
+  if (this.firstName && this.lastName) {
+    return `${this.firstName} ${this.lastName}`;
+  }
+  return this.username || 'Unknown User';
+});
+
+// Include virtuals in JSON output
+userSchema.set('toJSON', { virtuals: true });
+userSchema.set('toObject', { virtuals: true });
+
 userSchema.index({ username: 1 });
 userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
