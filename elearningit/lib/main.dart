@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'services/app_service.dart';
+import 'screens/api_test_screen.dart';
 
 // Theme configuration
 class AppTheme {
@@ -14,14 +16,17 @@ class AppTheme {
     ),
     cardTheme: CardThemeData(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     ),
   );
 }
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize app services
+  await AppService().initialize();
+
   runApp(const ELearningApp());
 }
 
@@ -40,7 +45,9 @@ class ELearningApp extends StatelessWidget {
         '/student-home': (context) => const StudentHomeScreen(),
         '/instructor-home': (context) => const InstructorDashboard(),
         '/profile': (context) => const ProfileScreen(),
+        '/api-test': (context) => const ApiTestScreen(),
       },
+      themeMode: ThemeMode.system,
     );
   }
 }
@@ -61,10 +68,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() {
     setState(() => _isLoading = true);
-    
+
     // Simulate login
     Future.delayed(const Duration(seconds: 1), () {
-      if (_usernameController.text == 'admin' && _passwordController.text == 'admin') {
+      if (_usernameController.text == 'admin' &&
+          _passwordController.text == 'admin') {
         Navigator.pushReplacementNamed(context, '/instructor-home');
       } else {
         Navigator.pushReplacementNamed(context, '/student-home');
@@ -77,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final isWeb = kIsWeb;
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -109,9 +117,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 16),
                     Text(
                       'E-Learning System',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -139,8 +146,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelText: 'Password',
                         prefixIcon: const Icon(Icons.lock),
                         suffixIcon: IconButton(
-                          icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -162,9 +175,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             ? const SizedBox(
                                 width: 24,
                                 height: 24,
-                                child: CircularProgressIndicator(color: Colors.white),
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
                               )
-                            : const Text('Login', style: TextStyle(fontSize: 16)),
+                            : const Text(
+                                'Login',
+                                style: TextStyle(fontSize: 16),
+                              ),
                       ),
                     ),
                   ],
@@ -229,7 +247,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   Widget build(BuildContext context) {
     final isWeb = kIsWeb;
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     return Scaffold(
       drawer: _buildDrawer(context),
       appBar: AppBar(
@@ -283,13 +301,13 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             } else if (constraints.maxWidth > 600) {
               crossAxisCount = 2;
             }
-            
+
             return GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 3/2,
+                childAspectRatio: 3 / 2,
               ),
               itemCount: _courses.length,
               itemBuilder: (context, index) {
@@ -353,10 +371,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   ),
                   Text(
                     course['code'],
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
               ),
@@ -409,7 +424,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               backgroundColor: Colors.white,
               child: Text(
                 'NS',
-                style: TextStyle(fontSize: 24, color: Theme.of(context).primaryColor),
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
             ),
           ),
@@ -425,7 +443,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const StudentDashboard()),
+                MaterialPageRoute(
+                  builder: (context) => const StudentDashboard(),
+                ),
               );
             },
           ),
@@ -466,9 +486,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           decoration: InputDecoration(
             labelText: 'Class Code',
             hintText: 'Enter class code',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
         actions: [
@@ -534,15 +552,28 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     );
   }
 
-  Widget _buildNotificationItem(String title, String subtitle, String time, IconData icon, bool isRead) {
+  Widget _buildNotificationItem(
+    String title,
+    String subtitle,
+    String time,
+    IconData icon,
+    bool isRead,
+  ) {
     return Container(
       color: isRead ? null : Colors.blue.shade50,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: isRead ? Colors.grey.shade300 : Theme.of(context).primaryColor,
+          backgroundColor: isRead
+              ? Colors.grey.shade300
+              : Theme.of(context).primaryColor,
           child: Icon(icon, color: Colors.white, size: 20),
         ),
-        title: Text(title, style: TextStyle(fontWeight: isRead ? FontWeight.normal : FontWeight.bold)),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
+          ),
+        ),
         subtitle: Text(subtitle),
         trailing: Text(time, style: const TextStyle(fontSize: 12)),
       ),
@@ -553,14 +584,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 // Course Detail Screen with Tabs
 class CourseDetailScreen extends StatefulWidget {
   final Map<String, dynamic> course;
-  
+
   const CourseDetailScreen({super.key, required this.course});
 
   @override
   State<CourseDetailScreen> createState() => _CourseDetailScreenState();
 }
 
-class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTickerProviderStateMixin {
+class _CourseDetailScreenState extends State<CourseDetailScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -585,13 +617,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildStreamTab(),
-          _buildClassworkTab(),
-          _buildPeopleTab(),
-        ],
+        children: [_buildStreamTab(), _buildClassworkTab(), _buildPeopleTab()],
       ),
-      floatingActionButton: _tabController.index == 0 
+      floatingActionButton: _tabController.index == 0
           ? FloatingActionButton(
               onPressed: () => _showNewPostDialog(context),
               child: const Icon(Icons.add),
@@ -622,7 +650,13 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
     );
   }
 
-  Widget _buildAnnouncementCard(String title, String content, String author, String time, int comments) {
+  Widget _buildAnnouncementCard(
+    String title,
+    String content,
+    String author,
+    String time,
+    int comments,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
@@ -641,19 +675,28 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(author, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      Text(time, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                      Text(
+                        author,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        time,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  onPressed: () {},
-                ),
+                IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
               ],
             ),
             const SizedBox(height: 12),
-            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             Text(content),
             const SizedBox(height: 12),
@@ -711,15 +754,45 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
           ],
         ),
         const SizedBox(height: 16),
-        _buildClassworkItem(Icons.assignment, 'Assignment 1', 'Build a Flutter App', 'Due Friday, 11:59 PM', Colors.blue),
-        _buildClassworkItem(Icons.quiz, 'Quiz 1', 'Chapter 1-3', 'Due Monday, 3:00 PM', Colors.orange),
-        _buildClassworkItem(Icons.folder, 'Week 1 Materials', 'Lecture slides and resources', 'Posted 2 weeks ago', Colors.green),
-        _buildClassworkItem(Icons.assignment, 'Assignment 2', 'State Management', 'Due Next Friday', Colors.blue),
+        _buildClassworkItem(
+          Icons.assignment,
+          'Assignment 1',
+          'Build a Flutter App',
+          'Due Friday, 11:59 PM',
+          Colors.blue,
+        ),
+        _buildClassworkItem(
+          Icons.quiz,
+          'Quiz 1',
+          'Chapter 1-3',
+          'Due Monday, 3:00 PM',
+          Colors.orange,
+        ),
+        _buildClassworkItem(
+          Icons.folder,
+          'Week 1 Materials',
+          'Lecture slides and resources',
+          'Posted 2 weeks ago',
+          Colors.green,
+        ),
+        _buildClassworkItem(
+          Icons.assignment,
+          'Assignment 2',
+          'State Management',
+          'Due Next Friday',
+          Colors.blue,
+        ),
       ],
     );
   }
 
-  Widget _buildClassworkItem(IconData icon, String title, String subtitle, String info, Color color) {
+  Widget _buildClassworkItem(
+    IconData icon,
+    String title,
+    String subtitle,
+    String info,
+    Color color,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
@@ -732,9 +805,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(info, style: const TextStyle(fontSize: 12)),
-          ],
+          children: [Text(info, style: const TextStyle(fontSize: 12))],
         ),
         onTap: () {},
       ),
@@ -746,7 +817,10 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
       padding: const EdgeInsets.all(16),
       children: [
         // Instructor Section
-        const Text('Instructor', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          'Instructor',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         Card(
           child: ListTile(
@@ -767,7 +841,10 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Groups', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Groups',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             Chip(label: const Text('3 groups')),
           ],
         ),
@@ -788,9 +865,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
         children: [
           for (int i = 1; i <= 3; i++)
             ListTile(
-              leading: CircleAvatar(
-                child: Text('S$i'),
-              ),
+              leading: CircleAvatar(child: Text('S$i')),
               title: Text('Student $i'),
               subtitle: Text('student$i@fit.edu.vn'),
               dense: true,
@@ -814,9 +889,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> with SingleTick
           maxLines: 4,
           decoration: InputDecoration(
             hintText: 'Share something with your class...',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
         actions: [
@@ -863,13 +936,14 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedSemester,
-                items: ['Semester 1 - 2025-2026', 'Semester 2 - 2024-2025']
-                    .map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value, style: const TextStyle(fontSize: 14)),
-                  );
-                }).toList(),
+                items: ['Semester 1 - 2025-2026', 'Semester 2 - 2024-2025'].map(
+                  (String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value, style: const TextStyle(fontSize: 14)),
+                    );
+                  },
+                ).toList(),
                 onChanged: (String? newValue) {
                   setState(() {
                     _selectedSemester = newValue!;
@@ -892,8 +966,11 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             // Summary Cards
             LayoutBuilder(
               builder: (context, constraints) {
-                final crossAxisCount = constraints.maxWidth > 900 ? 4 : 
-                                       constraints.maxWidth > 600 ? 2 : 1;
+                final crossAxisCount = constraints.maxWidth > 900
+                    ? 4
+                    : constraints.maxWidth > 600
+                    ? 2
+                    : 1;
                 return GridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -904,38 +981,74 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                   children: [
                     _buildStatCard('Courses', '4', Icons.book, Colors.blue),
                     _buildStatCard('Groups', '12', Icons.group, Colors.green),
-                    _buildStatCard('Students', '156', Icons.people, Colors.orange),
-                    _buildStatCard('Assignments', '24', Icons.assignment, Colors.purple),
+                    _buildStatCard(
+                      'Students',
+                      '156',
+                      Icons.people,
+                      Colors.orange,
+                    ),
+                    _buildStatCard(
+                      'Assignments',
+                      '24',
+                      Icons.assignment,
+                      Colors.purple,
+                    ),
                   ],
                 );
               },
             ),
             const SizedBox(height: 24),
             // Quick Actions
-            const Text('Quick Actions', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text(
+              'Quick Actions',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             Wrap(
               spacing: 12,
               runSpacing: 12,
               children: [
-                _buildActionButton('Create Course', Icons.add_box, () => _showCreateCourseDialog(context)),
-                _buildActionButton('Add Students', Icons.person_add, () => _showAddStudentsDialog(context)),
+                _buildActionButton(
+                  'Create Course',
+                  Icons.add_box,
+                  () => _showCreateCourseDialog(context),
+                ),
+                _buildActionButton(
+                  'Add Students',
+                  Icons.person_add,
+                  () => _showAddStudentsDialog(context),
+                ),
                 _buildActionButton('Import CSV', Icons.upload_file, () {}),
                 _buildActionButton('Export Reports', Icons.download, () {}),
               ],
             ),
             const SizedBox(height: 24),
             // Recent Activities
-            const Text('Recent Activities', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text(
+              'Recent Activities',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             Card(
               child: Column(
                 children: [
-                  _buildActivityItem('New assignment submitted', 'Nguyen Van A submitted Assignment 3', '10 minutes ago'),
+                  _buildActivityItem(
+                    'New assignment submitted',
+                    'Nguyen Van A submitted Assignment 3',
+                    '10 minutes ago',
+                  ),
                   const Divider(),
-                  _buildActivityItem('Quiz completed', '15 students completed Quiz 2', '1 hour ago'),
+                  _buildActivityItem(
+                    'Quiz completed',
+                    '15 students completed Quiz 2',
+                    '1 hour ago',
+                  ),
                   const Divider(),
-                  _buildActivityItem('Material viewed', '45 students viewed Week 8 materials', '3 hours ago'),
+                  _buildActivityItem(
+                    'Material viewed',
+                    '45 students viewed Week 8 materials',
+                    '3 hours ago',
+                  ),
                 ],
               ),
             ),
@@ -950,7 +1063,12 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -959,7 +1077,10 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
           children: [
             Icon(icon, size: 32, color: color),
             const SizedBox(height: 8),
-            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
             Text(title, style: TextStyle(color: Colors.grey.shade600)),
           ],
         ),
@@ -967,7 +1088,11 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon, VoidCallback onPressed) {
+  Widget _buildActionButton(
+    String label,
+    IconData icon,
+    VoidCallback onPressed,
+  ) {
     return ElevatedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon),
@@ -1002,7 +1127,10 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
               backgroundColor: Colors.white,
               child: Text(
                 'AD',
-                style: TextStyle(fontSize: 24, color: Theme.of(context).primaryColor),
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
             ),
           ),
@@ -1018,7 +1146,9 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const CourseManagementScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const CourseManagementScreen(),
+                ),
               );
             },
           ),
@@ -1029,7 +1159,9 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const StudentManagementScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const StudentManagementScreen(),
+                ),
               );
             },
           ),
@@ -1072,26 +1204,35 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Create New Course', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text(
+                'Create New Course',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 16),
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Course Code',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Course Name',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(
                   labelText: 'Number of Sessions',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 items: ['10', '15'].map((String value) {
                   return DropdownMenuItem<String>(
@@ -1134,7 +1275,10 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Add Students', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text(
+                'Add Students',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 16),
               DefaultTabController(
                 length: 2,
@@ -1158,21 +1302,27 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                                 TextField(
                                   decoration: InputDecoration(
                                     labelText: 'Student Name',
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 12),
                                 TextField(
                                   decoration: InputDecoration(
                                     labelText: 'Email',
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 12),
                                 TextField(
                                   decoration: InputDecoration(
                                     labelText: 'Student ID',
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -1183,7 +1333,11 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.cloud_upload, size: 64, color: Colors.grey.shade400),
+                                Icon(
+                                  Icons.cloud_upload,
+                                  size: 64,
+                                  color: Colors.grey.shade400,
+                                ),
                                 const SizedBox(height: 16),
                                 const Text('Drag and drop CSV file here'),
                                 const SizedBox(height: 8),
@@ -1195,7 +1349,10 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                                 const SizedBox(height: 16),
                                 Text(
                                   'CSV Format: Name, Email, Student ID',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
                                 ),
                               ],
                             ),
@@ -1236,9 +1393,7 @@ class StudentDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Dashboard'),
-      ),
+      appBar: AppBar(title: const Text('My Dashboard')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -1251,44 +1406,86 @@ class StudentDashboard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Learning Progress', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Learning Progress',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 16),
-                    _buildProgressItem('Assignments Submitted', 8, 12, Colors.blue),
+                    _buildProgressItem(
+                      'Assignments Submitted',
+                      8,
+                      12,
+                      Colors.blue,
+                    ),
                     const SizedBox(height: 12),
                     _buildProgressItem('Quizzes Completed', 5, 8, Colors.green),
                     const SizedBox(height: 12),
-                    _buildProgressItem('Materials Viewed', 15, 20, Colors.orange),
+                    _buildProgressItem(
+                      'Materials Viewed',
+                      15,
+                      20,
+                      Colors.orange,
+                    ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 16),
             // Upcoming Deadlines
-            const Text('Upcoming Deadlines', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Upcoming Deadlines',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
             Card(
               child: Column(
                 children: [
-                  _buildDeadlineItem('Mobile Dev Assignment 3', 'Tomorrow, 11:59 PM', Colors.red),
+                  _buildDeadlineItem(
+                    'Mobile Dev Assignment 3',
+                    'Tomorrow, 11:59 PM',
+                    Colors.red,
+                  ),
                   const Divider(height: 1),
-                  _buildDeadlineItem('Database Quiz 4', 'Friday, 3:00 PM', Colors.orange),
+                  _buildDeadlineItem(
+                    'Database Quiz 4',
+                    'Friday, 3:00 PM',
+                    Colors.orange,
+                  ),
                   const Divider(height: 1),
-                  _buildDeadlineItem('AI Project Proposal', 'Next Monday', Colors.blue),
+                  _buildDeadlineItem(
+                    'AI Project Proposal',
+                    'Next Monday',
+                    Colors.blue,
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
             // Recent Grades
-            const Text('Recent Grades', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Recent Grades',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
             Card(
               child: Column(
                 children: [
-                  _buildGradeItem('Assignment 2', '85/100', 'Mobile Development'),
+                  _buildGradeItem(
+                    'Assignment 2',
+                    '85/100',
+                    'Mobile Development',
+                  ),
                   const Divider(height: 1),
                   _buildGradeItem('Quiz 3', '18/20', 'Database Systems'),
                   const Divider(height: 1),
-                  _buildGradeItem('Lab Exercise 5', '95/100', 'Web Programming'),
+                  _buildGradeItem(
+                    'Lab Exercise 5',
+                    '95/100',
+                    'Web Programming',
+                  ),
                 ],
               ),
             ),
@@ -1298,17 +1495,19 @@ class StudentDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressItem(String label, int completed, int total, Color color) {
+  Widget _buildProgressItem(
+    String label,
+    int completed,
+    int total,
+    Color color,
+  ) {
     final progress = completed / total;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label),
-            Text('$completed/$total'),
-          ],
+          children: [Text(label), Text('$completed/$total')],
         ),
         const SizedBox(height: 4),
         LinearProgressIndicator(
@@ -1337,7 +1536,10 @@ class StudentDashboard extends StatelessWidget {
       ),
       title: Text(assignment),
       subtitle: Text(course),
-      trailing: Text(grade, style: const TextStyle(fontWeight: FontWeight.bold)),
+      trailing: Text(
+        grade,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
     );
   }
 }
@@ -1352,14 +1554,8 @@ class CourseManagementScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Course Management'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.filter_list), onPressed: () {}),
         ],
       ),
       body: ListView(
@@ -1398,13 +1594,21 @@ class CourseManagementScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCourseManagementCard(String name, String code, String info, Color color) {
+  Widget _buildCourseManagementCard(
+    String name,
+    String code,
+    String info,
+    Color color,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: color.withOpacity(0.2),
-          child: Text(code.substring(0, 2), style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+          child: Text(
+            code.substring(0, 2),
+            style: TextStyle(color: color, fontWeight: FontWeight.bold),
+          ),
         ),
         title: Text(name),
         subtitle: Column(
@@ -1440,18 +1644,9 @@ class StudentManagementScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Student Management'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.upload_file),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.download),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.upload_file), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.download), onPressed: () {}),
         ],
       ),
       body: Column(
@@ -1469,19 +1664,24 @@ class StudentManagementScreen extends StatelessWidget {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 DropdownButton<String>(
                   value: 'All Courses',
-                  items: ['All Courses', 'Mobile Dev', 'Database', 'AI', 'Web'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
+                  items: ['All Courses', 'Mobile Dev', 'Database', 'AI', 'Web']
+                      .map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      })
+                      .toList(),
                   onChanged: (String? newValue) {},
                 ),
               ],
@@ -1491,10 +1691,26 @@ class StudentManagementScreen extends StatelessWidget {
           Expanded(
             child: ListView(
               children: [
-                _buildStudentItem('Nguyen Van An', 'ST001', 'Mobile Dev - Group 1'),
-                _buildStudentItem('Tran Thi Binh', 'ST002', 'Mobile Dev - Group 1'),
-                _buildStudentItem('Le Van Cuong', 'ST003', 'Mobile Dev - Group 2'),
-                _buildStudentItem('Pham Thi Dung', 'ST004', 'Database - Group 1'),
+                _buildStudentItem(
+                  'Nguyen Van An',
+                  'ST001',
+                  'Mobile Dev - Group 1',
+                ),
+                _buildStudentItem(
+                  'Tran Thi Binh',
+                  'ST002',
+                  'Mobile Dev - Group 1',
+                ),
+                _buildStudentItem(
+                  'Le Van Cuong',
+                  'ST003',
+                  'Mobile Dev - Group 2',
+                ),
+                _buildStudentItem(
+                  'Pham Thi Dung',
+                  'ST004',
+                  'Database - Group 1',
+                ),
                 _buildStudentItem('Hoang Van Em', 'ST005', 'AI - Group 1'),
               ],
             ),
@@ -1513,9 +1729,7 @@ class StudentManagementScreen extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
-        leading: CircleAvatar(
-          child: Text(name.substring(0, 2).toUpperCase()),
-        ),
+        leading: CircleAvatar(child: Text(name.substring(0, 2).toUpperCase())),
         title: Text(name),
         subtitle: Text('$id • $course'),
         trailing: PopupMenuButton(
@@ -1539,9 +1753,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-      ),
+      appBar: AppBar(title: const Text('Profile')),
       body: SingleChildScrollView(
         child: Center(
           child: Container(
@@ -1555,7 +1767,10 @@ class ProfileScreen extends StatelessWidget {
                     CircleAvatar(
                       radius: 60,
                       backgroundColor: Theme.of(context).primaryColor,
-                      child: const Text('NS', style: TextStyle(fontSize: 36, color: Colors.white)),
+                      child: const Text(
+                        'NS',
+                        style: TextStyle(fontSize: 36, color: Colors.white),
+                      ),
                     ),
                     Positioned(
                       bottom: 0,
@@ -1563,7 +1778,10 @@ class ProfileScreen extends StatelessWidget {
                       child: CircleAvatar(
                         backgroundColor: Colors.white,
                         child: IconButton(
-                          icon: Icon(Icons.camera_alt, color: Theme.of(context).primaryColor),
+                          icon: Icon(
+                            Icons.camera_alt,
+                            color: Theme.of(context).primaryColor,
+                          ),
                           onPressed: () {},
                         ),
                       ),
@@ -1583,13 +1801,31 @@ class ProfileScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Personal Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const Text(
+                          'Personal Information',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 16),
-                        _buildProfileField('Full Name', 'Nguyen Van Student', false),
+                        _buildProfileField(
+                          'Full Name',
+                          'Nguyen Van Student',
+                          false,
+                        ),
                         _buildProfileField('Student ID', 'ST2021001', false),
-                        _buildProfileField('Email', 'student@fit.edu.vn', false),
+                        _buildProfileField(
+                          'Email',
+                          'student@fit.edu.vn',
+                          false,
+                        ),
                         _buildProfileField('Phone', '+84 123 456 789', true),
-                        _buildProfileField('Address', '123 Nguyen Hue, District 1, HCMC', true),
+                        _buildProfileField(
+                          'Address',
+                          '123 Nguyen Hue, District 1, HCMC',
+                          true,
+                        ),
                       ],
                     ),
                   ),
@@ -1601,9 +1837,19 @@ class ProfileScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Academic Information', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const Text(
+                          'Academic Information',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 16),
-                        _buildProfileField('Department', 'Information Technology', false),
+                        _buildProfileField(
+                          'Department',
+                          'Information Technology',
+                          false,
+                        ),
                         _buildProfileField('Year', '3rd Year', false),
                         _buildProfileField('GPA', '3.65/4.0', false),
                       ],
@@ -1616,7 +1862,10 @@ class ProfileScreen extends StatelessWidget {
                   icon: const Icon(Icons.edit),
                   label: const Text('Edit Profile'),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                   ),
                 ),
               ],
@@ -1637,7 +1886,10 @@ class ProfileScreen extends StatelessWidget {
             child: Text(label, style: TextStyle(color: Colors.grey.shade600)),
           ),
           Expanded(
-            child: Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
           ),
           if (isEditable)
             Icon(Icons.edit, size: 16, color: Colors.grey.shade400),
