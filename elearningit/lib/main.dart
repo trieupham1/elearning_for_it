@@ -3,39 +3,10 @@ import 'screens/login_screen.dart';
 import 'screens/student_home_screen.dart';
 import 'screens/instructor_dashboard.dart';
 import 'screens/api_test_screen.dart';
+import 'config/theme.dart';
 
 void main() {
   runApp(const ELearningApp());
-}
-
-// Theme configuration
-class AppTheme {
-  static ThemeData lightTheme = ThemeData(
-    primarySwatch: Colors.blue,
-    primaryColor: Colors.blue.shade600,
-    scaffoldBackgroundColor: Colors.grey.shade50,
-    appBarTheme: AppBarTheme(
-      backgroundColor: Colors.blue.shade600,
-      foregroundColor: Colors.white,
-      elevation: 0,
-    ),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blue.shade600,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-    ),
-    cardTheme: CardThemeData(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-    ),
-  );
 }
 
 class ELearningApp extends StatelessWidget {

@@ -13,16 +13,24 @@ class CourseService extends ApiService {
       if (semesterId != null) {
         endpoint += '?semesterId=$semesterId';
       }
-      
+
       final response = await get(endpoint);
       final data = parseResponse(response);
 
       // Backend returns courses directly as array
       if (data is List) {
-        return (data as List).map((courseJson) => Course.fromJson(courseJson as Map<String, dynamic>)).toList();
+        return (data as List)
+            .map(
+              (courseJson) =>
+                  Course.fromJson(courseJson as Map<String, dynamic>),
+            )
+            .toList();
       } else if (data.containsKey('courses')) {
         return (data['courses'] as List)
-            .map((courseJson) => Course.fromJson(courseJson as Map<String, dynamic>))
+            .map(
+              (courseJson) =>
+                  Course.fromJson(courseJson as Map<String, dynamic>),
+            )
             .toList();
       } else {
         return [];
@@ -43,9 +51,9 @@ class CourseService extends ApiService {
     }
   }
 
-  Future<Course> createCourse(CreateCourseRequest request) async {
+  Future<Course> createCourse(Map<String, dynamic> courseData) async {
     try {
-      final response = await post(ApiConfig.courses, body: request.toJson());
+      final response = await post(ApiConfig.courses, body: courseData);
       final data = parseResponse(response);
 
       return Course.fromJson(data);

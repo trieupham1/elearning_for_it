@@ -2,17 +2,46 @@
 const mongoose = require('mongoose');
 
 const courseSchema = new mongoose.Schema({
-  code: { type: String, required: true },
-  name: { type: String, required: true },
-  semesterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Semester', required: true },
-  sessions: { type: Number, enum: [10, 15], required: true },
-  instructorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  coverImage: String,
-  color: String,
-  description: String
-}, { timestamps: true });
+  code: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  name: {
+    type: String,
+    required: true
+  },
+  description: String,
+  instructor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  semester: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Semester'
+  },
+  students: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  sessions: {
+    type: Number,
+    default: 15
+  },
+  color: {
+    type: String,
+    default: '#1976D2'
+  },
+  image: String
+}, {
+  timestamps: true,
+  toJSON: {
+    transform: function(doc, ret) {
+      ret.id = ret._id.toString();
+      return ret;
+    }
+  }
+});
 
-courseSchema.index({ semesterId: 1 });
-courseSchema.index({ code: 1 });
-
-module.exports = mongoose.model('Course', courseSchema);
+module.exports = mongoose.models.Course || mongoose.model('Course', courseSchema);

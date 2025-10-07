@@ -1,69 +1,91 @@
 const express = require('express');
-const Semester = require('../models/Semester');
-const { authMiddleware, instructorOnly } = require('../middleware/auth');
-
 const router = express.Router();
+const Semester = require('../models/Semester');
+const auth = require('../middleware/auth');
 
 // Get all semesters
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
-    const semesters = await Semester.find().sort({ createdAt: -1 });
+    const semesters = await Semester.find().sort({ year: -1, name: -1 });
     res.json(semesters);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Get semesters error:', error);
+    res.status(500).json({ message: error.message });
   }
 });
 
-// Get current semester
-router.get('/current', authMiddleware, async (req, res) => {
+// Get single semester
+router.get('/:id', auth, async (req, res) => {
   try {
-    const semester = await Semester.findOne({ isCurrent: true });
-    res.json(semester);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Create semester (Instructor only)
-router.post('/', authMiddleware, instructorOnly, async (req, res) => {
-  try {
-    const semester = new Semester(req.body);
-    await semester.save();
-    res.status(201).json(semester);
-  } catch (error) {
-    res.status(400).json({ message: 'Error creating semester', error: error.message });
-  }
-});
-
-// Bulk import semesters from CSV
-router.post('/import', authMiddleware, instructorOnly, async (req, res) => {
-  try {
-    const { semesters } = req.body; // Array of semester objects
+    const semester = await Semester.findById(req.params.id);
     
-    const results = {
-      success: [],
-      skipped: [],
-      errors: []
-    };
-    
-    for (const semesterData of semesters) {
-      const existing = await Semester.findOne({ code: semesterData.code });
-      if (existing) {
-        results.skipped.push(semesterData.code);
-      } else {
-        try {
-          const semester = new Semester(semesterData);
-          await semester.save();
-          results.success.push(semesterData.code);
-        } catch (error) {
-          results.errors.push({ code: semesterData.code, error: error.message });
-        }
-      }
+    if (!semester) {
+      return res.status(404).json({ message: 'Semester not found' });
     }
     
-    res.json(results);
+    res.json(semester);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Get semester error:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Create semester (admin only)
+router.post('/', auth, async (req, res) => {
+  try {
+    if (req.userRole !== 'admin') {
+      return res.status(403).json({ message: 'Only admins can create semesters' });
+    }
+
+    const semester = await Semester.create(req.body);
+    res.status(201).json(semester);
+  } catch (error) {
+    console.error('Create semester error:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update semester (admin only)
+router.put('/:id', auth, async (req, res) => {
+  try {
+    if (req.userRole !== 'admin') {
+      return res.status(403).json({ message: 'Only admins can update semesters' });
+    }
+
+    const semester = await Semester.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    if (!semester) {
+      return res.status(404).json({ message: 'Semester not found' });
+    }
+
+    res.json(semester);
+  } catch (error) {
+    console.error('Update semester error:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Delete semester (admin only)
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    if (req.userRole !== 'admin') {
+      return res.status(403).json({ message: 'Only admins can delete semesters' });
+    }
+
+    const semester = await Semester.findByIdAndDelete(req.params.id);
+    
+    if (!semester) {
+      return res.status(404).json({ message: 'Semester not found' });
+    }
+
+    res.json({ message: 'Semester deleted successfully' });
+  } catch (error) {
+    console.error('Delete semester error:', error);
+    res.status(500).json({ message: error.message });
   }
 });
 

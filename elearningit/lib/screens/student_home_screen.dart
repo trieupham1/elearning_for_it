@@ -3,10 +3,10 @@ import '../services/auth_service.dart';
 import '../services/course_service.dart';
 import '../models/user.dart';
 import '../models/course.dart';
-// TODO: Create these screens
-// import 'course_detail_screen.dart';
-// import 'student_dashboard.dart';
-// import 'profile_screen.dart';
+import '../screens/course_detail_screen.dart';
+import '../screens/student_dashboard.dart';
+import '../screens/profile_screen.dart';
+import '../utils/constants.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -24,12 +24,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   String? _errorMessage;
   User? _currentUser;
 
-  final List<String> _semesters = [
-    'Semester 1 - 2025-2026',
-    'Semester 2 - 2024-2025',
-    'Semester 1 - 2024-2025',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -38,14 +32,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Load current user
       _currentUser = await _authService.getCurrentUser();
-      
+
       // Load courses
       final courses = await _courseService.getCourses();
-      
+
       setState(() {
         _courses = courses;
         _isLoading = false;
@@ -78,7 +72,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               child: DropdownButton<String>(
                 value: _selectedSemester,
                 icon: const Icon(Icons.arrow_drop_down),
-                items: _semesters.map((String semester) {
+                items: Constants.semesters.map((String semester) {
                   return DropdownMenuItem<String>(
                     value: semester,
                     child: Text(semester, style: const TextStyle(fontSize: 14)),
@@ -100,9 +94,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           IconButton(
             icon: const Icon(Icons.account_circle),
             onPressed: () {
-              // TODO: Navigate to ProfileScreen
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile screen coming soon!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
               );
             },
           ),
@@ -111,68 +105,75 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error_outline, size: 64, color: Colors.red.shade400),
-                      const SizedBox(height: 16),
-                      Text('Error loading courses', style: Theme.of(context).textTheme.headlineSmall),
-                      const SizedBox(height: 8),
-                      Text(_errorMessage!, textAlign: TextAlign.center),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadData,
-                        child: const Text('Retry'),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Colors.red.shade400,
                   ),
-                )
-              : _courses.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.school_outlined, size: 64, color: Colors.grey),
-                          SizedBox(height: 16),
-                          Text('No courses found'),
-                          SizedBox(height: 8),
-                          Text('Contact your instructor to join courses'),
-                        ],
-                      ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _loadData,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            int crossAxisCount = 1;
-                            if (constraints.maxWidth > 1200) {
-                              crossAxisCount = 4;
-                            } else if (constraints.maxWidth > 900) {
-                              crossAxisCount = 3;
-                            } else if (constraints.maxWidth > 600) {
-                              crossAxisCount = 2;
-                            }
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading courses',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(_errorMessage!, textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadData,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            )
+          : _courses.isEmpty
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.school_outlined, size: 64, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text('No courses found'),
+                  SizedBox(height: 8),
+                  Text('Contact your instructor to join courses'),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _loadData,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    int crossAxisCount = 1;
+                    if (constraints.maxWidth > 1200) {
+                      crossAxisCount = 4;
+                    } else if (constraints.maxWidth > 900) {
+                      crossAxisCount = 3;
+                    } else if (constraints.maxWidth > 600) {
+                      crossAxisCount = 2;
+                    }
 
-                            return GridView.builder(
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossAxisCount,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                                childAspectRatio: 3 / 2,
-                              ),
-                              itemCount: _courses.length,
-                              itemBuilder: (context, index) {
-                                final course = _courses[index];
-                                return _buildCourseCard(course, context);
-                              },
-                            );
-                          },
-                        ),
+                    return GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 3 / 2,
                       ),
-                    ),
+                      itemCount: _courses.length,
+                      itemBuilder: (context, index) {
+                        final course = _courses[index];
+                        return _buildCourseCard(course, context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showJoinClassDialog(context),
         tooltip: 'Join Class',
@@ -183,16 +184,24 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   Widget _buildCourseCard(Course course, BuildContext context) {
     // Generate colors based on course ID
-    final colors = [Colors.blue, Colors.green, Colors.purple, Colors.orange, Colors.red];
+    final colors = [
+      Colors.blue,
+      Colors.green,
+      Colors.purple,
+      Colors.orange,
+      Colors.red,
+    ];
     final color = colors[course.id.hashCode % colors.length];
-    
+
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to CourseDetailScreen
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Course detail for ${course.title} coming soon!')),
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CourseDetailScreen(course: course),
+            ),
           );
         },
         child: Column(
@@ -249,7 +258,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       children: [
                         Text(
                           '${course.studentCount} students',
-                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
                         Row(
                           children: [
@@ -306,9 +318,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             title: const Text('Dashboard'),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Navigate to StudentDashboard
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dashboard coming soon!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const StudentDashboard()),
               );
             },
           ),
@@ -365,7 +377,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               // TODO: Implement join class functionality
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Join class feature coming soon!')),
+                const SnackBar(
+                  content: Text('Join class feature coming soon!'),
+                ),
               );
             },
             child: const Text('Join'),

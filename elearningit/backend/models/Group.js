@@ -2,11 +2,33 @@
 const mongoose = require('mongoose');
 
 const groupSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
-  studentIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
-}, { timestamps: true });
+  name: {
+    type: String,
+    required: true
+  },
+  courseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course',
+    required: true
+  },
+  members: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  description: String
+}, {
+  timestamps: true,
+  toJSON: {
+    transform: function(doc, ret) {
+      ret.id = ret._id.toString();
+      return ret;
+    }
+  }
+});
 
-groupSchema.index({ courseId: 1 });
-
-module.exports = mongoose.model('Group', groupSchema);
+module.exports = mongoose.models.Group || mongoose.model('Group', groupSchema);

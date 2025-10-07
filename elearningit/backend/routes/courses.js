@@ -1,56 +1,52 @@
 const express = require('express');
-const Course = require('../models/Course');
-const Group = require('../models/Group');
-const { authMiddleware, instructorOnly } = require('../middleware/auth');
-
 const router = express.Router();
+const Course = require('../models/Course');
+const auth = require('../middleware/auth');
 
-// Get courses by semester
-router.get('/', authMiddleware, async (req, res) => {
+// Get all courses
+router.get('/', auth, async (req, res) => {
   try {
     const { semesterId } = req.query;
-    
-    let query = {};
-    if (semesterId) {
-      query.semesterId = semesterId;
-    }
-    
-    if (req.user.role === 'student') {
-      // Get courses where student is enrolled
-      const groups = await Group.find({ studentIds: req.user.userId });
-      const courseIds = groups.map(g => g.courseId);
-      query._id = { $in: courseIds };
-    }
-    // Admin can see all courses
+    const query = semesterId ? { semester: semesterId } : {};
     
     const courses = await Course.find(query)
-      .populate('semesterId')
-      .populate('instructorId', 'fullName email'); // Keep field name for backward compatibility
+      .populate({
+        path: 'instructor',
+        select: 'username email firstName lastName',
+        strictPopulate: false
+      })
+      .populate({
+        path: 'semester',
+        select: 'name year',
+        strictPopulate: false
+      });
     
-    // Add group and student counts
-    const coursesWithStats = await Promise.all(courses.map(async (course) => {
-      const groups = await Group.find({ courseId: course._id });
-      const studentCount = groups.reduce((sum, g) => sum + g.studentIds.length, 0);
-      
-      return {
-        ...course.toObject(),
-        groupCount: groups.length,
-        studentCount
-      };
-    }));
-    
-    res.json(coursesWithStats);
+    res.json(courses);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Get courses error:', error);
+    res.status(500).json({ message: error.message });
   }
 });
 
 // Get single course
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const course = await Course.findById(req.params.id)
-      .populate('semesterId')
-      .populate('instructorId', 'fullName email');
+      .populate({
+        path: 'instructor',
+        select: 'username email firstName lastName',
+        strictPopulate: false
+      })
+      .populate({
+        path: 'semester',
+        select: 'name year',
+        strictPopulate: false
+      })
+      .populate({
+        path: 'students',
+        select: 'username email firstName lastName studentId',
+        strictPopulate: false
+      });
     
     if (!course) {
       return res.status(404).json({ message: 'Course not found' });
@@ -58,101 +54,190 @@ router.get('/:id', authMiddleware, async (req, res) => {
     
     res.json(course);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Get course error:', error);
+    res.status(500).json({ message: error.message });
   }
 });
 
-// Create course
-router.post('/', authMiddleware, instructorOnly, async (req, res) => {
+// Create course (instructor only)
+router.post('/', auth, async (req, res) => {
   try {
-    const course = new Course({
+    if (req.userRole !== 'instructor' && req.userRole !== 'admin') {
+      return res.status(403).json({ message: 'Only instructors can create courses' });
+    }
+
+    const course = await Course.create({
       ...req.body,
-      instructorId: req.user.userId
+      instructor: req.userId
     });
-    await course.save();
-    res.status(201).json(course);
+
+    const populatedCourse = await Course.findById(course._id)
+      .populate({
+        path: 'instructor',
+        select: 'username email firstName lastName',
+        strictPopulate: false
+      })
+      .populate({
+        path: 'semester',
+        select: 'name year',
+        strictPopulate: false
+      });
+
+    res.status(201).json(populatedCourse);
   } catch (error) {
-    res.status(400).json({ message: 'Error creating course', error: error.message });
+    console.error('Create course error:', error);
+    res.status(500).json({ message: error.message });
   }
 });
 
 // Update course
-router.put('/:id', authMiddleware, instructorOnly, async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
   try {
-    const course = await Course.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const course = await Course.findById(req.params.id);
     
     if (!course) {
       return res.status(404).json({ message: 'Course not found' });
     }
-    
-    res.json(course);
+
+    if (course.instructor.toString() !== req.userId && req.userRole !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized to update this course' });
+    }
+
+    const updatedCourse = await Course.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    )
+      .populate({
+        path: 'instructor',
+        select: 'username email firstName lastName',
+        strictPopulate: false
+      })
+      .populate({
+        path: 'semester',
+        select: 'name year',
+        strictPopulate: false
+      });
+
+    res.json(updatedCourse);
   } catch (error) {
-    res.status(400).json({ message: 'Error updating course', error: error.message });
+    console.error('Update course error:', error);
+    res.status(500).json({ message: error.message });
   }
 });
 
 // Delete course
-router.delete('/:id', authMiddleware, instructorOnly, async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
-    const course = await Course.findByIdAndDelete(req.params.id);
+    const course = await Course.findById(req.params.id);
     
     if (!course) {
       return res.status(404).json({ message: 'Course not found' });
     }
-    
+
+    if (course.instructor.toString() !== req.userId && req.userRole !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized to delete this course' });
+    }
+
+    await Course.findByIdAndDelete(req.params.id);
     res.json({ message: 'Course deleted successfully' });
   } catch (error) {
-    res.status(400).json({ message: 'Error deleting course', error: error.message });
+    console.error('Delete course error:', error);
+    res.status(500).json({ message: error.message });
   }
 });
 
-// Enroll student in course (adds student to default group)
-router.post('/:id/enroll', authMiddleware, instructorOnly, async (req, res) => {
+// Enroll student in course
+router.post('/:id/enroll', auth, async (req, res) => {
   try {
-    const { studentId } = req.body;
-    const courseId = req.params.id;
+    const course = await Course.findById(req.params.id);
     
-    // Find or create default group for this course
-    let group = await Group.findOne({ courseId, name: 'Default Group' });
-    if (!group) {
-      group = new Group({
-        name: 'Default Group',
-        courseId,
-        studentIds: []
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    const studentId = req.body.studentId || req.userId;
+
+    if (course.students.includes(studentId)) {
+      return res.status(400).json({ message: 'Student already enrolled' });
+    }
+
+    course.students.push(studentId);
+    await course.save();
+
+    const updatedCourse = await Course.findById(course._id)
+      .populate({
+        path: 'instructor',
+        select: 'username email firstName lastName',
+        strictPopulate: false
+      })
+      .populate({
+        path: 'students',
+        select: 'username email firstName lastName studentId',
+        strictPopulate: false
       });
-    }
-    
-    // Add student if not already enrolled
-    if (!group.studentIds.includes(studentId)) {
-      group.studentIds.push(studentId);
-      await group.save();
-    }
-    
-    res.json({ message: 'Student enrolled successfully' });
+
+    res.json(updatedCourse);
   } catch (error) {
-    res.status(400).json({ message: 'Error enrolling student', error: error.message });
+    console.error('Enroll student error:', error);
+    res.status(500).json({ message: error.message });
   }
 });
 
 // Unenroll student from course
-router.post('/:id/unenroll', authMiddleware, instructorOnly, async (req, res) => {
+router.post('/:id/unenroll', auth, async (req, res) => {
   try {
-    const { studentId } = req.body;
-    const courseId = req.params.id;
+    const course = await Course.findById(req.params.id);
     
-    // Remove student from all groups in this course
-    await Group.updateMany(
-      { courseId },
-      { $pull: { studentIds: studentId } }
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    const studentId = req.body.studentId || req.userId;
+
+    course.students = course.students.filter(
+      id => id.toString() !== studentId
     );
-    
-    res.json({ message: 'Student unenrolled successfully' });
+    await course.save();
+
+    const updatedCourse = await Course.findById(course._id)
+      .populate({
+        path: 'instructor',
+        select: 'username email firstName lastName',
+        strictPopulate: false
+      })
+      .populate({
+        path: 'students',
+        select: 'username email firstName lastName studentId',
+        strictPopulate: false
+      });
+
+    res.json(updatedCourse);
   } catch (error) {
-    res.status(400).json({ message: 'Error unenrolling student', error: error.message });
+    console.error('Unenroll student error:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get courses for a specific instructor
+router.get('/instructor/:instructorId', auth, async (req, res) => {
+  try {
+    const courses = await Course.find({ instructor: req.params.instructorId })
+      .populate({
+        path: 'instructor',
+        select: 'username email firstName lastName',
+        strictPopulate: false
+      })
+      .populate({
+        path: 'semester',
+        select: 'name year',
+        strictPopulate: false
+      });
+    
+    res.json(courses);
+  } catch (error) {
+    console.error('Get instructor courses error:', error);
+    res.status(500).json({ message: error.message });
   }
 });
 

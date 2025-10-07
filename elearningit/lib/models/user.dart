@@ -9,8 +9,11 @@ class User {
   final String email;
   final String? firstName;
   final String? lastName;
-  final String role; // 'student', 'admin'
+  final String role;
   final String? profilePicture;
+  final String? studentId;
+  final String? department;
+  final String? year; // Changed from int? to String?
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -18,27 +21,62 @@ class User {
     required this.id,
     required this.username,
     required this.email,
+    required this.role,
     this.firstName,
     this.lastName,
-    required this.role,
     this.profilePicture,
+    this.studentId,
+    this.department,
+    this.year,
     this.createdAt,
     this.updatedAt,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
-  Map<String, dynamic> toJson() => _$UserToJson(this);
+  String get fullName => '${firstName ?? ''} ${lastName ?? ''}'.trim().isEmpty
+      ? username
+      : '${firstName ?? ''} ${lastName ?? ''}'.trim();
 
-  String get fullName {
-    if (firstName != null && lastName != null) {
-      return '$firstName $lastName';
+  factory User.fromJson(Map<String, dynamic> json) {
+    // Helper to parse DateTime safely
+    DateTime? parseDateTime(dynamic value) {
+      if (value == null) return null;
+      if (value is DateTime) return value;
+      if (value is String) return DateTime.tryParse(value);
+      return null;
     }
-    return username;
+
+    return User(
+      id: (json['_id'] ?? json['id'] ?? '').toString(),
+      username: json['username']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      role: json['role']?.toString() ?? 'student',
+      firstName: json['firstName']?.toString(),
+      lastName: json['lastName']?.toString(),
+      profilePicture: json['profilePicture']?.toString(),
+      studentId: json['studentId']?.toString(),
+      department: json['department']?.toString(),
+      year: json['year']?.toString(), // Convert to string
+      createdAt: parseDateTime(json['createdAt']),
+      updatedAt: parseDateTime(json['updatedAt']),
+    );
   }
 
-  bool get isStudent => role == 'student';
-  bool get isAdmin => role == 'admin';
-  bool get isTeacher => role == 'admin'; // For backward compatibility
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'username': username,
+      'email': email,
+      'role': role,
+      'firstName': firstName,
+      'lastName': lastName,
+      'profilePicture': profilePicture,
+      'studentId': studentId,
+      'department': department,
+      'year': year,
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+    };
+  }
 }
 
 @JsonSerializable()

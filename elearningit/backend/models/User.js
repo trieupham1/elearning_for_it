@@ -4,18 +4,25 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['admin', 'student'], required: true },
+  email: { type: String, required: true, unique: true },
+  role: { type: String, enum: ['student', 'instructor', 'admin'], default: 'student' },
   firstName: { type: String },
   lastName: { type: String },
-  email: { type: String, required: true, unique: true },
-  profilePicture: String,
-  phone: String,
-  address: String,
-  studentId: String,
+  studentId: { type: String, sparse: true },
   department: { type: String, default: 'Information Technology' },
-  year: Number,
-  gpa: Number
-}, { timestamps: true });
+  year: { type: Number },
+  profilePicture: { type: String },
+  gpa: { type: Number }
+}, { 
+  timestamps: true,
+  toJSON: {
+    transform: function(doc, ret) {
+      ret.id = ret._id.toString();
+      delete ret.password;
+      return ret;
+    }
+  }
+});
 
 // Virtual for full name
 userSchema.virtual('fullName').get(function() {
