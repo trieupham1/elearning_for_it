@@ -1,4 +1,6 @@
 import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import '../utils/token_manager.dart';
 
 class ApiConfig {
   // Development server URL - change this to your actual backend URL
@@ -24,24 +26,39 @@ class ApiConfig {
   // Timeout duration
   static const Duration timeout = Duration(seconds: 30);
 
-  // Headers
-  static Map<String, String> get headers => {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
-
-  static Map<String, String> headersWithAuth(String token) => {
-    ...headers,
-    'Authorization': 'Bearer $token',
-  };
-
   // Helper method to get the correct base URL for different environments
   static String getBaseUrl() {
-    try {
-      if (Platform.isAndroid) return _androidEmulatorBase;
-    } catch (_) {
-      // If Platform is not available (e.g., during tests), fall back to local
+    if (kIsWeb) {
+      return _localBase;
     }
-    return _localBase;
+
+    try {
+      if (Platform.isAndroid) {
+        return _androidEmulatorBase;
+      }
+      return _localBase;
+    } catch (e) {
+      return _localBase;
+    }
+  }
+
+  // Add baseUrl getter for backward compatibility
+  static String get baseUrl => getBaseUrl();
+
+  // Helper method to get headers with authorization token
+  static Future<Map<String, String>> headers() async {
+    final token = await _getToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  static Future<String?> _getToken() async {
+    try {
+      return await TokenManager.getToken();
+    } catch (e) {
+      return null;
+    }
   }
 }

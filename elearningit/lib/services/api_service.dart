@@ -33,7 +33,7 @@ class ApiService {
   }
 
   Future<Map<String, String>> _getHeaders([bool withAuth = true]) async {
-    final headers = Map<String, String>.from(ApiConfig.headers);
+    final headers = await ApiConfig.headers();
 
     if (withAuth) {
       final token = await getToken();
@@ -49,19 +49,25 @@ class ApiService {
     try {
       final headers = await _getHeaders(withAuth);
       final url = '${ApiConfig.getBaseUrl()}$endpoint';
-      
+
       print('🌐 GET Request: $url');
       print('📋 Headers: $headers');
-      
-      final response = await http.get(Uri.parse(url), headers: headers).timeout(ApiConfig.timeout);
-      
+
+      final response = await http
+          .get(Uri.parse(url), headers: headers)
+          .timeout(ApiConfig.timeout);
+
       print('📥 Response Status: ${response.statusCode}');
-      print('📥 Response Body: ${response.body.length > 200 ? response.body.substring(0, 200) + '...' : response.body}');
+      print(
+        '📥 Response Body: ${response.body.length > 200 ? response.body.substring(0, 200) + '...' : response.body}',
+      );
 
       return _handleResponse(response);
     } on SocketException catch (e) {
       print('❌ Socket Exception: $e');
-      throw ApiException('No internet connection - check if backend server is running on ${ApiConfig.getBaseUrl()}');
+      throw ApiException(
+        'No internet connection - check if backend server is running on ${ApiConfig.getBaseUrl()}',
+      );
     } on HttpException catch (e) {
       print('❌ HTTP Exception: $e');
       throw ApiException('HTTP error occurred');
@@ -80,20 +86,26 @@ class ApiService {
       final headers = await _getHeaders(withAuth);
       final url = '${ApiConfig.getBaseUrl()}$endpoint';
       final bodyString = body != null ? json.encode(body) : null;
-      
+
       print('🌐 POST Request: $url');
       print('📋 Headers: $headers');
       print('📤 Body: $bodyString');
-      
-      final response = await http.post(Uri.parse(url), headers: headers, body: bodyString).timeout(ApiConfig.timeout);
-      
+
+      final response = await http
+          .post(Uri.parse(url), headers: headers, body: bodyString)
+          .timeout(ApiConfig.timeout);
+
       print('📥 Response Status: ${response.statusCode}');
-      print('📥 Response Body: ${response.body.length > 200 ? response.body.substring(0, 200) + '...' : response.body}');
+      print(
+        '📥 Response Body: ${response.body.length > 200 ? response.body.substring(0, 200) + '...' : response.body}',
+      );
 
       return _handleResponse(response);
     } on SocketException catch (e) {
       print('❌ Socket Exception: $e');
-      throw ApiException('No internet connection - check if backend server is running on ${ApiConfig.getBaseUrl()}');
+      throw ApiException(
+        'No internet connection - check if backend server is running on ${ApiConfig.getBaseUrl()}',
+      );
     } on HttpException catch (e) {
       print('❌ HTTP Exception: $e');
       throw ApiException('HTTP error occurred');
@@ -111,7 +123,13 @@ class ApiService {
     try {
       final headers = await _getHeaders(withAuth);
       final url = '${ApiConfig.getBaseUrl()}$endpoint';
-      final response = await http.put(Uri.parse(url), headers: headers, body: body != null ? json.encode(body) : null).timeout(ApiConfig.timeout);
+      final response = await http
+          .put(
+            Uri.parse(url),
+            headers: headers,
+            body: body != null ? json.encode(body) : null,
+          )
+          .timeout(ApiConfig.timeout);
 
       return _handleResponse(response);
     } on SocketException {
@@ -127,7 +145,9 @@ class ApiService {
     try {
       final headers = await _getHeaders(withAuth);
       final url = '${ApiConfig.getBaseUrl()}$endpoint';
-      final response = await http.delete(Uri.parse(url), headers: headers).timeout(ApiConfig.timeout);
+      final response = await http
+          .delete(Uri.parse(url), headers: headers)
+          .timeout(ApiConfig.timeout);
 
       return _handleResponse(response);
     } on SocketException {
@@ -141,7 +161,7 @@ class ApiService {
 
   http.Response _handleResponse(http.Response response) {
     print('🔍 Handling response: ${response.statusCode}');
-    
+
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return response;
     }
@@ -183,12 +203,14 @@ class ApiService {
   Future<bool> testConnection() async {
     try {
       print('🔄 Testing connection to ${ApiConfig.getBaseUrl()}...');
-      
-      final response = await http.get(
-        Uri.parse('${ApiConfig.getBaseUrl()}/health'),
-        headers: {'Accept': 'application/json'},
-      ).timeout(const Duration(seconds: 5));
-      
+
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.getBaseUrl()}/health'),
+            headers: {'Accept': 'application/json'},
+          )
+          .timeout(const Duration(seconds: 5));
+
       print('✅ Connection test result: ${response.statusCode}');
       return response.statusCode == 200;
     } catch (e) {

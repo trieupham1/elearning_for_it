@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/student_home_screen.dart';
-import 'screens/instructor_dashboard.dart';
+import 'screens/instructor_home_screen.dart';
 import 'screens/api_test_screen.dart';
+import 'screens/manage_semesters_screen.dart';
+import 'screens/manage_courses_screen.dart';
+import 'screens/manage_students_screen.dart';
 import 'config/theme.dart';
 
 void main() {
@@ -22,9 +25,12 @@ class ELearningApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/student-home': (context) => const StudentHomeScreen(),
-        '/instructor-home': (context) => const InstructorDashboard(),
+        '/instructor-home': (context) => const InstructorHomeScreen(),
         '/profile': (context) => const ProfileScreen(),
         '/api-test': (context) => const ApiTestScreen(),
+        '/manage-semesters': (context) => const ManageSemestersScreen(),
+        '/manage-courses': (context) => const ManageCoursesScreen(),
+        '/manage-students': (context) => const ManageStudentsScreen(),
       },
       themeMode: ThemeMode.system,
     );
@@ -38,9 +44,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-      ),
+      appBar: AppBar(title: const Text('Profile')),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

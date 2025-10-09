@@ -16,7 +16,7 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
   profilePicture: json['profilePicture'] as String?,
   studentId: json['studentId'] as String?,
   department: json['department'] as String?,
-  year: json['year'] as String?,
+  phoneNumber: json['phoneNumber'] as String?,
   createdAt: json['createdAt'] == null
       ? null
       : DateTime.parse(json['createdAt'] as String),
@@ -35,7 +35,7 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
   'profilePicture': instance.profilePicture,
   'studentId': instance.studentId,
   'department': instance.department,
-  'year': instance.year,
+  'phoneNumber': instance.phoneNumber,
   'createdAt': instance.createdAt?.toIso8601String(),
   'updatedAt': instance.updatedAt?.toIso8601String(),
 };

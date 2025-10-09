@@ -1,139 +1,159 @@
-import '../models/course.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
+import '../models/course.dart';
+import '../utils/token_manager.dart';
 import 'api_service.dart';
 
 class CourseService extends ApiService {
-  static final CourseService _instance = CourseService._internal();
-  factory CourseService() => _instance;
-  CourseService._internal();
-
-  Future<List<Course>> getCourses({String? semesterId}) async {
+  Future<List<Course>> getCourses({String? semester}) async {
     try {
-      String endpoint = ApiConfig.courses;
-      if (semesterId != null) {
-        endpoint += '?semesterId=$semesterId';
-      }
+      final token = await TokenManager.getToken();
+      if (token == null) throw Exception('No authentication token');
 
-      final response = await get(endpoint);
-      final data = parseResponse(response);
+      final url = semester != null
+          ? '${ApiConfig.baseUrl}${ApiConfig.courses}?semester=$semester'
+          : '${ApiConfig.baseUrl}${ApiConfig.courses}';
 
-      // Backend returns courses directly as array
-      if (data is List) {
-        return (data as List)
-            .map(
-              (courseJson) =>
-                  Course.fromJson(courseJson as Map<String, dynamic>),
-            )
-            .toList();
-      } else if (data.containsKey('courses')) {
-        return (data['courses'] as List)
-            .map(
-              (courseJson) =>
-                  Course.fromJson(courseJson as Map<String, dynamic>),
-            )
-            .toList();
+      final headers = await ApiConfig.headers();
+
+      final response = await http
+          .get(Uri.parse(url), headers: headers)
+          .timeout(ApiConfig.timeout);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((json) => Course.fromJson(json)).toList();
       } else {
-        return [];
+        throw Exception('Failed to load courses: ${response.body}');
       }
     } catch (e) {
-      throw ApiException('Failed to fetch courses: $e');
+      throw Exception('Error fetching courses: $e');
     }
   }
 
-  Future<Course> getCourse(String courseId) async {
+  Future<Course> getCourseById(String id) async {
     try {
-      final response = await get('${ApiConfig.courses}/$courseId');
-      final data = parseResponse(response);
+      final token = await TokenManager.getToken();
+      if (token == null) throw Exception('No authentication token');
 
-      return Course.fromJson(data);
+      final headers = await ApiConfig.headers();
+
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}${ApiConfig.courses}/$id'),
+            headers: headers,
+          )
+          .timeout(ApiConfig.timeout);
+
+      if (response.statusCode == 200) {
+        return Course.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Failed to load course: ${response.body}');
+      }
     } catch (e) {
-      throw ApiException('Failed to fetch course: $e');
+      throw Exception('Error fetching course: $e');
     }
   }
 
-  Future<Course> createCourse(Map<String, dynamic> courseData) async {
+  Future<Course> createCourse({
+    required String code,
+    required String name,
+    required String description,
+    required String semesterId,
+    required int sessions,
+    required String color,
+  }) async {
     try {
-      final response = await post(ApiConfig.courses, body: courseData);
-      final data = parseResponse(response);
+      final token = await TokenManager.getToken();
+      if (token == null) throw Exception('No authentication token');
 
-      return Course.fromJson(data);
+      final headers = await ApiConfig.headers();
+
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}${ApiConfig.courses}'),
+            headers: headers,
+            body: json.encode({
+              'code': code,
+              'name': name,
+              'description': description,
+              'semester': semesterId,
+              'sessions': sessions,
+              'color': color,
+            }),
+          )
+          .timeout(ApiConfig.timeout);
+
+      if (response.statusCode == 201) {
+        return Course.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Failed to create course: ${response.body}');
+      }
     } catch (e) {
-      throw ApiException('Failed to create course: $e');
+      throw Exception('Error creating course: $e');
     }
   }
 
-  Future<Course> updateCourse(
-    String courseId,
-    Map<String, dynamic> updates,
-  ) async {
+  Future<Course> updateCourse({
+    required String id,
+    required String code,
+    required String name,
+    required String description,
+    required String semesterId,
+    required int sessions,
+    required String color,
+  }) async {
     try {
-      final response = await put(
-        '${ApiConfig.courses}/$courseId',
-        body: updates,
-      );
-      final data = parseResponse(response);
+      final token = await TokenManager.getToken();
+      if (token == null) throw Exception('No authentication token');
 
-      return Course.fromJson(data);
+      final headers = await ApiConfig.headers();
+
+      final response = await http
+          .put(
+            Uri.parse('${ApiConfig.baseUrl}${ApiConfig.courses}/$id'),
+            headers: headers,
+            body: json.encode({
+              'code': code,
+              'name': name,
+              'description': description,
+              'semester': semesterId,
+              'sessions': sessions,
+              'color': color,
+            }),
+          )
+          .timeout(ApiConfig.timeout);
+
+      if (response.statusCode == 200) {
+        return Course.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Failed to update course: ${response.body}');
+      }
     } catch (e) {
-      throw ApiException('Failed to update course: $e');
+      throw Exception('Error updating course: $e');
     }
   }
 
-  Future<void> deleteCourse(String courseId) async {
+  Future<void> deleteCourse(String id) async {
     try {
-      await delete('${ApiConfig.courses}/$courseId');
+      final token = await TokenManager.getToken();
+      if (token == null) throw Exception('No authentication token');
+
+      final headers = await ApiConfig.headers();
+
+      final response = await http
+          .delete(
+            Uri.parse('${ApiConfig.baseUrl}${ApiConfig.courses}/$id'),
+            headers: headers,
+          )
+          .timeout(ApiConfig.timeout);
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to delete course: ${response.body}');
+      }
     } catch (e) {
-      throw ApiException('Failed to delete course: $e');
-    }
-  }
-
-  Future<void> enrollStudent(String courseId, String studentId) async {
-    try {
-      await post(
-        '${ApiConfig.courses}/$courseId/enroll',
-        body: {'studentId': studentId},
-      );
-    } catch (e) {
-      throw ApiException('Failed to enroll student: $e');
-    }
-  }
-
-  Future<void> unenrollStudent(String courseId, String studentId) async {
-    try {
-      await post(
-        '${ApiConfig.courses}/$courseId/unenroll',
-        body: {'studentId': studentId},
-      );
-    } catch (e) {
-      throw ApiException('Failed to unenroll student: $e');
-    }
-  }
-
-  Future<List<Course>> getStudentCourses(String studentId) async {
-    try {
-      final response = await get('${ApiConfig.users}/$studentId/courses');
-      final data = parseResponse(response);
-
-      return (data['courses'] as List)
-          .map((courseJson) => Course.fromJson(courseJson))
-          .toList();
-    } catch (e) {
-      throw ApiException('Failed to fetch student courses: $e');
-    }
-  }
-
-  Future<List<Course>> getTeacherCourses(String teacherId) async {
-    try {
-      final response = await get(
-        '${ApiConfig.users}/$teacherId/taught-courses',
-      );
-      final data = parseResponse(response);
-
-      return (data['courses'] as List)
-          .map((courseJson) => Course.fromJson(courseJson))
-          .toList();
-    } catch (e) {
-      throw ApiException('Failed to fetch teacher courses: $e');
+      throw Exception('Error deleting course: $e');
     }
   }
 }

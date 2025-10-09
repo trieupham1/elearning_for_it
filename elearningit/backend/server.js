@@ -17,11 +17,13 @@ const authRoutes = require('./routes/auth');
 const courseRoutes = require('./routes/courses');
 const userRoutes = require('./routes/users');
 const semesterRoutes = require('./routes/semesters');
+const studentRoutes = require('./routes/students');
 
 app.use('/api/auth', authRoutes);
-app.use('/api/courses', courseRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/courses', courseRoutes);
 app.use('/api/semesters', semesterRoutes);
+app.use('/api/students', studentRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

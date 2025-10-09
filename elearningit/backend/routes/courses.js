@@ -6,8 +6,12 @@ const auth = require('../middleware/auth');
 // Get all courses
 router.get('/', auth, async (req, res) => {
   try {
-    const { semesterId } = req.query;
-    const query = semesterId ? { semester: semesterId } : {};
+    const { semesterId, semester } = req.query;
+    // Support both 'semesterId' and 'semester' query parameters
+    const semesterFilter = semesterId || semester;
+    const query = semesterFilter ? { semester: semesterFilter } : {};
+    
+    console.log('Fetching courses with query:', query);
     
     const courses = await Course.find(query)
       .populate({
@@ -19,7 +23,14 @@ router.get('/', auth, async (req, res) => {
         path: 'semester',
         select: 'name year',
         strictPopulate: false
+      })
+      .populate({
+        path: 'students',
+        select: '_id username email firstName lastName studentId',
+        strictPopulate: false
       });
+    
+    console.log(`Found ${courses.length} courses`);
     
     res.json(courses);
   } catch (error) {

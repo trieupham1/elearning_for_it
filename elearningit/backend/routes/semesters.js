@@ -1,7 +1,56 @@
 const express = require('express');
 const router = express.Router();
 const Semester = require('../models/Semester');
+const Course = require('../models/Course');
+const Group = require('../models/Group');
+const Assignment = require('../models/Assignment');
+const Quiz = require('../models/Quiz');
 const auth = require('../middleware/auth');
+
+// Get semester statistics
+router.get('/:id/statistics', auth, async (req, res) => {
+  try {
+    const semester = await Semester.findById(req.params.id);
+    
+    if (!semester) {
+      return res.status(404).json({ message: 'Semester not found' });
+    }
+
+    // Get all courses for this semester
+    const courses = await Course.find({ semester: req.params.id });
+    const courseIds = courses.map(c => c._id);
+
+    // Get all groups for these courses
+    const groups = await Group.find({ course: { $in: courseIds } });
+
+    // Get unique students across all courses
+    const allStudents = new Set();
+    courses.forEach(course => {
+      if (course.students && Array.isArray(course.students)) {
+        course.students.forEach(student => {
+          allStudents.add(student.toString());
+        });
+      }
+    });
+
+    // Get assignments and quizzes
+    const assignments = await Assignment.find({ course: { $in: courseIds } });
+    const quizzes = await Quiz.find({ course: { $in: courseIds } });
+
+    res.json({
+      semesterId: semester._id,
+      semesterName: semester.displayName,
+      courses: courses.length,
+      groups: groups.length,
+      students: allStudents.size,
+      assignments: assignments.length,
+      quizzes: quizzes.length,
+    });
+  } catch (error) {
+    console.error('Get semester statistics error:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
 
 // Get all semesters
 router.get('/', auth, async (req, res) => {

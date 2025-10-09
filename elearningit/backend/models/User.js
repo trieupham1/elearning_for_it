@@ -12,7 +12,9 @@ const userSchema = new mongoose.Schema({
   department: { type: String, default: 'Information Technology' },
   year: { type: Number },
   profilePicture: { type: String },
-  gpa: { type: Number }
+  phoneNumber: { type: String },
+  bio: { type: String },
+  isActive: { type: Boolean, default: true }
 }, { 
   timestamps: true,
   toJSON: {

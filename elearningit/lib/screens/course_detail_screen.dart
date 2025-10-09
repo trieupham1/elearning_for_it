@@ -3,83 +3,136 @@ import '../models/course.dart';
 
 class CourseDetailScreen extends StatelessWidget {
   final Course course;
+  final bool isReadOnly;
 
-  const CourseDetailScreen({Key? key, required this.course}) : super(key: key);
+  const CourseDetailScreen({
+    super.key,
+    required this.course,
+    this.isReadOnly = false,
+  });
+
+  Color _parseColor(String? colorString) {
+    if (colorString == null || colorString.isEmpty) {
+      return Colors.blue;
+    }
+
+    try {
+      // Remove # if present
+      final hexColor = colorString.replaceAll('#', '');
+      return Color(int.parse('FF$hexColor', radix: 16));
+    } catch (e) {
+      return Colors.blue;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final courseColor = _parseColor(course.color);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(course.title),
-        actions: [
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Course Header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: course.color,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [course.color, course.color.withOpacity(0.7)],
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 200,
+            pinned: true,
+            backgroundColor: courseColor,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(course.name),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [courseColor, courseColor.withValues(alpha: 0.7)],
+                  ),
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    course.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    course.code,
-                    style: const TextStyle(color: Colors.white70, fontSize: 16),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    course.description,
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      const Icon(Icons.person, color: Colors.white, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        course.instructor,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      const SizedBox(width: 24),
-                      const Icon(Icons.people, color: Colors.white, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${course.studentCount} students',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ],
+                child: course.image != null && course.image!.isNotEmpty
+                    ? Image.network(
+                        course.image!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const SizedBox(),
+                      )
+                    : null,
               ),
             ),
-
-            // Quick Actions
-            Padding(
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Course Info
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.school, color: Colors.blue),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  course.code,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          if (course.instructorName != null) ...[
+                            Row(
+                              children: [
+                                const Icon(Icons.person, color: Colors.grey),
+                                const SizedBox(width: 8),
+                                Text('Instructor: ${course.instructorName}'),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                          if (course.semesterName != null) ...[
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.calendar_today,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(course.semesterName!),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                          Row(
+                            children: [
+                              const Icon(Icons.people, color: Colors.grey),
+                              const SizedBox(width: 8),
+                              Text('${course.studentCount} students'),
+                            ],
+                          ),
+                          if (course.description != null &&
+                              course.description!.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            const Divider(),
+                            const SizedBox(height: 8),
+                            Text(
+                              course.description!,
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Quick Actions
                   const Text(
                     'Quick Actions',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -127,37 +180,12 @@ class CourseDetailScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  Card(
-                    child: Column(
-                      children: [
-                        _buildActivityItem(
-                          'New Assignment Posted',
-                          'Assignment 4: Flutter Navigation',
-                          '2 hours ago',
-                          Icons.assignment,
-                        ),
-                        const Divider(height: 1),
-                        _buildActivityItem(
-                          'Material Updated',
-                          'Week 8 lecture slides updated',
-                          '1 day ago',
-                          Icons.folder,
-                        ),
-                        const Divider(height: 1),
-                        _buildActivityItem(
-                          'Announcement',
-                          'Quiz scheduled for next week',
-                          '2 days ago',
-                          Icons.announcement,
-                        ),
-                      ],
-                    ),
-                  ),
+                  _buildRecentActivity(),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -168,27 +196,49 @@ class CourseDetailScreen extends StatelessWidget {
     Color color,
     VoidCallback onTap,
   ) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentActivity() {
     return Card(
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const Icon(Icons.arrow_forward_ios, size: 16),
-            ],
-          ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _buildActivityItem(
+              'New announcement posted',
+              'Welcome to the course!',
+              Icons.announcement,
+              Colors.blue,
+            ),
+            const Divider(),
+            _buildActivityItem(
+              'Assignment due soon',
+              'Lab 01 - Due in 3 days',
+              Icons.assignment,
+              Colors.orange,
+            ),
+          ],
         ),
       ),
     );
@@ -197,20 +247,17 @@ class CourseDetailScreen extends StatelessWidget {
   Widget _buildActivityItem(
     String title,
     String subtitle,
-    String time,
     IconData icon,
+    Color color,
   ) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: course.color.withOpacity(0.1),
-        child: Icon(icon, color: course.color, size: 20),
+        backgroundColor: color.withValues(alpha: 0.1),
+        child: Icon(icon, color: color),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(title),
       subtitle: Text(subtitle),
-      trailing: Text(
-        time,
-        style: const TextStyle(fontSize: 12, color: Colors.grey),
-      ),
+      trailing: const Icon(Icons.chevron_right),
     );
   }
 }

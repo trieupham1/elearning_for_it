@@ -19,7 +19,8 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
 
   Future<void> _login() async {
-    if (_usernameController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
+    if (_usernameController.text.trim().isEmpty ||
+        _passwordController.text.trim().isEmpty) {
       setState(() => _errorMessage = 'Please enter both username and password');
       return;
     }
@@ -36,9 +37,13 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       final loginResponse = await _authService.login(loginRequest);
-      
+
+      // Check if widget is still mounted before navigating
+      if (!mounted) return;
+
       // Navigate based on user role
-      if (loginResponse.user.role == 'admin') {
+      if (loginResponse.user.role == 'instructor' ||
+          loginResponse.user.role == 'admin') {
         Navigator.pushReplacementNamed(context, '/instructor-home');
       } else {
         Navigator.pushReplacementNamed(context, '/student-home');
@@ -109,7 +114,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.error_outline, color: Colors.red.shade600),
+                            Icon(
+                              Icons.error_outline,
+                              color: Colors.red.shade600,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(

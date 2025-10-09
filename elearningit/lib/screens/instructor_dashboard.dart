@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/course_service.dart';
+import '../services/semester_service.dart';
 import '../models/user.dart';
 import '../models/course.dart';
+import '../models/semester.dart';
 
 class InstructorDashboard extends StatefulWidget {
   const InstructorDashboard({super.key});
@@ -14,10 +16,21 @@ class InstructorDashboard extends StatefulWidget {
 class _InstructorDashboardState extends State<InstructorDashboard> {
   final _authService = AuthService();
   final _courseService = CourseService();
+  final _semesterService = SemesterService();
+
   List<Course> _courses = [];
+  List<Semester> _semesters = [];
+  Semester? _selectedSemester;
   bool _isLoading = true;
   String? _errorMessage;
   User? _currentUser;
+
+  // Semester-specific metrics
+  int _totalCourses = 0;
+  int _totalGroups = 0;
+  int _totalStudents = 0;
+  int _totalAssignments = 0;
+  int _totalQuizzes = 0;
 
   @override
   void initState() {
@@ -27,83 +40,204 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Load current user
       _currentUser = await _authService.getCurrentUser();
-      
-      // Load instructor's courses
-      final courses = await _courseService.getCourses();
-      
+
+      // Load semesters
+      final semesters = await _semesterService.getSemesters();
+
+      // Get active semester or first semester
+      Semester? activeSemester;
+      try {
+        activeSemester = semesters.firstWhere((s) => s.isActive);
+      } catch (e) {
+        activeSemester = semesters.isNotEmpty ? semesters.first : null;
+      }
+
+      // Load data for active semester
+      if (activeSemester != null) {
+        await _loadSemesterData(activeSemester);
+      }
+
       setState(() {
-        _courses = courses;
+        _semesters = semesters;
+        _selectedSemester = activeSemester;
         _isLoading = false;
         _errorMessage = null;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString().replaceFirst('ApiException: ', '');
+        _errorMessage = e.toString().replaceFirst('Exception: ', '');
         _isLoading = false;
       });
     }
   }
 
+  Future<void> _loadSemesterData(Semester semester) async {
+    try {
+      // Load courses for selected semester
+      final courses = await _courseService.getCourses(semester: semester.id);
+
+      print(
+        '=== DEBUG: Loaded ${courses.length} courses for semester ${semester.displayName}',
+      );
+
+      // Calculate statistics from courses
+      // Use a Set to track unique students if they appear in multiple courses
+      Set<String> uniqueStudentIds = {};
+
+      for (var course in courses) {
+        print(
+          'Course: ${course.name}, Students count: ${course.students.length}',
+        );
+        // Add student IDs from each course
+        if (course.students.isNotEmpty) {
+          uniqueStudentIds.addAll(course.students);
+        }
+      }
+
+      print('Total unique students: ${uniqueStudentIds.length}');
+
+      // Use the count of unique students
+      final studentCount = uniqueStudentIds.length;
+
+      setState(() {
+        _courses = courses;
+        _totalCourses = courses.length;
+        _totalStudents = studentCount;
+        // For groups, assignments, and quizzes, we'll show 0 for now
+        // These would need separate API calls or be included in the course data
+        _totalGroups = 0;
+        _totalAssignments = 0;
+        _totalQuizzes = 0;
+        _selectedSemester = semester;
+      });
+    } catch (e) {
+      print('Error loading semester data: $e');
+      setState(() {
+        _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
+  Future<void> _changeSemester(Semester semester) async {
+    setState(() => _isLoading = true);
+    await _loadSemesterData(semester);
+    setState(() => _isLoading = false);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Instructor Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showCreateCourseDialog(context),
-            tooltip: 'Create Course',
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () => _showNotifications(context),
-          ),
-        ],
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red.shade400),
+            const SizedBox(height: 16),
+            Text(
+              'Error loading dashboard',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            Text(_errorMessage!, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Semester Selector Card
+            if (_semesters.isNotEmpty) _buildSemesterSelector(),
+            const SizedBox(height: 16),
+            _buildWelcomeCard(),
+            const SizedBox(height: 24),
+            _buildQuickStats(),
+            const SizedBox(height: 24),
+            _buildCoursesSection(),
+            const SizedBox(height: 24),
+            _buildRecentActivity(),
+          ],
+        ),
       ),
-      drawer: _buildDrawer(context),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error_outline, size: 64, color: Colors.red.shade400),
-                      const SizedBox(height: 16),
-                      Text('Error loading dashboard', style: Theme.of(context).textTheme.headlineSmall),
-                      const SizedBox(height: 8),
-                      Text(_errorMessage!, textAlign: TextAlign.center),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadData,
-                        child: const Text('Retry'),
+    );
+  }
+
+  Widget _buildSemesterSelector() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            const Icon(Icons.calendar_today, size: 20),
+            const SizedBox(width: 12),
+            const Text(
+              'Semester:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<Semester>(
+                  value: _selectedSemester,
+                  icon: const Icon(Icons.arrow_drop_down),
+                  isExpanded: true,
+                  items: _semesters.map((Semester semester) {
+                    return DropdownMenuItem<Semester>(
+                      value: semester,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(semester.displayName),
+                          if (semester.isActive) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Text(
+                                'Current',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                    ],
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildWelcomeCard(),
-                        const SizedBox(height: 24),
-                        _buildQuickStats(),
-                        const SizedBox(height: 24),
-                        _buildCoursesSection(),
-                        const SizedBox(height: 24),
-                        _buildRecentActivity(),
-                      ],
-                    ),
-                  ),
+                    );
+                  }).toList(),
+                  onChanged: (Semester? newSemester) {
+                    if (newSemester != null) {
+                      _changeSemester(newSemester);
+                    }
+                  },
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -135,7 +269,7 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             Text(
               'Manage your courses and track student progress',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 fontSize: 16,
               ),
             ),
@@ -146,39 +280,177 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
   }
 
   Widget _buildQuickStats() {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: _buildStatCard(
-            'Total Courses',
-            '${_courses.length}',
-            Icons.book,
-            Colors.green,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              _selectedSemester != null
+                  ? '${_selectedSemester!.displayName} Overview'
+                  : 'Semester Overview',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            if (_selectedSemester != null && !_selectedSemester!.isActive)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'Past Semester',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+              ),
+          ],
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildStatCard(
-            'Total Students',
-            '${_courses.fold(0, (sum, course) => sum + course.studentCount)}',
-            Icons.people,
-            Colors.orange,
-          ),
+        const SizedBox(height: 16),
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: MediaQuery.of(context).size.width > 900
+              ? 5
+              : MediaQuery.of(context).size.width > 600
+              ? 3
+              : 2,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 1.3,
+          children: [
+            _buildStatCard(
+              'Courses',
+              '$_totalCourses',
+              Icons.school,
+              Colors.blue,
+            ),
+            _buildStatCard(
+              'Groups',
+              '$_totalGroups',
+              Icons.group,
+              Colors.green,
+            ),
+            _buildStatCard(
+              'Students',
+              '$_totalStudents',
+              Icons.people,
+              Colors.orange,
+            ),
+            _buildStatCard(
+              'Assignments',
+              '$_totalAssignments',
+              Icons.assignment,
+              Colors.purple,
+            ),
+            _buildStatCard('Quizzes', '$_totalQuizzes', Icons.quiz, Colors.red),
+          ],
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildStatCard(
-            'Pending Reviews',
-            '12', // TODO: Get real data
-            Icons.assignment,
-            Colors.purple,
+        const SizedBox(height: 24),
+        _buildProgressCharts(),
+      ],
+    );
+  }
+
+  Widget _buildProgressCharts() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Quick Insights',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildProgressIndicator(
+                    'Assignment Completion',
+                    0.75,
+                    '75%',
+                    Colors.purple,
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Expanded(
+                  child: _buildProgressIndicator(
+                    'Quiz Participation',
+                    0.68,
+                    '68%',
+                    Colors.blue,
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Expanded(
+                  child: _buildProgressIndicator(
+                    'Student Engagement',
+                    0.82,
+                    '82%',
+                    Colors.green,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressIndicator(
+    String label,
+    double value,
+    String percentage,
+    Color color,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+              ),
+            ),
+            Text(
+              percentage,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: LinearProgressIndicator(
+            value: value,
+            backgroundColor: color.withValues(alpha: 0.2),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            minHeight: 8,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -188,10 +460,7 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             Text(
               title,
@@ -229,7 +498,11 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
-                      Icon(Icons.school_outlined, size: 64, color: Colors.grey.shade400),
+                      Icon(
+                        Icons.school_outlined,
+                        size: 64,
+                        color: Colors.grey.shade400,
+                      ),
                       const SizedBox(height: 16),
                       const Text('No courses yet'),
                       const SizedBox(height: 8),
@@ -248,7 +521,9 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: MediaQuery.of(context).size.width > 600 ? 2 : 1,
+                  crossAxisCount: MediaQuery.of(context).size.width > 600
+                      ? 2
+                      : 1,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                   childAspectRatio: 3,
@@ -264,7 +539,13 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
   }
 
   Widget _buildCourseCard(Course course) {
-    final colors = [Colors.blue, Colors.green, Colors.purple, Colors.orange, Colors.red];
+    final colors = [
+      Colors.blue,
+      Colors.green,
+      Colors.purple,
+      Colors.orange,
+      Colors.red,
+    ];
     final color = colors[course.id.hashCode % colors.length];
 
     return Card(
@@ -272,7 +553,9 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
         onTap: () {
           // TODO: Navigate to course detail
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Course detail for ${course.title} coming soon!')),
+            SnackBar(
+              content: Text('Course detail for ${course.name} coming soon!'),
+            ),
           );
         },
         child: Padding(
@@ -294,7 +577,7 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      course.title,
+                      course.name,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -304,7 +587,7 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      course.description,
+                      course.description ?? '',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,
@@ -315,7 +598,11 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        Icon(Icons.people, size: 16, color: Colors.grey.shade600),
+                        Icon(
+                          Icons.people,
+                          size: 16,
+                          color: Colors.grey.shade600,
+                        ),
                         const SizedBox(width: 4),
                         Text('${course.studentCount} students'),
                       ],
@@ -341,10 +628,22 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit Course')),
-                  const PopupMenuItem(value: 'students', child: Text('View Students')),
-                  const PopupMenuItem(value: 'assignments', child: Text('Assignments')),
-                  const PopupMenuItem(value: 'materials', child: Text('Materials')),
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Text('Edit Course'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'students',
+                    child: Text('View Students'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'assignments',
+                    child: Text('Assignments'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'materials',
+                    child: Text('Materials'),
+                  ),
                 ],
               ),
             ],
@@ -410,7 +709,7 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
       children: [
         CircleAvatar(
           radius: 20,
-          backgroundColor: color.withOpacity(0.1),
+          backgroundColor: color.withValues(alpha: 0.1),
           child: Icon(icon, color: color, size: 20),
         ),
         const SizedBox(width: 12),
@@ -418,83 +717,13 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                description,
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(description, style: TextStyle(color: Colors.grey.shade600)),
             ],
           ),
         ),
-        Text(
-          time,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade500,
-          ),
-        ),
+        Text(time, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
       ],
-    );
-  }
-
-  Widget _buildDrawer(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          UserAccountsDrawerHeader(
-            accountName: Text(_currentUser?.fullName ?? 'Loading...'),
-            accountEmail: Text(_currentUser?.email ?? ''),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Text(
-                _currentUser?.username.substring(0, 2).toUpperCase() ?? 'I',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.dashboard),
-            title: const Text('Dashboard'),
-            onTap: () => Navigator.pop(context),
-          ),
-          ListTile(
-            leading: const Icon(Icons.school),
-            title: const Text('My Courses'),
-            onTap: () => Navigator.pop(context),
-          ),
-          ListTile(
-            leading: const Icon(Icons.assignment),
-            title: const Text('Assignments'),
-            onTap: () => Navigator.pop(context),
-          ),
-          ListTile(
-            leading: const Icon(Icons.people),
-            title: const Text('Students'),
-            onTap: () => Navigator.pop(context),
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
-            onTap: () => Navigator.pop(context),
-          ),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
-            onTap: () async {
-              await _authService.logout();
-              Navigator.pushReplacementNamed(context, '/login');
-            },
-          ),
-        ],
-      ),
     );
   }
 
@@ -515,7 +744,9 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                 controller: titleController,
                 decoration: InputDecoration(
                   labelText: 'Course Title',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -523,7 +754,9 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                 controller: descriptionController,
                 decoration: InputDecoration(
                   labelText: 'Description',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 maxLines: 3,
               ),
@@ -540,7 +773,9 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
               // TODO: Implement create course
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Create course feature coming soon!')),
+                const SnackBar(
+                  content: Text('Create course feature coming soon!'),
+                ),
               );
             },
             child: const Text('Create'),
@@ -551,103 +786,26 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
   }
 
   void _showEditCourseDialog(BuildContext context, Course course) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Edit ${course.title} coming soon!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Edit ${course.name} coming soon!')));
   }
 
   void _showStudentsList(BuildContext context, Course course) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Students list for ${course.title} coming soon!')),
+      SnackBar(content: Text('Students list for ${course.name} coming soon!')),
     );
   }
 
   void _showAssignments(BuildContext context, Course course) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Assignments for ${course.title} coming soon!')),
+      SnackBar(content: Text('Assignments for ${course.name} coming soon!')),
     );
   }
 
   void _showMaterials(BuildContext context, Course course) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Materials for ${course.title} coming soon!')),
-    );
-  }
-
-  void _showNotifications(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Notifications',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView(
-                children: [
-                  _buildNotificationItem(
-                    'New Submission',
-                    'Assignment submitted by John Doe',
-                    '1 hour ago',
-                    Icons.assignment_turned_in,
-                    false,
-                  ),
-                  _buildNotificationItem(
-                    'Course Question',
-                    'Student asked a question in the forum',
-                    '3 hours ago',
-                    Icons.help,
-                    false,
-                  ),
-                  _buildNotificationItem(
-                    'System Update',
-                    'Platform maintenance scheduled for tonight',
-                    'Yesterday',
-                    Icons.system_update,
-                    true,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNotificationItem(
-    String title,
-    String subtitle,
-    String time,
-    IconData icon,
-    bool isRead,
-  ) {
-    return Container(
-      color: isRead ? null : Colors.blue.shade50,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: isRead
-              ? Colors.grey.shade300
-              : Theme.of(context).primaryColor,
-          child: Icon(icon, color: Colors.white, size: 20),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
-          ),
-        ),
-        subtitle: Text(subtitle),
-        trailing: Text(time, style: const TextStyle(fontSize: 12)),
-      ),
+      SnackBar(content: Text('Materials for ${course.name} coming soon!')),
     );
   }
 }

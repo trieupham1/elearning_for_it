@@ -13,7 +13,7 @@ class User {
   final String? profilePicture;
   final String? studentId;
   final String? department;
-  final String? year; // Changed from int? to String?
+  final String? phoneNumber;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -27,7 +27,7 @@ class User {
     this.profilePicture,
     this.studentId,
     this.department,
-    this.year,
+    this.phoneNumber,
     this.createdAt,
     this.updatedAt,
   });
@@ -55,7 +55,7 @@ class User {
       profilePicture: json['profilePicture']?.toString(),
       studentId: json['studentId']?.toString(),
       department: json['department']?.toString(),
-      year: json['year']?.toString(), // Convert to string
+      phoneNumber: json['phoneNumber']?.toString(),
       createdAt: parseDateTime(json['createdAt']),
       updatedAt: parseDateTime(json['updatedAt']),
     );
@@ -72,7 +72,7 @@ class User {
       'profilePicture': profilePicture,
       'studentId': studentId,
       'department': department,
-      'year': year,
+      'phoneNumber': phoneNumber,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };

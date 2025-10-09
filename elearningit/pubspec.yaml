@@ -43,6 +43,12 @@ dependencies:
   
   # JSON serialization annotations
   json_annotation: ^4.8.1
+  
+  # CSV file parsing
+  csv: ^6.0.0
+  
+  # File picker for CSV import
+  file_picker: ^8.0.0+1
 
 dev_dependencies:
   flutter_test:

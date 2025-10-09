@@ -7,7 +7,7 @@ const quizAttemptSchema = new mongoose.Schema({
   attemptNumber: { type: Number, default: 1 },
   answers: [{
     questionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Question' },
-    selectedChoice: Number,
+    selectedChoice: { type: String, required: true },
     isCorrect: Boolean
   }],
   startedAt: { type: Date, required: true },

@@ -22,7 +22,7 @@ class ClassworkItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.2),
+          backgroundColor: color.withValues(alpha: 0.2),
           child: Icon(icon, color: color),
         ),
         title: Text(title),
@@ -30,9 +30,7 @@ class ClassworkItem extends StatelessWidget {
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(info, style: const TextStyle(fontSize: 12)),
-          ],
+          children: [Text(info, style: const TextStyle(fontSize: 12))],
         ),
         onTap: () {},
       ),
