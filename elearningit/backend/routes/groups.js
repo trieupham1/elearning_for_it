@@ -9,7 +9,7 @@ router.get('/', authMiddleware, async (req, res) => {
   try {
     const { courseId } = req.query;
     const groups = await Group.find({ courseId })
-      .populate('studentIds', 'fullName email studentId');
+      .populate('members', 'firstName lastName fullName email studentId username');
     res.json(groups);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -20,7 +20,7 @@ router.get('/', authMiddleware, async (req, res) => {
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const group = await Group.findById(req.params.id)
-      .populate('studentIds', 'fullName email studentId');
+      .populate('members', 'firstName lastName fullName email studentId username');
     
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
@@ -73,8 +73,8 @@ router.post('/:groupId/students', authMiddleware, instructorOnly, async (req, re
     }
     
     // Remove duplicates
-    const newStudents = studentIds.filter(id => !group.studentIds.includes(id));
-    group.studentIds.push(...newStudents);
+    const newStudents = studentIds.filter(id => !group.members.includes(id));
+    group.members.push(...newStudents);
     await group.save();
     
     res.json(group);
@@ -92,7 +92,7 @@ router.delete('/:groupId/students/:studentId', authMiddleware, instructorOnly, a
       return res.status(404).json({ message: 'Group not found' });
     }
     
-    group.studentIds = group.studentIds.filter(id => id.toString() !== req.params.studentId);
+    group.members = group.members.filter(id => id.toString() !== req.params.studentId);
     await group.save();
     
     res.json(group);

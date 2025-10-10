@@ -3,22 +3,26 @@ const mongoose = require('mongoose');
 
 const quizSchema = new mongoose.Schema({
   courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   title: { type: String, required: true },
   description: String,
-  groupIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group', required: true }],
+  groupIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }], // Empty array = all groups
   openDate: { type: Date, required: true },
   closeDate: { type: Date, required: true },
-  duration: { type: Number, required: true },
+  duration: { type: Number, required: true }, // in minutes
   maxAttempts: { type: Number, default: 1 },
   questionStructure: {
-    easy: Number,
-    medium: Number,
-    hard: Number
+    easy: { type: Number, default: 0 },
+    medium: { type: Number, default: 0 },
+    hard: { type: Number, default: 0 }
   },
-  selectedQuestions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Question' }]
+  randomizeQuestions: { type: Boolean, default: true },
+  selectedQuestions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Question' }],
+  totalPoints: { type: Number, default: 100 }
 }, { timestamps: true });
 
 quizSchema.index({ courseId: 1 });
 quizSchema.index({ openDate: 1, closeDate: 1 });
+quizSchema.index({ 'groupIds': 1 });
 
 module.exports = mongoose.model('Quiz', quizSchema);

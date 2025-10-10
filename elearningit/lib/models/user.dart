@@ -47,7 +47,7 @@ class User {
 
     return User(
       id: (json['_id'] ?? json['id'] ?? '').toString(),
-      username: json['username']?.toString() ?? '',
+      username: json['username']?.toString() ?? 'user',
       email: json['email']?.toString() ?? '',
       role: json['role']?.toString() ?? 'student',
       firstName: json['firstName']?.toString(),

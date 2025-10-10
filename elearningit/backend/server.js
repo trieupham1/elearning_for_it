@@ -18,12 +18,26 @@ const courseRoutes = require('./routes/courses');
 const userRoutes = require('./routes/users');
 const semesterRoutes = require('./routes/semesters');
 const studentRoutes = require('./routes/students');
+const notificationRoutes = require('./routes/notifications');
+const announcementRoutes = require('./routes/announcements');
+const assignmentRoutes = require('./routes/assignments');
+const classworkRoutes = require('./routes/classwork');
+const messageRoutes = require('./routes/messages');
+const groupRoutes = require('./routes/groups');
+const { router: fileRoutes, initializeGridFS } = require('./routes/files');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/semesters', semesterRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/announcements', announcementRoutes);
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/classwork', classworkRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/groups', groupRoutes);
+app.use('/api/files', fileRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -34,7 +48,15 @@ app.get('/api/health', (req, res) => {
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('Connected to MongoDB');
-    const PORT = process.env.PORT || 3000;
+    
+    // Initialize GridFS for file storage
+    const { GridFSBucket } = require('mongodb');
+    const db = mongoose.connection.db;
+    const gfsBucket = new GridFSBucket(db, { bucketName: 'uploads' });
+    initializeGridFS(gfsBucket);
+    console.log('GridFS initialized');
+    
+    const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });

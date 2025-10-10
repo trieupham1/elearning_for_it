@@ -49,6 +49,21 @@ dependencies:
   
   # File picker for CSV import
   file_picker: ^8.0.0+1
+  
+  # Time ago formatter for notifications
+  timeago: ^3.7.0
+  
+  # URL launcher for opening files
+  url_launcher: ^6.2.5
+  
+  # Date formatting
+  intl: ^0.19.0
+  
+  # Path provider for file storage
+  path_provider: ^2.1.2
+  
+  # Share files
+  share_plus: ^7.2.2
 
 dev_dependencies:
   flutter_test:

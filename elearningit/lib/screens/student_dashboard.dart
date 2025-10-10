@@ -6,6 +6,7 @@ import '../models/user.dart';
 import '../models/course.dart';
 import '../models/semester.dart';
 import '../screens/course_detail_screen.dart';
+import '../screens/available_courses_screen.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -125,29 +126,46 @@ class _StudentDashboardState extends State<StudentDashboard> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome Section
-            _buildWelcomeSection(),
-            const SizedBox(height: 24),
+    return Scaffold(
+      body: RefreshIndicator(
+        onRefresh: _loadData,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Welcome Section
+              _buildWelcomeSection(),
+              const SizedBox(height: 24),
 
-            // Stats Cards
-            _buildStatsCards(),
-            const SizedBox(height: 32),
+              // Stats Cards
+              _buildStatsCards(),
+              const SizedBox(height: 32),
 
-            // Courses Section with Semester Filter
-            _buildCoursesHeader(),
-            const SizedBox(height: 16),
+              // Courses Section with Semester Filter
+              _buildCoursesHeader(),
+              const SizedBox(height: 16),
 
-            // Courses Grid
-            _buildCoursesGrid(),
-          ],
+              // Courses Grid
+              _buildCoursesGrid(),
+            ],
+          ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AvailableCoursesScreen()),
+          );
+          // Reload courses if a course was joined
+          if (result == true) {
+            _loadData();
+          }
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Join Course'),
+        backgroundColor: Colors.blue,
       ),
     );
   }

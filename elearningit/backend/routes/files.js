@@ -42,13 +42,15 @@ router.post('/upload', authMiddleware, upload.single('file'), async (req, res) =
     uploadStream.end(req.file.buffer);
     
     uploadStream.on('finish', () => {
-      res.json({
+      const response = {
         fileId: uploadStream.id,
         fileName: req.file.originalname,
         fileSize: req.file.size,
         mimeType: req.file.mimetype,
-        fileUrl: `/api/files/${uploadStream.id}`
-      });
+        fileUrl: `/files/${uploadStream.id}`
+      };
+      console.log('File uploaded successfully. Returning:', JSON.stringify(response));
+      res.json(response);
     });
     
     uploadStream.on('error', (error) => {

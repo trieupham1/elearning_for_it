@@ -5,6 +5,7 @@ import '../services/semester_service.dart';
 import '../models/user.dart';
 import '../models/course.dart';
 import '../models/semester.dart';
+import 'course_detail_screen.dart';
 
 class InstructorDashboard extends StatefulWidget {
   const InstructorDashboard({super.key});
@@ -27,7 +28,6 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
 
   // Semester-specific metrics
   int _totalCourses = 0;
-  int _totalGroups = 0;
   int _totalStudents = 0;
   int _totalAssignments = 0;
   int _totalQuizzes = 0;
@@ -109,7 +109,6 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
         _totalStudents = studentCount;
         // For groups, assignments, and quizzes, we'll show 0 for now
         // These would need separate API calls or be included in the course data
-        _totalGroups = 0;
         _totalAssignments = 0;
         _totalQuizzes = 0;
         _selectedSemester = semester;
@@ -169,8 +168,6 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             _buildQuickStats(),
             const SizedBox(height: 24),
             _buildCoursesSection(),
-            const SizedBox(height: 24),
-            _buildRecentActivity(),
           ],
         ),
       ),
@@ -327,12 +324,6 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
               '$_totalCourses',
               Icons.school,
               Colors.blue,
-            ),
-            _buildStatCard(
-              'Groups',
-              '$_totalGroups',
-              Icons.group,
-              Colors.green,
             ),
             _buildStatCard(
               'Students',
@@ -539,22 +530,25 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
   }
 
   Widget _buildCourseCard(Course course) {
-    final colors = [
-      Colors.blue,
-      Colors.green,
-      Colors.purple,
-      Colors.orange,
-      Colors.red,
-    ];
-    final color = colors[course.id.hashCode % colors.length];
+    // Parse course color if available
+    Color color = Colors.blue;
+    if (course.color != null && course.color!.isNotEmpty) {
+      try {
+        final hexColor = course.color!.replaceAll('#', '');
+        color = Color(int.parse('FF$hexColor', radix: 16));
+      } catch (e) {
+        color = Colors.blue;
+      }
+    }
 
     return Card(
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to course detail
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Course detail for ${course.name} coming soon!'),
+          // Navigate to course detail screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CourseDetailScreen(course: course),
             ),
           );
         },
@@ -650,80 +644,6 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildRecentActivity() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Recent Activity',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildActivityItem(
-                  Icons.assignment_turned_in,
-                  'New submission',
-                  'John Doe submitted Assignment 3 in Mobile Development',
-                  '2 hours ago',
-                  Colors.green,
-                ),
-                const Divider(),
-                _buildActivityItem(
-                  Icons.message,
-                  'New message',
-                  'Jane Smith posted in the course forum',
-                  '4 hours ago',
-                  Colors.blue,
-                ),
-                const Divider(),
-                _buildActivityItem(
-                  Icons.person_add,
-                  'New student',
-                  'Mike Johnson joined Web Development course',
-                  '1 day ago',
-                  Colors.orange,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActivityItem(
-    IconData icon,
-    String title,
-    String description,
-    String time,
-    Color color,
-  ) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 20,
-          backgroundColor: color.withValues(alpha: 0.1),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text(description, style: TextStyle(color: Colors.grey.shade600)),
-            ],
-          ),
-        ),
-        Text(time, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-      ],
     );
   }
 

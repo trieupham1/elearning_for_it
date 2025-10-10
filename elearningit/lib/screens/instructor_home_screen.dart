@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 import '../models/user.dart';
 import '../screens/instructor_dashboard.dart';
 import '../screens/profile_screen.dart';
+import '../screens/notifications_screen.dart';
 
 class InstructorHomeScreen extends StatefulWidget {
   const InstructorHomeScreen({super.key});
@@ -13,12 +15,15 @@ class InstructorHomeScreen extends StatefulWidget {
 
 class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
   final _authService = AuthService();
+  final _notificationService = NotificationService();
   User? _currentUser;
+  int _unreadCount = 0;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _loadUnreadCount();
   }
 
   Future<void> _loadData() async {
@@ -31,12 +36,68 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
     }
   }
 
+  Future<void> _loadUnreadCount() async {
+    try {
+      final count = await _notificationService.getUnreadCount();
+      setState(() {
+        _unreadCount = count;
+      });
+    } catch (e) {
+      // Handle error silently
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
         actions: [
+          // Notification icon with badge
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications),
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationsScreen(),
+                    ),
+                  );
+                  // Reload unread count when returning from notifications screen
+                  _loadUnreadCount();
+                },
+              ),
+              if (_unreadCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      _unreadCount > 99 ? '99+' : _unreadCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(width: 8),
+
           // Profile icon
           IconButton(
             icon: CircleAvatar(
@@ -94,6 +155,58 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
             leading: const Icon(Icons.dashboard),
             title: const Text('Dashboard'),
             onTap: () => Navigator.pop(context),
+          ),
+          ListTile(
+            leading: Stack(
+              children: [
+                const Icon(Icons.notifications),
+                if (_unreadCount > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 12,
+                        minHeight: 12,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            title: const Text('Notifications'),
+            trailing: _unreadCount > 0
+                ? Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _unreadCount > 99 ? '99+' : _unreadCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                : null,
+            onTap: () async {
+              Navigator.pop(context);
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+              );
+              _loadUnreadCount();
+            },
           ),
           const Divider(),
           ListTile(
@@ -175,7 +288,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
               leading: const Icon(Icons.school, color: Colors.green),
               title: const Text('Course Management'),
               subtitle: const Text(
-                'Create, edit courses, materials, assignments & quizzes',
+                'Create, edit courses, delete courses',
               ),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {

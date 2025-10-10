@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
+import '../models/course.dart';
+import '../models/group.dart';
 import '../models/import_models.dart';
 import '../services/student_service.dart';
+import '../services/course_service.dart';
+import '../services/notification_service.dart';
+import '../services/group_service.dart';
 import '../widgets/csv_import_dialog.dart';
 
 class ManageStudentsScreen extends StatefulWidget {
@@ -142,6 +147,8 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
                 return;
               }
 
+              // Save the scaffold messenger before popping
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
               Navigator.pop(context);
 
               try {
@@ -159,24 +166,20 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
                       : phoneController.text.trim(),
                 );
 
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Student created successfully!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  _loadStudents(); // Reload list
-                }
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Student created successfully!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                _loadStudents(); // Reload list
               } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Error: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
             },
             child: const Text('Create'),
@@ -237,6 +240,8 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
+              // Save the scaffold messenger before popping
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
               Navigator.pop(context);
 
               try {
@@ -253,24 +258,20 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
                       : passwordController.text.trim(),
                 );
 
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Student updated successfully!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  _loadStudents(); // Reload list
-                }
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Student updated successfully!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                _loadStudents(); // Reload list
               } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Error: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
             },
             child: const Text('Save'),
@@ -295,29 +296,27 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
+              // Save the scaffold messenger before popping
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
               Navigator.pop(context);
 
               try {
                 await _studentService.deleteStudent(student.id);
 
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Student deleted successfully!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                  _loadStudents(); // Reload list
-                }
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Student deleted successfully!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                _loadStudents(); // Reload list
               } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Error: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -328,54 +327,68 @@ class _ManageStudentsScreenState extends State<ManageStudentsScreen> {
     );
   }
 
-  void _sendCourseInvitation(User student) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Send Course Invitation'),
-        content: SizedBox(
-          width: 400,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Send course invitation to ${student.fullName}'),
-              const SizedBox(height: 16),
-              const Text(
-                'Select courses to invite the student to:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              // TODO: Add course selection list
-              const ListTile(
-                leading: Icon(Icons.school, color: Colors.blue),
-                title: Text('Course selection coming soon'),
-                subtitle: Text('Students will receive invitation notification'),
-              ),
-            ],
+  void _sendCourseInvitation(User student) async {
+    // Load instructor's courses
+    final courseService = CourseService();
+    final notificationService = NotificationService();
+
+    try {
+      final courses = await courseService.getCourses();
+
+      if (courses.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You have no courses to invite students to'),
           ),
+        );
+        return;
+      }
+
+      // Show dialog with course and group selection
+      final selectedCourseIds = <String>{};
+      final courseGroupMap = <String, String?>{}; // courseId -> groupId
+
+      if (!mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => _CourseInvitationDialog(
+          student: student,
+          courses: courses,
+          selectedCourseIds: selectedCourseIds,
+          courseGroupMap: courseGroupMap,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      );
+
+      if (confirmed != true || selectedCourseIds.isEmpty) return;
+
+      // Send invitations for each selected course
+      for (final courseId in selectedCourseIds) {
+        await notificationService.sendCourseInvitation(
+          courseId: courseId,
+          studentIds: [student.id],
+          groupId: courseGroupMap[courseId],
+        );
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Sent ${selectedCourseIds.length} course invitation(s) to ${student.fullName}',
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Implement send invitation API call
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Invitation sent to ${student.fullName}. They will receive a notification to accept or decline.',
-                  ),
-                ),
-              );
-            },
-            child: const Text('Send Invitation'),
-          ),
-        ],
-      ),
-    );
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error sending invitations: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _showImportCsvDialog() {
@@ -550,6 +563,208 @@ bob_wilson,bob.wilson@fit.edu.vn,Bob,Wilson,STU003,student123,Information Techno
           ),
         ],
       ),
+    );
+  }
+}
+
+// Course Invitation Dialog with Group Selection
+class _CourseInvitationDialog extends StatefulWidget {
+  final User student;
+  final List<Course> courses;
+  final Set<String> selectedCourseIds;
+  final Map<String, String?> courseGroupMap;
+
+  const _CourseInvitationDialog({
+    required this.student,
+    required this.courses,
+    required this.selectedCourseIds,
+    required this.courseGroupMap,
+  });
+
+  @override
+  State<_CourseInvitationDialog> createState() =>
+      _CourseInvitationDialogState();
+}
+
+class _CourseInvitationDialogState extends State<_CourseInvitationDialog> {
+  final Map<String, List<Group>> _courseGroups = {};
+  final Map<String, bool> _loadingGroups = {};
+
+  @override
+  void initState() {
+    super.initState();
+    for (final course in widget.courses) {
+      _loadGroupsForCourse(course.id);
+    }
+  }
+
+  Future<void> _loadGroupsForCourse(String courseId) async {
+    setState(() {
+      _loadingGroups[courseId] = true;
+    });
+
+    try {
+      final groups = await GroupService.getGroupsByCourse(courseId);
+      setState(() {
+        _courseGroups[courseId] = groups;
+        _loadingGroups[courseId] = false;
+      });
+    } catch (e) {
+      print('Error loading groups for course $courseId: $e');
+      setState(() {
+        _courseGroups[courseId] = [];
+        _loadingGroups[courseId] = false;
+      });
+    }
+  }
+
+  Color _parseCourseColor(String? colorString) {
+    if (colorString == null || colorString.isEmpty) {
+      return Colors.blue;
+    }
+    try {
+      final hexColor = colorString.replaceAll('#', '');
+      return Color(int.parse('FF$hexColor', radix: 16));
+    } catch (e) {
+      return Colors.blue;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Send Course Invitation'),
+      content: SizedBox(
+        width: 500,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Send course invitation to ${widget.student.fullName}'),
+            const SizedBox(height: 16),
+            const Text(
+              'Select courses and groups to invite the student to:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            // Course selection list with group dropdowns
+            Container(
+              constraints: const BoxConstraints(maxHeight: 400),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: widget.courses.map((course) {
+                    final isSelected = widget.selectedCourseIds.contains(
+                      course.id,
+                    );
+                    final groups = _courseGroups[course.id] ?? [];
+                    final isLoadingGroups = _loadingGroups[course.id] ?? false;
+                    final selectedGroupId = widget.courseGroupMap[course.id];
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: Column(
+                        children: [
+                          CheckboxListTile(
+                            value: isSelected,
+                            onChanged: (checked) {
+                              setState(() {
+                                if (checked == true) {
+                                  widget.selectedCourseIds.add(course.id);
+                                } else {
+                                  widget.selectedCourseIds.remove(course.id);
+                                  widget.courseGroupMap.remove(course.id);
+                                }
+                              });
+                            },
+                            title: Text(course.name),
+                            subtitle: Text(course.code),
+                            secondary: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: _parseCourseColor(course.color),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.school,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                          if (isSelected) ...[
+                            const Divider(height: 1),
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: isLoadingGroups
+                                  ? const CircularProgressIndicator()
+                                  : groups.isEmpty
+                                  ? const Text(
+                                      'No groups in this course',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 12,
+                                      ),
+                                    )
+                                  : DropdownButtonFormField<String?>(
+                                      value: selectedGroupId,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Select Group (Optional)',
+                                        border: OutlineInputBorder(),
+                                        isDense: true,
+                                      ),
+                                      items: [
+                                        const DropdownMenuItem<String?>(
+                                          value: null,
+                                          child: Text('No specific group'),
+                                        ),
+                                        ...groups.map(
+                                          (group) => DropdownMenuItem(
+                                            value: group.id,
+                                            child: Text(
+                                              '${group.name} (${group.members.length} members)',
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                      onChanged: (groupId) {
+                                        setState(() {
+                                          widget.courseGroupMap[course.id] =
+                                              groupId;
+                                        });
+                                      },
+                                    ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            if (widget.selectedCourseIds.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  'Please select at least one course',
+                  style: TextStyle(color: Colors.orange, fontSize: 12),
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: widget.selectedCourseIds.isEmpty
+              ? null
+              : () => Navigator.pop(context, true),
+          child: const Text('Send Invitation'),
+        ),
+      ],
     );
   }
 }
