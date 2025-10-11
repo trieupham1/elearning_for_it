@@ -16,14 +16,7 @@ const userSchema = new mongoose.Schema({
   bio: { type: String },
   isActive: { type: Boolean, default: true }
 }, { 
-  timestamps: true,
-  toJSON: {
-    transform: function(doc, ret) {
-      ret.id = ret._id.toString();
-      delete ret.password;
-      return ret;
-    }
-  }
+  timestamps: true
 });
 
 // Virtual for full name
@@ -34,8 +27,16 @@ userSchema.virtual('fullName').get(function() {
   return this.username || 'Unknown User';
 });
 
-// Include virtuals in JSON output
-userSchema.set('toJSON', { virtuals: true });
+// Configure JSON output with both transform and virtuals
+userSchema.set('toJSON', {
+  virtuals: true,
+  transform: function(doc, ret) {
+    ret.id = ret._id.toString();
+    delete ret.password;  // Remove password but keep everything else including profilePicture
+    return ret;
+  }
+});
+
 userSchema.set('toObject', { virtuals: true });
 
 userSchema.index({ username: 1 });

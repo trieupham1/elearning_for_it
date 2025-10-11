@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/course.dart';
-import '../services/course_service.dart';
 import '../services/group_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;

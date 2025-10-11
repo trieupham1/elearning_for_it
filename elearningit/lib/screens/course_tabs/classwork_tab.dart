@@ -7,6 +7,12 @@ import '../../services/assignment_service.dart';
 import '../instructor/create_assignment_screen.dart';
 import '../student/assignment_detail_screen.dart';
 import '../instructor/assignment_tracking_screen.dart';
+import '../student/quiz_detail_screen.dart';
+import '../instructor/quiz_management_screen.dart';
+import '../instructor/create_material_screen.dart';
+import '../instructor/material_detail_screen.dart';
+import '../instructor/material_management_screen.dart';
+import '../../services/material_service.dart';
 
 enum ClassworkType { all, assignments, quizzes, materials }
 
@@ -227,21 +233,65 @@ class _ClassworkTabState extends State<ClassworkTab> {
             ListTile(
               leading: const Icon(Icons.quiz, color: Colors.red),
               title: const Text('Create Quiz'),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Quiz creation coming soon')),
+                final result = await Navigator.pushNamed(
+                  context,
+                  '/create-quiz',
+                  arguments: {
+                    'courseId': widget.course.id,
+                  },
                 );
+                
+                if (result != null) {
+                  // Quiz was created, refresh the classwork list
+                  _loadClasswork();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Quiz created successfully!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.help_outline, color: Colors.purple),
+              title: const Text('Create Question'),
+              onTap: () async {
+                Navigator.pop(context);
+                final result = await Navigator.pushNamed(
+                  context,
+                  '/create-question',
+                  arguments: {
+                    'courseId': widget.course.id,
+                    'courseName': widget.course.name,
+                  },
+                );
+                if (result == true) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Question created successfully!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
               },
             ),
             ListTile(
               leading: const Icon(Icons.folder, color: Colors.blue),
               title: const Text('Upload Material'),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Material upload coming soon')),
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CreateMaterialScreen(course: widget.course),
+                  ),
                 );
+                if (result == true) {
+                  _loadClasswork();
+                }
               },
             ),
           ],
@@ -285,6 +335,7 @@ class _ClassworkCard extends StatelessWidget {
 
   // Create service instance for fetching assignment data
   final AssignmentService _assignmentService = AssignmentService();
+  final MaterialService _materialService = MaterialService();
 
   IconData get _icon {
     switch (item.type) {
@@ -411,12 +462,18 @@ class _ClassworkCard extends StatelessWidget {
                 ),
               ),
 
-              // Trailing: Tracking button for instructors on assignments
+              // Trailing: Action buttons for instructors
               if (_isInstructor && item.type == 'assignment')
                 IconButton(
                   icon: const Icon(Icons.analytics_outlined),
                   onPressed: () => _navigateToTracking(context),
                   tooltip: 'View Tracking',
+                ),
+              if (_isInstructor && item.type == 'material')
+                IconButton(
+                  icon: const Icon(Icons.settings_outlined),
+                  onPressed: () => _navigateToMaterialManagement(context),
+                  tooltip: 'Manage Materials',
                 ),
             ],
           ),
@@ -461,13 +518,32 @@ class _ClassworkCard extends StatelessWidget {
         }
       }
     } else if (item.type == 'quiz') {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Quiz feature coming soon')));
+      if (_isInstructor) {
+        // Instructor: Navigate to quiz management
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => QuizManagementScreen(quizId: item.id),
+          ),
+        );
+        if (result == true) {
+          onRefresh();
+        }
+      } else {
+        // Student: Navigate to quiz detail
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => QuizDetailScreen(quizId: item.id),
+          ),
+        );
+        if (result == true) {
+          onRefresh();
+        }
+      }
     } else if (item.type == 'material') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Material feature coming soon')),
-      );
+      // Navigate to material detail by fetching the material first
+      _navigateToMaterial(context, item.id);
     }
   }
 
@@ -479,6 +555,60 @@ class _ClassworkCard extends StatelessWidget {
       ),
     );
     onRefresh();
+  }
+
+  void _navigateToMaterialManagement(BuildContext context) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MaterialManagementScreen(course: course),
+      ),
+    );
+    if (result == true) {
+      onRefresh();
+    }
+  }
+
+  void _navigateToMaterial(BuildContext context, String materialId) async {
+    try {
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Fetch the material
+      final material = await _materialService.getMaterial(materialId);
+      
+      // Hide loading
+      Navigator.pop(context);
+
+      // Navigate to material detail screen
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MaterialDetailScreen(
+            material: material,
+            course: course,
+          ),
+        ),
+      );
+      
+      if (result == true) {
+        onRefresh();
+      }
+    } catch (e) {
+      // Hide loading
+      Navigator.pop(context);
+      
+      // Show error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading material: $e')),
+      );
+    }
   }
 
   String _formatDate(DateTime date) {

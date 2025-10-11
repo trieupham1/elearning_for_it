@@ -1,3 +1,5 @@
+import 'package:http/http.dart' as http;
+import 'package:file_picker/file_picker.dart';
 import '../models/user.dart';
 import '../config/api_config.dart';
 import 'api_service.dart';
@@ -134,6 +136,60 @@ class AuthService extends ApiService {
       return _currentUser!;
     } catch (e) {
       throw ApiException('Failed to update profile: $e');
+    }
+  }
+
+  Future<User> updateProfilePicture(PlatformFile file) async {
+    try {
+      final token = await getToken();
+      if (token == null) {
+        throw ApiException('No authentication token found');
+      }
+
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('${ApiConfig.getBaseUrl()}/users/profile-picture'),
+      );
+
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Handle web vs mobile/desktop platforms
+      if (file.bytes != null) {
+        // Web platform - use bytes
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'profilePicture',
+            file.bytes!,
+            filename: file.name,
+          ),
+        );
+      } else if (file.path != null) {
+        // Mobile/Desktop - use file path
+        request.files.add(
+          await http.MultipartFile.fromPath('profilePicture', file.path!),
+        );
+      } else {
+        throw ApiException('Unable to access file data');
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      print('🔍 Profile picture upload response status: ${response.statusCode}');
+      print('📄 Raw response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = parseResponse(response);
+        print('📦 Parsed response data: $data');
+        print('👤 User data from response: ${data['user']}');
+        _currentUser = User.fromJson(data['user']);
+        return _currentUser!;
+      } else {
+        final errorData = parseResponse(response);
+        throw ApiException(errorData['message'] ?? 'Upload failed');
+      }
+    } catch (e) {
+      throw ApiException('Failed to update profile picture: $e');
     }
   }
 
