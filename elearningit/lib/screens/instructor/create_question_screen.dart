@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../services/quiz_service.dart';
+import '../../services/question_service.dart';
 import '../../services/auth_service.dart';
 
 class CreateQuestionScreen extends StatefulWidget {
@@ -18,7 +18,7 @@ class CreateQuestionScreen extends StatefulWidget {
 
 class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _quizService = QuizService();
+  final _questionService = QuestionService();
   final _authService = AuthService();
   
   // Controllers
@@ -118,7 +118,7 @@ class _CreateQuestionScreenState extends State<CreateQuestionScreen> {
       };
 
       print('🔧 Creating question with data: $questionData');
-      await _quizService.createQuestion(questionData);
+      await _questionService.createQuestion(questionData);
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

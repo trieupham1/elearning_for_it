@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import '../../models/quiz.dart';
 import '../../services/quiz_service.dart';
 import 'quiz_results_screen.dart';
+import 'edit_quiz_screen.dart';
+import 'manage_questions_screen.dart';
 
 class QuizManagementScreen extends StatefulWidget {
   final String quizId;
@@ -682,32 +684,30 @@ class _QuizManagementScreenState extends State<QuizManagementScreen> with Single
 
   Future<void> _editQuizSettings() async {
     try {
-      print('🔧 Opening quiz settings editor for quiz: ${widget.quizId}');
-      final result = await Navigator.pushNamed(
+      print('🔧 Opening quiz editor for quiz: ${widget.quizId}');
+      final result = await Navigator.push(
         context,
-        '/quiz-settings',
-        arguments: {
-          'quizId': widget.quizId,
-          'quiz': _quiz,
-        },
+        MaterialPageRoute(
+          builder: (context) => EditQuizScreen(quiz: _quiz!),
+        ),
       );
       
-      print('🔧 Quiz settings editor result: $result');
+      print('🔧 Quiz editor result: $result');
       if (result == true) {
         // Settings were updated, reload the quiz
         _loadQuiz();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Quiz settings updated successfully!'),
+            content: Text('Quiz updated successfully!'),
             backgroundColor: Colors.green,
           ),
         );
       }
     } catch (e) {
-      print('❌ Error opening quiz settings editor: $e');
+      print('❌ Error opening quiz editor: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to open quiz settings: $e'),
+          content: Text('Failed to open quiz editor: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -771,6 +771,106 @@ class _QuizManagementScreenState extends State<QuizManagementScreen> with Single
     );
   }
 
+  Future<void> _removeQuestionFromQuiz(dynamic question, int questionNumber) async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove Question'),
+        content: Text('Are you sure you want to remove Question $questionNumber from this quiz?\n\nNote: This will only remove it from the quiz, not delete it from the question bank.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && _quiz != null) {
+      try {
+        // Get question ID
+        String questionId;
+        if (question is Map<String, dynamic>) {
+          questionId = question['_id'] ?? question['id'] ?? '';
+        } else if (question is String) {
+          questionId = question;
+        } else {
+          throw Exception('Invalid question format');
+        }
+
+        // Remove question from the quiz's selectedQuestions list
+        final updatedSelectedQuestions = List<dynamic>.from(_quiz!.selectedQuestions);
+        updatedSelectedQuestions.removeWhere((q) {
+          if (q is Map<String, dynamic>) {
+            return q['_id'] == questionId || q['id'] == questionId;
+          } else if (q is String) {
+            return q == questionId;
+          }
+          return false;
+        });
+
+        // Update the quiz with the new questions list
+        final updatedQuiz = Quiz(
+          id: _quiz!.id,
+          title: _quiz!.title,
+          description: _quiz!.description,
+          courseId: _quiz!.courseId,
+          duration: _quiz!.duration,
+          maxAttempts: _quiz!.maxAttempts,
+          allowRetakes: _quiz!.allowRetakes,
+          shuffleQuestions: _quiz!.shuffleQuestions,
+          showResultsImmediately: _quiz!.showResultsImmediately,
+          openDate: _quiz!.openDate,
+          closeDate: _quiz!.closeDate,
+          status: _quiz!.status,
+          categories: _quiz!.categories,
+          selectedQuestions: updatedSelectedQuestions,
+          questionStructure: _quiz!.questionStructure,
+          createdBy: _quiz!.createdBy,
+          createdAt: _quiz!.createdAt,
+          updatedAt: DateTime.now(),
+        );
+
+        // Save the updated quiz
+        await _quizService.updateQuiz(_quiz!.id, {
+          'selectedQuestions': updatedSelectedQuestions,
+          'updatedAt': DateTime.now().toIso8601String(),
+        });
+
+        // Update local state
+        setState(() {
+          _quiz = updatedQuiz;
+        });
+
+        // Show success message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Question $questionNumber removed from quiz successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        print('❌ Error removing question from quiz: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to remove question: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   Widget _buildQuizQuestions(Quiz quiz) {
     if (quiz.selectedQuestions.isEmpty) {
       return Column(
@@ -830,14 +930,36 @@ class _QuizManagementScreenState extends State<QuizManagementScreen> with Single
           children: [
             _buildSectionTitle('Quiz Questions'),
             TextButton.icon(
-              onPressed: () {
-                // TODO: Navigate to manage questions screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Manage questions feature coming soon!'),
-                    backgroundColor: Colors.blue,
-                  ),
-                );
+              onPressed: () async {
+                try {
+                  print('🔧 Opening manage questions screen for quiz: ${widget.quizId}');
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ManageQuestionsScreen(quiz: _quiz!),
+                    ),
+                  );
+                  
+                  print('🔧 Manage questions result: $result');
+                  if (result == true) {
+                    // Questions were updated, reload the quiz
+                    _loadQuiz();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Quiz questions updated successfully!'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  print('❌ Error opening manage questions screen: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to open question manager: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               },
               icon: const Icon(Icons.edit),
               label: const Text('Manage Questions'),
@@ -978,12 +1100,7 @@ class _QuizManagementScreenState extends State<QuizManagementScreen> with Single
                   );
                   break;
                 case 'delete':
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Delete question feature coming soon!'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+                  _removeQuestionFromQuiz(question, number);
                   break;
               }
             },
