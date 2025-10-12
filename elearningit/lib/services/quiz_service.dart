@@ -239,7 +239,8 @@ class QuizService extends ApiService {
   }
 
   Future<Map<String, dynamic>?> getAllStudentQuizAttempts(String quizId) async {
-    print('📊 QuizService: Getting ALL student attempts for quiz (instructor view): $quizId');
+    print('📊 QuizService: Getting ALL student attempts for quiz (INSTRUCTOR VIEW): $quizId');
+    print('🔗 QuizService: Making request to: /quiz-attempts/quiz/$quizId/all');
     try {
       final response = await get('/quiz-attempts/quiz/$quizId/all');
       final data = parseResponse(response);
@@ -277,6 +278,23 @@ class QuizService extends ApiService {
       return List<Map<String, dynamic>>.from(data['attempts'] ?? []);
     } catch (e) {
       print('❌ QuizService: Error getting student attempts: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getMyQuizAttempts(String quizId) async {
+    print('🎯 QuizService: Getting MY quiz attempts (student view): $quizId');
+    try {
+      final response = await get('/quiz-attempts/quiz/$quizId/student/all');
+      final data = parseResponse(response);
+      print('✅ QuizService: Found ${data['totalAttempts']} of my attempts for quiz: $quizId');
+      return data;
+    } catch (e) {
+      if (e.toString().contains('404') || e.toString().contains('not found')) {
+        print('ℹ️ QuizService: No attempts found for quiz: $quizId');
+        return null;
+      }
+      print('❌ QuizService: Error getting my quiz attempts: $e');
       rethrow;
     }
   }

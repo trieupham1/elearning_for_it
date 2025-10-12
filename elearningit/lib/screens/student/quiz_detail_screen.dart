@@ -61,10 +61,10 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
           print('🎯 Attempt state: ${attempt['state']}');
           print('🎯 Attempt score: ${attempt['score']}/${attempt['maxScore']}');
           
-          // Get all attempts for detailed display
-          allAttempts = await _quizService.getAllStudentQuizAttempts(widget.quizId);
+          // Get all attempts for detailed display (my attempts only)
+          allAttempts = await _quizService.getMyQuizAttempts(widget.quizId);
           if (allAttempts != null) {
-            print('📊 All attempts loaded: ${allAttempts['totalAttempts']} total');
+            print('📊 All my attempts loaded: ${allAttempts['totalAttempts']} total');
           }
         } else {
           print('ℹ️ No previous attempt found');

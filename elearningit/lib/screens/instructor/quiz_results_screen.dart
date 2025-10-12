@@ -52,7 +52,13 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       final results = await _quizService.getAllStudentQuizAttempts(widget.quizId);
       
       setState(() {
-        _resultsData = results;
+        _resultsData = results ?? {
+          'totalAttempts': 0,
+          'uniqueStudents': 0,
+          'completedAttempts': 0,
+          'averageScore': 0,
+          'attempts': []
+        };
         _isLoading = false;
       });
     } catch (e) {
@@ -798,7 +804,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       setState(() => _isLoading = true);
       
       final student = attempt['studentId'];
-      final studentId = student['_id'];
+      final studentId = student['_id'].toString();
       final firstName = student['firstName'] ?? '';
       final lastName = student['lastName'] ?? '';
       final username = student['username'] ?? '';
