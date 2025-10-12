@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import '../services/auth_service.dart';
 import '../models/user.dart';
 
@@ -215,6 +216,78 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> _uploadProfilePicture() async {
+    try {
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('Uploading profile picture...'),
+            ],
+          ),
+        ),
+      );
+
+      // Pick image file
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        
+        // Validate file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+          if (mounted) Navigator.pop(context); // Close loading dialog
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Image size must be less than 5MB'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
+        // Upload to backend
+        final updatedUser = await _authService.updateProfilePicture(file);
+        
+        setState(() {
+          _currentUser = updatedUser;
+        });
+
+        if (mounted) Navigator.pop(context); // Close loading dialog
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile picture updated successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        if (mounted) Navigator.pop(context); // Close loading dialog
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context); // Close loading dialog
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to upload profile picture: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   void _showEditProfileDialog() {
     final formKey = GlobalKey<FormState>();
     final isInstructor = _currentUser!.role == 'instructor';
@@ -264,14 +337,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           child: IconButton(
                             icon: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
-                            onPressed: () {
-                              // TODO: Implement avatar upload
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Avatar upload coming soon'),
-                                ),
-                              );
-                            },
+                            onPressed: () => _uploadProfilePicture(),
                           ),
                         ),
                       ),
@@ -458,9 +524,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 border: Border.all(color: Colors.white, width: 2),
                               ),
                               child: IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.white, size: 20),
-                                onPressed: _showEditProfileDialog,
-                                tooltip: 'Edit Avatar',
+                                icon: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                                onPressed: _uploadProfilePicture,
+                                tooltip: 'Change Avatar',
                               ),
                             ),
                           ),

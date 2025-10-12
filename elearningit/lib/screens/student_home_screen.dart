@@ -123,11 +123,13 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   )
                 : null,
           ),
-          onPressed: () {
-            Navigator.push(
+          onPressed: () async {
+            await Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const ProfileScreen()),
             );
+            // Reload user data when returning from profile screen
+            _loadData();
           },
         ),
         const SizedBox(width: 8),
@@ -145,13 +147,18 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             accountEmail: Text(_currentUser?.email ?? ''),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Colors.white,
-              child: Text(
-                _currentUser?.username.substring(0, 2).toUpperCase() ?? 'U',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),
+              backgroundImage: _currentUser?.profilePicture != null
+                  ? NetworkImage(_currentUser!.profilePicture!)
+                  : null,
+              child: _currentUser?.profilePicture == null
+                  ? Text(
+                      _currentUser?.username.substring(0, 2).toUpperCase() ?? 'U',
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    )
+                  : null,
             ),
           ),
           ListTile(
@@ -220,12 +227,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           ListTile(
             leading: const Icon(Icons.person),
             title: const Text('Profile'),
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const ProfileScreen()),
               );
+              // Reload user data when returning from profile screen
+              _loadData();
             },
           ),
           ListTile(

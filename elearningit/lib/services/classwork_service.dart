@@ -14,6 +14,7 @@ class ClassworkItem {
   final bool? allowLateSubmission;
   final int? duration; // for quizzes (in seconds)
   final List<dynamic>? files; // for materials
+  final bool? isCompleted; // for quizzes - whether student has completed it
 
   ClassworkItem({
     required this.id,
@@ -28,6 +29,7 @@ class ClassworkItem {
     this.allowLateSubmission,
     this.duration,
     this.files,
+    this.isCompleted,
   });
 
   factory ClassworkItem.fromJson(Map<String, dynamic> json) {
@@ -50,6 +52,7 @@ class ClassworkItem {
       allowLateSubmission: json['allowLateSubmission'],
       duration: json['duration'],
       files: json['files'],
+      isCompleted: json['isCompleted'],
     );
   }
 

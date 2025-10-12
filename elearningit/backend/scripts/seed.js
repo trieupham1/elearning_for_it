@@ -7,8 +7,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from parent directory
+dotenv.config({ path: '../.env' });
 
 // Import all models
 const User = require('../models/User');
@@ -47,6 +47,13 @@ const ids = {
 
 async function seedDatabase() {
   try {
+    // Check if MONGODB_URI is available
+    if (!process.env.MONGODB_URI) {
+      console.error('❌ MONGODB_URI environment variable not found');
+      console.error('Please make sure you have a .env file in the backend directory with MONGODB_URI');
+      process.exit(1);
+    }
+
     // Connect to MongoDB
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✓ Connected to MongoDB Atlas');
@@ -281,6 +288,7 @@ async function seedDatabase() {
           }
         ],
         authorId: ids.instructor,
+        authorName: 'Mai Van Manh',
         publishedAt: new Date()
       },
       {
@@ -289,6 +297,7 @@ async function seedDatabase() {
         content: '<p>Lab sessions will be held every Monday and Wednesday. Please check the schedule for your group.</p>',
         attachments: [],
         authorId: ids.instructor,
+        authorName: 'Mai Van Manh',
         publishedAt: new Date()
       }
     ]);
@@ -317,6 +326,8 @@ async function seedDatabase() {
         startDate: new Date(),
         deadline: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
         maxScore: 10,
+        createdBy: ids.instructor,
+        createdByName: 'Mai Van Manh',
         authorId: ids.instructor
       },
       {
@@ -327,6 +338,8 @@ async function seedDatabase() {
         startDate: new Date(),
         deadline: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000),
         maxScore: 10,
+        createdBy: ids.instructor,
+        createdByName: 'Mai Van Manh',
         authorId: ids.instructor
       }
     ]);
@@ -343,6 +356,7 @@ async function seedDatabase() {
       {
         assignmentId: ids.assignments[0],
         studentId: ids.students[0],
+        studentName: 'Nguyen Van An',
         files: [
           {
             filename: 'lab01_nguyen_van_an.zip',
@@ -360,6 +374,7 @@ async function seedDatabase() {
       {
         assignmentId: ids.assignments[0],
         studentId: ids.students[1],
+        studentName: 'Tran Thi Binh',
         files: [
           {
             filename: 'lab01_tran_thi_binh.zip',
@@ -391,7 +406,8 @@ async function seedDatabase() {
         ],
         difficulty: 'easy',
         topic: 'Flutter Basics',
-        authorId: ids.instructor
+        authorId: ids.instructor,
+        createdBy: ids.instructor
       },
       {
         courseId: ids.courses[0],
@@ -404,7 +420,8 @@ async function seedDatabase() {
         ],
         difficulty: 'easy',
         topic: 'Flutter Basics',
-        authorId: ids.instructor
+        authorId: ids.instructor,
+        createdBy: ids.instructor
       },
       {
         courseId: ids.courses[0],
@@ -417,7 +434,8 @@ async function seedDatabase() {
         ],
         difficulty: 'medium',
         topic: 'Widgets',
-        authorId: ids.instructor
+        authorId: ids.instructor,
+        createdBy: ids.instructor
       },
       {
         courseId: ids.courses[0],
@@ -430,7 +448,8 @@ async function seedDatabase() {
         ],
         difficulty: 'medium',
         topic: 'Widget Lifecycle',
-        authorId: ids.instructor
+        authorId: ids.instructor,
+        createdBy: ids.instructor
       },
       {
         courseId: ids.courses[0],
@@ -443,7 +462,8 @@ async function seedDatabase() {
         ],
         difficulty: 'hard',
         topic: 'Advanced Concepts',
-        authorId: ids.instructor
+        authorId: ids.instructor,
+        createdBy: ids.instructor
       },
       {
         courseId: ids.courses[0],
@@ -456,7 +476,8 @@ async function seedDatabase() {
         ],
         difficulty: 'easy',
         topic: 'Widgets',
-        authorId: ids.instructor
+        authorId: ids.instructor,
+        createdBy: ids.instructor
       },
       {
         courseId: ids.courses[0],
@@ -469,7 +490,8 @@ async function seedDatabase() {
         ],
         difficulty: 'easy',
         topic: 'Development Tools',
-        authorId: ids.instructor
+        authorId: ids.instructor,
+        createdBy: ids.instructor
       },
       {
         courseId: ids.courses[0],
@@ -482,7 +504,8 @@ async function seedDatabase() {
         ],
         difficulty: 'medium',
         topic: 'State Management',
-        authorId: ids.instructor
+        authorId: ids.instructor,
+        createdBy: ids.instructor
       },
       {
         courseId: ids.courses[0],
@@ -495,7 +518,8 @@ async function seedDatabase() {
         ],
         difficulty: 'hard',
         topic: 'Asynchronous Programming',
-        authorId: ids.instructor
+        authorId: ids.instructor,
+        createdBy: ids.instructor
       },
       {
         courseId: ids.courses[0],
@@ -508,7 +532,8 @@ async function seedDatabase() {
         ],
         difficulty: 'medium',
         topic: 'Layouts',
-        authorId: ids.instructor
+        authorId: ids.instructor,
+        createdBy: ids.instructor
       }
     ]);
 
@@ -530,7 +555,8 @@ async function seedDatabase() {
         openDate: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
         closeDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000),
         maxScore: 10,
-        authorId: ids.instructor
+        authorId: ids.instructor,
+        createdBy: ids.instructor
       }
     ]);
 
@@ -555,7 +581,8 @@ async function seedDatabase() {
             mimeType: 'application/pdf'
           }
         ],
-        authorId: ids.instructor
+        authorId: ids.instructor,
+        createdBy: ids.instructor
       },
       {
         courseId: ids.courses[0],
@@ -569,7 +596,8 @@ async function seedDatabase() {
             mimeType: 'application/pdf'
           }
         ],
-        authorId: ids.instructor
+        authorId: ids.instructor,
+        createdBy: ids.instructor
       }
     ]);
 

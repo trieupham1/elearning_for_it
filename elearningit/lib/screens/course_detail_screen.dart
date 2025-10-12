@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import 'course_tabs/stream_tab.dart';
 import 'course_tabs/classwork_tab.dart';
 import 'course_tabs/people_tab.dart';
+import 'forum/forum_list_screen.dart';
 
 class CourseDetailScreen extends StatefulWidget {
   final Course course;
@@ -29,7 +30,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _loadCurrentUser();
   }
 
@@ -66,6 +67,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
           tabs: const [
             Tab(icon: Icon(Icons.stream), text: 'Stream'),
             Tab(icon: Icon(Icons.assignment), text: 'Classwork'),
+            Tab(icon: Icon(Icons.forum), text: 'Forum'),
             Tab(icon: Icon(Icons.people), text: 'People'),
           ],
         ),
@@ -75,6 +77,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
         children: [
           StreamTab(course: widget.course, currentUser: _currentUser),
           ClassworkTab(course: widget.course, currentUser: _currentUser),
+          ForumListScreen(courseId: widget.course.id),
           PeopleTab(course: widget.course, currentUser: _currentUser),
         ],
       ),

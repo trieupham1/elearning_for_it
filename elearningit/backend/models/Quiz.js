@@ -11,6 +11,9 @@ const quizSchema = new mongoose.Schema({
   closeDate: { type: Date, required: true },
   duration: { type: Number, required: true }, // in minutes
   maxAttempts: { type: Number, default: 1 },
+  allowRetakes: { type: Boolean, default: false },
+  shuffleQuestions: { type: Boolean, default: true },
+  showResultsImmediately: { type: Boolean, default: false },
   questionStructure: {
     easy: { type: Number, default: 0 },
     medium: { type: Number, default: 0 },
@@ -18,7 +21,9 @@ const quizSchema = new mongoose.Schema({
   },
   randomizeQuestions: { type: Boolean, default: true },
   selectedQuestions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Question' }],
-  totalPoints: { type: Number, default: 100 }
+  totalPoints: { type: Number, default: 100 },
+  isActive: { type: Boolean, default: true },
+  status: { type: String, enum: ['draft', 'active', 'closed', 'archived'], default: 'draft' }
 }, { timestamps: true });
 
 quizSchema.index({ courseId: 1 });

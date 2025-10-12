@@ -6,6 +6,12 @@ import 'screens/api_test_screen.dart';
 import 'screens/manage_semesters_screen.dart';
 import 'screens/manage_courses_screen.dart';
 import 'screens/manage_students_screen.dart';
+import 'screens/student/quiz_taking_screen.dart';
+import 'screens/student/quiz_result_screen.dart';
+import 'screens/instructor/quiz_settings_screen.dart';
+import 'screens/instructor/create_quiz_screen.dart';
+import 'screens/instructor/create_question_screen.dart';
+import 'models/quiz.dart';
 import 'config/theme.dart';
 
 void main() {
@@ -31,6 +37,53 @@ class ELearningApp extends StatelessWidget {
         '/manage-semesters': (context) => const ManageSemestersScreen(),
         '/manage-courses': (context) => const ManageCoursesScreen(),
         '/manage-students': (context) => const ManageStudentsScreen(),
+      },
+      onGenerateRoute: (settings) {
+        // Handle dynamic routes
+        if (settings.name == '/quiz-taking') {
+          final args = settings.arguments as Map<String, dynamic>?;
+          return MaterialPageRoute(
+            builder: (context) => QuizTakingScreen(
+              quizId: args?['quizId'] ?? '',
+              attemptId: args?['attemptId'],
+            ),
+          );
+        }
+        if (settings.name == '/quiz-result') {
+          final attempt = settings.arguments as QuizAttempt;
+          return MaterialPageRoute(
+            builder: (context) => QuizResultScreen(
+              attempt: attempt,
+            ),
+          );
+        }
+        if (settings.name == '/quiz-settings') {
+          final args = settings.arguments as Map<String, dynamic>?;
+          return MaterialPageRoute(
+            builder: (context) => QuizSettingsScreen(
+              quizId: args?['quizId'] ?? '',
+              quiz: args?['quiz'],
+            ),
+          );
+        }
+        if (settings.name == '/create-quiz') {
+          final args = settings.arguments as Map<String, dynamic>?;
+          return MaterialPageRoute(
+            builder: (context) => CreateQuizScreen(
+              courseId: args?['courseId'] ?? '',
+            ),
+          );
+        }
+        if (settings.name == '/create-question') {
+          final args = settings.arguments as Map<String, dynamic>?;
+          return MaterialPageRoute(
+            builder: (context) => CreateQuestionScreen(
+              courseId: args?['courseId'] ?? '',
+              courseName: args?['courseName'] ?? 'Course',
+            ),
+          );
+        }
+        return null;
       },
       themeMode: ThemeMode.system,
     );

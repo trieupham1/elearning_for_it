@@ -2,6 +2,7 @@ const express = require('express');
 const Assignment = require('../models/Assignment');
 const Quiz = require('../models/Quiz');
 const Material = require('../models/Material');
+const QuizAttempt = require('../models/QuizAttempt');
 const { authMiddleware, instructorOnly } = require('../middleware/auth');
 const { notifyNewAssignment, notifyNewQuiz, notifyNewMaterial } = require('../utils/notificationHelper');
 
@@ -27,7 +28,29 @@ router.get('/course/:courseId', authMiddleware, async (req, res) => {
       const quizzes = await Quiz.find({ courseId })
         .sort({ closeDate: -1 })
         .lean();
-      classwork = [...classwork, ...quizzes.map(q => ({ ...q, type: 'quiz' }))];
+      
+      // For students, check if they have completed each quiz
+      let quizzesWithStatus = quizzes.map(q => ({ ...q, type: 'quiz' }));
+      
+      if (req.user.role === 'student') {
+        // Get completion status for all quizzes for this student
+        const quizIds = quizzes.map(q => q._id);
+        const completedAttempts = await QuizAttempt.find({
+          quizId: { $in: quizIds },
+          studentId: req.user.userId,
+          status: { $in: ['completed', 'submitted', 'auto_submitted'] }
+        }).select('quizId').lean();
+        
+        const completedQuizIds = new Set(completedAttempts.map(attempt => attempt.quizId.toString()));
+        
+        quizzesWithStatus = quizzes.map(q => ({
+          ...q,
+          type: 'quiz',
+          isCompleted: completedQuizIds.has(q._id.toString())
+        }));
+      }
+      
+      classwork = [...classwork, ...quizzesWithStatus];
     }
     
     if (!filter || filter === 'materials') {
