@@ -48,7 +48,8 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
     });
 
     try {
-      final results = await _quizService.getAllQuizAttempts(widget.quizId);
+      // Use the grouped student results endpoint
+      final results = await _quizService.getAllStudentQuizAttempts(widget.quizId);
       
       setState(() {
         _resultsData = results;
@@ -67,26 +68,20 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
     
     List<dynamic> attempts = List.from(_resultsData!['attempts'] ?? []);
     
-    // Filter by status
-    if (_filterStatus != 'all') {
-      attempts = attempts.where((attempt) {
-        final status = attempt['status'] ?? '';
-        if (_filterStatus == 'completed') {
-          return ['submitted', 'auto_submitted'].contains(status);
-        } else if (_filterStatus == 'in_progress') {
-          return status == 'in_progress';
-        }
-        return true;
-      }).toList();
-    }
-    
     // Filter by search query
     if (_searchQuery.isNotEmpty) {
       attempts = attempts.where((attempt) {
-        final studentName = attempt['studentId']?['name']?.toString().toLowerCase() ?? '';
-        final studentEmail = attempt['studentId']?['email']?.toString().toLowerCase() ?? '';
+        final student = attempt['studentId'];
+        final firstName = student?['firstName'] ?? '';
+        final lastName = student?['lastName'] ?? '';
+        final username = student?['username'] ?? '';
+        final email = student?['email'] ?? '';
+        
+        final studentName = '$firstName $lastName'.trim();
+        final displayName = studentName.isNotEmpty ? studentName : username;
+        
         final query = _searchQuery.toLowerCase();
-        return studentName.contains(query) || studentEmail.contains(query);
+        return displayName.toLowerCase().contains(query) || email.toLowerCase().contains(query);
       }).toList();
     }
     
@@ -96,20 +91,22 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       
       switch (_sortBy) {
         case 'studentName':
-          aValue = a['studentId']?['name'] ?? '';
-          bValue = b['studentId']?['name'] ?? '';
+          final aStudent = a['studentId'];
+          final bStudent = b['studentId'];
+          aValue = '${aStudent?['firstName'] ?? ''} ${aStudent?['lastName'] ?? ''}'.trim();
+          if (aValue.isEmpty) aValue = aStudent?['username'] ?? '';
+          bValue = '${bStudent?['firstName'] ?? ''} ${bStudent?['lastName'] ?? ''}'.trim();
+          if (bValue.isEmpty) bValue = bStudent?['username'] ?? '';
           break;
         case 'score':
           aValue = a['score'] ?? 0;
           bValue = b['score'] ?? 0;
           break;
         case 'submissionTime':
-          aValue = a['submissionTime'] ?? a['createdAt'] ?? '';
-          bValue = b['submissionTime'] ?? b['createdAt'] ?? '';
-          break;
         default:
-          aValue = a['createdAt'] ?? '';
-          bValue = b['createdAt'] ?? '';
+          aValue = a['submissionTime'] ?? '';
+          bValue = b['submissionTime'] ?? '';
+          break;
       }
       
       int comparison = 0;
@@ -446,39 +443,35 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
     );
   }
 
-  Widget _buildAttemptsList(List<dynamic> attempts) {
+  Widget _buildAttemptsList(List<dynamic> studentResults) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: attempts.length,
+      itemCount: studentResults.length,
       itemBuilder: (context, index) {
-        final attempt = attempts[index];
-        return _buildAttemptCard(attempt);
+        final studentResult = studentResults[index];
+        return _buildStudentResultCard(studentResult);
       },
     );
   }
 
-  Widget _buildAttemptCard(Map<String, dynamic> attempt) {
+  Widget _buildStudentResultCard(Map<String, dynamic> attempt) {
     final student = attempt['studentId'] ?? {};
-    
-    // Extract student name properly from User model structure
     final firstName = student['firstName'] ?? '';
     final lastName = student['lastName'] ?? '';
     final username = student['username'] ?? '';
+    final email = student['email'] ?? 'No email';
     
-    String studentName = 'Unknown Student';
-    if (firstName.isNotEmpty || lastName.isNotEmpty) {
-      studentName = '$firstName $lastName'.trim();
-    } else if (username.isNotEmpty) {
-      studentName = username;
+    String studentName = '$firstName $lastName'.trim();
+    if (studentName.isEmpty) {
+      studentName = username.isNotEmpty ? username : 'Unknown Student';
     }
-    final studentEmail = student['email'] ?? '';
-    final score = attempt['score'] ?? 0;
-    final status = attempt['status'] ?? 'unknown';
-    final attemptNumber = attempt['attemptNumber'] ?? 1;
-    final submissionTime = attempt['submissionTime'];
-    final timeSpent = attempt['timeSpent'] ?? 0;
+    
+    final bestScore = attempt['score'] ?? 0;
+    final totalAttempts = attempt['totalStudentAttempts'] ?? 1;
     final correctAnswers = attempt['correctAnswers'] ?? 0;
     final totalQuestions = attempt['totalQuestions'] ?? 0;
+    final lastSubmission = attempt['submissionTime'];
+    final timeSpent = attempt['timeSpent'] ?? 0;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -487,10 +480,20 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header row
+            // Header with student info
             Row(
               children: [
-                // Student info
+                CircleAvatar(
+                  backgroundColor: Colors.blue.shade100,
+                  child: Text(
+                    studentName.isNotEmpty ? studentName[0].toUpperCase() : '?',
+                    style: TextStyle(
+                      color: Colors.blue.shade700,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -499,39 +502,56 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                         studentName,
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      if (studentEmail.isNotEmpty)
-                        Text(
-                          studentEmail,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
+                      const SizedBox(height: 2),
+                      Text(
+                        email,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
                         ),
+                      ),
                     ],
                   ),
                 ),
                 
-                // Status badge
-                _buildStatusBadge(status),
+                // Status badge  
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.green.shade300,
+                    ),
+                  ),
+                  child: const Text(
+                    'Completed',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
                 const SizedBox(width: 12),
                 
-                // Score
+                // Best Score
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: _getScoreColor(score).withOpacity(0.1),
+                    color: _getScoreColor(bestScore).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: _getScoreColor(score).withOpacity(0.3),
+                      color: _getScoreColor(bestScore).withOpacity(0.3),
                     ),
                   ),
                   child: Text(
-                    '${score}%',
+                    '${bestScore}%',
                     style: TextStyle(
-                      color: _getScoreColor(score),
+                      color: _getScoreColor(bestScore),
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -546,7 +566,9 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
               children: [
                 _buildDetailChip(
                   Icons.repeat,
-                  'Attempt $attemptNumber',
+                  totalAttempts > 1 
+                      ? '$totalAttempts attempts'
+                      : 'Single attempt',
                   Colors.blue,
                 ),
                 const SizedBox(width: 8),
@@ -564,8 +586,8 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
               ],
             ),
             
-            // Submission time
-            if (submissionTime != null) ...[
+            // Last submission time
+            if (lastSubmission != null) ...[
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -576,9 +598,9 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'Submitted: ${_formatDateTime(submissionTime)}',
+                    'Last submitted: ${DateFormat('MMM dd, yyyy HH:mm').format(DateTime.parse(lastSubmission))}',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       color: Colors.grey.shade600,
                     ),
                   ),
@@ -598,16 +620,6 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                     foregroundColor: Colors.blue.shade700,
                   ),
                 ),
-                const SizedBox(width: 8),
-                if (status == 'in_progress')
-                  TextButton.icon(
-                    onPressed: () => _handleExpiredAttempt(attempt),
-                    icon: const Icon(Icons.warning, size: 16),
-                    label: const Text('Check Status'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.orange.shade700,
-                    ),
-                  ),
               ],
             ),
           ],
@@ -781,14 +793,55 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
     }
   }
 
-  void _viewAttemptDetails(Map<String, dynamic> attempt) {
-    // TODO: Navigate to detailed attempt view
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Viewing details for ${attempt['studentId']?['name'] ?? 'student'}'),
-        backgroundColor: Colors.blue,
-      ),
-    );
+  void _viewAttemptDetails(Map<String, dynamic> attempt) async {
+    try {
+      setState(() => _isLoading = true);
+      
+      final student = attempt['studentId'];
+      final studentId = student['_id'];
+      final firstName = student['firstName'] ?? '';
+      final lastName = student['lastName'] ?? '';
+      final username = student['username'] ?? '';
+      
+      String studentName = '$firstName $lastName'.trim();
+      if (studentName.isEmpty) {
+        studentName = username.isNotEmpty ? username : 'Unknown Student';
+      }
+      
+      print('🔍 Getting all attempts for student: $studentId, quiz: ${widget.quizId}');
+      
+      // Get all attempts for this student
+      final allAttempts = await _quizService.getStudentAllAttempts(studentId, widget.quizId);
+      
+      setState(() => _isLoading = false);
+      
+      if (mounted) {
+        if (allAttempts.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No attempts found for this student'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          return;
+        }
+
+        print('✅ Got ${allAttempts.length} attempts for student: $studentName');
+        
+        // Show attempt selection dialog
+        _showAttemptSelectionDialog(studentName, allAttempts);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading student attempts: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _handleExpiredAttempt(Map<String, dynamic> attempt) {
@@ -894,6 +947,528 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       // Fallback to dialog
       _showCsvDialog(csvContent);
     }
+  }
+
+  void _showAttemptSelectionDialog(String studentName, List<Map<String, dynamic>> attempts) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.7,
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade700,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(4),
+                    topRight: Radius.circular(4),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Select Attempt to View',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '$studentName • ${attempts.length} attempt${attempts.length != 1 ? 's' : ''}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Attempts list
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: attempts.length,
+                  itemBuilder: (context, index) {
+                    final attempt = attempts[index];
+                    return _buildAttemptSelectionCard(attempt, index);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAttemptSelectionCard(Map<String, dynamic> attempt, int index) {
+    final score = attempt['score'] ?? 0;
+    final correctAnswers = attempt['correctAnswers'] ?? 0;
+    final totalQuestions = attempt['totalQuestions'] ?? 0;
+    final timeSpent = attempt['timeSpent'] ?? 0;
+    final submissionTime = attempt['submissionTime'];
+    final attemptNumber = attempt['attemptNumber'] ?? (index + 1);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () async {
+          Navigator.of(context).pop(); // Close selection dialog
+          
+          try {
+            setState(() => _isLoading = true);
+            
+            final detailedAttempt = await _quizService.getAttemptDetails(attempt['_id']);
+            
+            setState(() => _isLoading = false);
+            
+            if (mounted) {
+              _showAttemptDetailsDialog(detailedAttempt);
+            }
+          } catch (e) {
+            setState(() => _isLoading = false);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error loading attempt details: $e'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              // Attempt number badge
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade100,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.blue.shade300),
+                ),
+                child: Center(
+                  child: Text(
+                    '#$attemptNumber',
+                    style: TextStyle(
+                      color: Colors.blue.shade700,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              
+              // Attempt details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Score: ${score}%',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: _getScoreColor(score),
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '$correctAnswers/$totalQuestions correct',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.timer,
+                          size: 16,
+                          color: Colors.grey.shade600,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatDuration(timeSpent),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        if (submissionTime != null) ...[
+                          Icon(
+                            Icons.access_time,
+                            size: 16,
+                            color: Colors.grey.shade600,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat('MMM dd, HH:mm').format(DateTime.parse(submissionTime)),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              // View arrow
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: Colors.grey.shade400,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAttemptDetailsDialog(Map<String, dynamic> detailedAttempt) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.8,
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade700,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(4),
+                    topRight: Radius.circular(4),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Attempt Details',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${detailedAttempt['student']['name']} • ${detailedAttempt['quiz']['title']}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Summary
+              Container(
+                padding: const EdgeInsets.all(16),
+                color: Colors.grey.shade50,
+                child: Row(
+                  children: [
+                    _buildSummaryItem(
+                      'Score',
+                      '${detailedAttempt['score']}%',
+                      Icons.grade,
+                      _getScoreColor(detailedAttempt['score']),
+                    ),
+                    _buildSummaryItem(
+                      'Correct',
+                      '${detailedAttempt['correctAnswers']}/${detailedAttempt['totalQuestions']}',
+                      Icons.check_circle,
+                      Colors.green,
+                    ),
+                    _buildSummaryItem(
+                      'Time',
+                      _formatDuration(detailedAttempt['timeSpent'] ?? 0),
+                      Icons.timer,
+                      Colors.orange,
+                    ),
+                    _buildSummaryItem(
+                      'Attempt',
+                      '#${detailedAttempt['attemptNumber']}',
+                      Icons.repeat,
+                      Colors.blue,
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Questions list
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: detailedAttempt['questions']?.length ?? 0,
+                  itemBuilder: (context, index) {
+                    final question = detailedAttempt['questions'][index];
+                    return _buildQuestionDetailCard(question, index + 1);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryItem(String label, String value, IconData icon, Color color) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuestionDetailCard(Map<String, dynamic> question, int questionNumber) {
+    final isCorrect = question['isCorrect'] ?? false;
+    final studentAnswers = List<String>.from(question['studentAnswer'] ?? []);
+    final choices = List<Map<String, dynamic>>.from(question['choices'] ?? []);
+    
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Question header
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isCorrect ? Colors.green.shade100 : Colors.red.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isCorrect ? Colors.green : Colors.red,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isCorrect ? Icons.check : Icons.close,
+                        size: 16,
+                        color: isCorrect ? Colors.green : Colors.red,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Question $questionNumber',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isCorrect ? Colors.green : Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                _buildDifficultyChip(question['difficulty'] ?? 'Unknown'),
+              ],
+            ),
+            const SizedBox(height: 12),
+            
+            // Question text
+            Text(
+              question['questionText'] ?? 'Question text not available',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Answer choices
+            ...choices.asMap().entries.map((entry) {
+              final choiceIndex = entry.key;
+              final choice = entry.value;
+              final choiceText = choice['text'] ?? '';
+              final isChoiceCorrect = choice['isCorrect'] ?? false;
+              final isStudentChoice = studentAnswers.contains(choiceText);
+              
+              Color backgroundColor = Colors.grey.shade50;
+              Color borderColor = Colors.grey.shade300;
+              IconData? icon;
+              
+              if (isStudentChoice && isChoiceCorrect) {
+                // Student chose correct answer
+                backgroundColor = Colors.green.shade50;
+                borderColor = Colors.green;
+                icon = Icons.check_circle;
+              } else if (isStudentChoice && !isChoiceCorrect) {
+                // Student chose wrong answer
+                backgroundColor = Colors.red.shade50;
+                borderColor = Colors.red;
+                icon = Icons.cancel;
+              } else if (!isStudentChoice && isChoiceCorrect) {
+                // Correct answer not chosen by student
+                backgroundColor = Colors.blue.shade50;
+                borderColor = Colors.blue;
+                icon = Icons.info;
+              }
+              
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: borderColor),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      String.fromCharCode(65 + choiceIndex), // A, B, C, D
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: borderColor,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        choiceText,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                    if (icon != null) ...[
+                      const SizedBox(width: 8),
+                      Icon(icon, color: borderColor, size: 20),
+                    ],
+                  ],
+                ),
+              );
+            }).toList(),
+            
+            // Time spent on this question
+            if (question['timeSpent'] != null && question['timeSpent'] > 0) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(
+                    Icons.timer,
+                    size: 16,
+                    color: Colors.grey.shade600,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Time spent: ${_formatDuration(question['timeSpent'])}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDifficultyChip(String difficulty) {
+    Color color;
+    switch (difficulty.toLowerCase()) {
+      case 'easy':
+        color = Colors.green;
+        break;
+      case 'medium':
+        color = Colors.orange;
+        break;
+      case 'hard':
+        color = Colors.red;
+        break;
+      default:
+        color = Colors.grey;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color),
+      ),
+      child: Text(
+        difficulty.toUpperCase(),
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
+      ),
+    );
   }
 
   Future<void> _openQuizSettings() async {

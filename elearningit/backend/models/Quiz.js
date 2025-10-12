@@ -11,6 +11,9 @@ const quizSchema = new mongoose.Schema({
   closeDate: { type: Date, required: true },
   duration: { type: Number, required: true }, // in minutes
   maxAttempts: { type: Number, default: 1 },
+  allowRetakes: { type: Boolean, default: false },
+  shuffleQuestions: { type: Boolean, default: true },
+  showResultsImmediately: { type: Boolean, default: false },
   questionStructure: {
     easy: { type: Number, default: 0 },
     medium: { type: Number, default: 0 },

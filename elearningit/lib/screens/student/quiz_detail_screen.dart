@@ -18,6 +18,8 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
   Quiz? _quiz;
   bool _isLoading = true;
   String? _error;
+  Map<String, dynamic>? _studentAttempt;
+  Map<String, dynamic>? _allAttempts;
 
   @override
   void initState() {
@@ -25,20 +27,58 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
     _loadQuiz();
   }
 
-  Future<void> _loadQuiz() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  @override
+  void didUpdateWidget(QuizDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload quiz if the quizId changed
+    if (oldWidget.quizId != widget.quizId) {
+      _loadQuiz();
+    }
+  }
 
-    try {
+  Future<void> _loadQuiz() async {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+        _studentAttempt = null; // Clear cached attempt data
+        _allAttempts = null; // Clear cached all attempts data
+      });    try {
       final quiz = await _quizService.getQuiz(widget.quizId);
       print('📊 Quiz loaded: ${quiz.title}');
       print('🔗 Selected questions count: ${quiz.selectedQuestions.length}');
       print('🔍 First question type: ${quiz.selectedQuestions.isNotEmpty ? quiz.selectedQuestions.first.runtimeType : 'N/A'}');
+      print('🎯 Quiz allowRetakes: ${quiz.allowRetakes}');
+      print('🎯 Quiz maxAttempts: ${quiz.maxAttempts}');
+      
+      // Check if student has already attempted this quiz
+      Map<String, dynamic>? attempt;
+      Map<String, dynamic>? allAttempts;
+      try {
+        // Get latest attempt for quick status check
+        attempt = await _quizService.getStudentQuizAttempt(widget.quizId);
+        if (attempt != null) {
+          print('🎯 Student attempt found: ${attempt.keys}');
+          print('🎯 Attempt state: ${attempt['state']}');
+          print('🎯 Attempt score: ${attempt['score']}/${attempt['maxScore']}');
+          
+          // Get all attempts for detailed display
+          allAttempts = await _quizService.getAllStudentQuizAttempts(widget.quizId);
+          if (allAttempts != null) {
+            print('📊 All attempts loaded: ${allAttempts['totalAttempts']} total');
+          }
+        } else {
+          print('ℹ️ No previous attempt found');
+        }
+      } catch (e) {
+        print('ℹ️ No previous attempt found: $e');
+        attempt = null;
+        allAttempts = null;
+      }
       
       setState(() {
         _quiz = quiz;
+        _studentAttempt = attempt;
+        _allAttempts = allAttempts;
         _isLoading = false;
       });
     } catch (e) {
@@ -108,9 +148,11 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
   Widget _buildQuizContent() {
     final quiz = _quiz!;
     
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
+    return RefreshIndicator(
+      onRefresh: _loadQuiz,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Quiz Header
@@ -145,9 +187,18 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
           _buildQuizStructure(quiz),
           const SizedBox(height: 24),
 
-          // Quiz Questions Preview
-          _buildQuizQuestions(quiz),
+          // Student's Quiz Results (if attempted)
+          if (_allAttempts != null) ...[
+            _buildAllStudentResults(_allAttempts!),
+            const SizedBox(height: 24),
+          ] else if (_studentAttempt != null) ...[
+            _buildStudentResult(_studentAttempt!),
+            const SizedBox(height: 24),
+          ],
+
+          // Quiz questions are only visible to instructors
         ],
+      ),
       ),
     );
   }
@@ -268,7 +319,7 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
           child: _buildInfoCard(
             icon: Icons.repeat,
             title: 'Attempts',
-            value: quiz.maxAttempts == -1 ? 'Unlimited' : quiz.maxAttempts.toString(),
+            value: _getAttemptsDisplayValue(),
             color: Colors.green,
           ),
         ),
@@ -381,23 +432,82 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
       );
     }
 
+    // Check if student has already attempted the quiz
+    bool hasAttempted = _studentAttempt != null;
+    
+    // Check if retakes are allowed based on backend response
+    bool canRetake = false;
+    if (hasAttempted) {
+      // Use canRetake from backend response if available
+      canRetake = _studentAttempt!['canRetake'] ?? false;
+      print('🔄 Backend says canRetake: $canRetake');
+      print('🔍 Student attempt data: ${_studentAttempt!.keys}');
+    } else {
+      // No attempt yet, student can take the quiz
+      canRetake = true;
+    }
+
+    print('📊 Final decision: hasAttempted=$hasAttempted, canRetake=$canRetake');
+
+    if (hasAttempted && !canRetake) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Icon(
+                Icons.check_circle,
+                size: 48,
+                color: Colors.green.shade400,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Quiz Completed',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green.shade700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You have already completed this quiz.',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _getAttemptStatusMessage(),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Column(
       children: [
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _startQuiz,
+            onPressed: canRetake ? _startQuiz : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade700,
+              backgroundColor: canRetake ? Colors.red.shade700 : Colors.grey.shade400,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text(
-              'Start Quiz',
-              style: TextStyle(
+            child: Text(
+              hasAttempted ? 'Retake Quiz' : 'Start Quiz',
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -406,7 +516,9 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Once you start, you have ${quiz.duration} minutes to complete the quiz.',
+          canRetake 
+              ? 'Once you start, you have ${quiz.duration} minutes to complete the quiz.'
+              : _getAttemptStatusMessage(),
           style: TextStyle(
             fontSize: 14,
             color: Colors.grey.shade600,
@@ -507,66 +619,284 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
     );
   }
 
-  Widget _buildQuizQuestions(Quiz quiz) {
-    if (quiz.selectedQuestions.isEmpty) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Icon(
-                Icons.help_outline,
-                size: 48,
-                color: Colors.grey.shade400,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No questions linked to this quiz',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+  // Quiz questions preview moved to instructor quiz management screen
+
+  Widget _buildAllStudentResults(Map<String, dynamic> allAttemptsData) {
+    final List<dynamic> attempts = allAttemptsData['attempts'] ?? [];
+    final double finalGrade = (allAttemptsData['finalGrade'] ?? 0.0).toDouble();
+    final bool canRetake = allAttemptsData['canRetake'] ?? false;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Quiz Questions'),
+        _buildSectionTitle('Summary of your previous attempts'),
         const SizedBox(height: 12),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.quiz,
-                      color: Colors.blue.shade600,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${quiz.selectedQuestions.length} Questions Available',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                // Header row
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'Attempt',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade700,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    ),
-                  ],
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'State',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade700,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'Marks / ${attempts.isNotEmpty ? attempts.first['maxScore'].toStringAsFixed(1) : '100.0'}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade700,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'Grade / 10.00',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade700,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'Review',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade700,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
-                ...quiz.selectedQuestions.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final question = entry.value;
-                  return _buildQuestionPreview(index + 1, question);
+                
+                // Data rows for each attempt
+                ...attempts.asMap().entries.map((entry) {
+                  final int index = entry.key;
+                  final Map<String, dynamic> attempt = entry.value;
+                  final bool isLatest = attempt['isLatest'] ?? false;
+                  
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isLatest 
+                          ? Colors.blue.shade50 
+                          : Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: isLatest 
+                          ? Border.all(color: Colors.blue.shade200)
+                          : null,
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                children: [
+                                  Text(
+                                    '${attempt['attemptNumber'] ?? (index + 1)}',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: isLatest ? Colors.blue.shade700 : Colors.black,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  if (isLatest) ...[
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.shade600,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Text(
+                                        'Latest',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                attempt['state'] ?? 'Finished',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                (attempt['score'] ?? 0).toStringAsFixed(1),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                (attempt['grade'] ?? 0.0).toStringAsFixed(2),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: (attempt['grade'] ?? 0.0) >= 5.0 
+                                      ? Colors.green.shade600
+                                      : Colors.red.shade600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Text(
+                                'Not permitted',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Submitted ${DateFormat('EEEE, dd MMMM yyyy, h:mm a').format(DateTime.parse(attempt['submittedAt']))}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
                 }).toList(),
+                
+                const SizedBox(height: 20),
+                
+                // Final grade section
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Your final grade for this quiz is ${finalGrade.toStringAsFixed(2)}/10.00.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.blue.shade800,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Based on ${attempts.length} attempt${attempts.length == 1 ? '' : 's'}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        canRetake 
+                            ? 'You can attempt this quiz again'
+                            : 'No more attempts are allowed',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: canRetake 
+                              ? Colors.green.shade600
+                              : Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: 160,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.shade600,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: const Text(
+                            'Back to the course',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -575,92 +905,253 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
     );
   }
 
-  Widget _buildQuestionPreview(int number, dynamic question) {
-    String questionText = 'Question $number';
-    String difficulty = 'Unknown';
-    Color difficultyColor = Colors.grey;
+  Widget _buildStudentResult(Map<String, dynamic> attempt) {
+    final score = attempt['score'] ?? 0;
+    final maxScore = attempt['maxScore'] ?? 20;
+    final grade = maxScore > 0 ? (score / maxScore * 10) : 0;
+    final submittedAt = attempt['submittedAt'] != null 
+        ? DateTime.parse(attempt['submittedAt'])
+        : DateTime.now();
+    final state = attempt['state'] ?? 'Finished';
 
-    // Handle both cases: populated question objects and just IDs
-    if (question is Map<String, dynamic>) {
-      // Populated question object
-      questionText = question['questionText'] ?? 'Question $number';
-      difficulty = question['difficulty'] ?? 'Unknown';
-    } else if (question is String) {
-      // Just an ID - we'll show a generic preview
-      questionText = 'Question $number (ID: ${question.substring(0, 8)}...)';
-      difficulty = 'Unknown';
-    }
-    
-    switch (difficulty.toLowerCase()) {
-      case 'easy':
-        difficultyColor = Colors.green;
-        break;
-      case 'medium':
-        difficultyColor = Colors.orange;
-        break;
-      case 'hard':
-        difficultyColor = Colors.red;
-        break;
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: Colors.blue.shade100,
-            child: Text(
-              number.toString(),
-              style: TextStyle(
-                color: Colors.blue.shade700,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Summary of your previous attempts'),
+        const SizedBox(height: 12),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  questionText.length > 60 
-                      ? '${questionText.substring(0, 60)}...'
-                      : questionText,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                // Header row
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'State',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'Marks / ${maxScore.toStringAsFixed(1)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade700,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'Grade / 10.00',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade700,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'Review',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade700,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                
+                // Data row
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              state,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Submitted ${DateFormat('EEEE, dd MMMM yyyy, h:mm a').format(submittedAt)}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          score.toStringAsFixed(1),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          grade.toStringAsFixed(2),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'Not permitted',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 4),
+                
+                const SizedBox(height: 20),
+                
+                // Final grade section
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: difficultyColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade200),
                   ),
-                  child: Text(
-                    difficulty.toUpperCase(),
-                    style: TextStyle(
-                      color: difficultyColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Your final grade for this quiz is ${grade.toStringAsFixed(2)}/10.00.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.blue.shade800,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No more attempts are allowed',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: 160,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.shade600,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: const Text(
+                            'Back to the course',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
+  }
+
+  String _getAttemptsDisplayValue() {
+    final quiz = _quiz!;
+    
+    // Use all attempts data if available
+    if (_allAttempts != null) {
+      final totalAttempts = _allAttempts!['totalAttempts'] ?? 0;
+      if (quiz.maxAttempts == -1) {
+        return totalAttempts > 0 ? '$totalAttempts / ∞' : 'Unlimited';
+      } else {
+        return '$totalAttempts / ${quiz.maxAttempts}';
+      }
+    }
+    
+    // Fallback to single attempt data
+    if (_studentAttempt == null) {
+      return quiz.maxAttempts == -1 ? 'Unlimited' : quiz.maxAttempts.toString();
+    }
+    
+    final totalAttempts = _studentAttempt!['totalAttempts'] ?? 1;
+    if (quiz.maxAttempts == -1) {
+      return '$totalAttempts / ∞';
+    } else {
+      return '$totalAttempts / ${quiz.maxAttempts}';
+    }
+  }
+
+  String _getAttemptStatusMessage() {
+    if (_studentAttempt == null) return 'No attempts yet.';
+    
+    final quiz = _quiz!;
+    final totalAttempts = _studentAttempt!['totalAttempts'] ?? 1;
+    final maxAttempts = quiz.maxAttempts;
+    final allowRetakes = quiz.allowRetakes;
+    
+    if (!allowRetakes) {
+      return 'No more attempts are allowed.';
+    }
+    
+    if (maxAttempts > 0 && totalAttempts >= maxAttempts) {
+      return 'Maximum attempts ($maxAttempts) reached.';
+    }
+    
+    return 'You can retake this quiz.';
   }
 
   void _startQuiz() {

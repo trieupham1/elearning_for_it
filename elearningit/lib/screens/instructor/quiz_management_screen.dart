@@ -180,6 +180,10 @@ class _QuizManagementScreenState extends State<QuizManagementScreen> with Single
 
           // Quiz Structure
           _buildQuizStructure(quiz),
+          const SizedBox(height: 24),
+
+          // Quiz Questions Preview (for instructors)
+          _buildQuizQuestions(quiz),
         ],
       ),
     );
@@ -763,6 +767,247 @@ class _QuizManagementScreenState extends State<QuizManagementScreen> with Single
       const SnackBar(
         content: Text('Cleaning up expired attempts...'),
         backgroundColor: Colors.orange,
+      ),
+    );
+  }
+
+  Widget _buildQuizQuestions(Quiz quiz) {
+    if (quiz.selectedQuestions.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('Quiz Questions'),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.help_outline,
+                    size: 48,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No questions linked to this quiz',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      // TODO: Navigate to add questions screen
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Add questions feature coming soon!'),
+                          backgroundColor: Colors.blue,
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Questions'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue.shade600,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildSectionTitle('Quiz Questions'),
+            TextButton.icon(
+              onPressed: () {
+                // TODO: Navigate to manage questions screen
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Manage questions feature coming soon!'),
+                    backgroundColor: Colors.blue,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.edit),
+              label: const Text('Manage Questions'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.quiz,
+                      color: Colors.blue.shade600,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${quiz.selectedQuestions.length} Questions Available',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ...quiz.selectedQuestions.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final question = entry.value;
+                  return _buildQuestionPreview(index + 1, question);
+                }).toList(),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuestionPreview(int number, dynamic question) {
+    String questionText = 'Question $number';
+    String difficulty = 'Unknown';
+    Color difficultyColor = Colors.grey;
+
+    // Handle both cases: populated question objects and just IDs
+    if (question is Map<String, dynamic>) {
+      // Populated question object
+      questionText = question['questionText'] ?? 'Question $number';
+      difficulty = question['difficulty'] ?? 'Unknown';
+    } else if (question is String) {
+      // Just an ID - we'll show a generic preview
+      questionText = 'Question $number (ID: ${question.substring(0, 8)}...)';
+      difficulty = 'Unknown';
+    }
+    
+    switch (difficulty.toLowerCase()) {
+      case 'easy':
+        difficultyColor = Colors.green;
+        break;
+      case 'medium':
+        difficultyColor = Colors.orange;
+        break;
+      case 'hard':
+        difficultyColor = Colors.red;
+        break;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 16,
+            backgroundColor: Colors.blue.shade100,
+            child: Text(
+              number.toString(),
+              style: TextStyle(
+                color: Colors.blue.shade700,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  questionText.length > 60 
+                      ? '${questionText.substring(0, 60)}...'
+                      : questionText,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: difficultyColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    difficulty.toUpperCase(),
+                    style: TextStyle(
+                      color: difficultyColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Add action buttons for instructors
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              switch (value) {
+                case 'edit':
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Edit question feature coming soon!'),
+                      backgroundColor: Colors.blue,
+                    ),
+                  );
+                  break;
+                case 'delete':
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Delete question feature coming soon!'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'edit',
+                child: ListTile(
+                  leading: Icon(Icons.edit, size: 16),
+                  title: Text('Edit Question'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'delete',
+                child: ListTile(
+                  leading: Icon(Icons.delete, color: Colors.red, size: 16),
+                  title: Text('Remove Question', style: TextStyle(color: Colors.red)),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+            child: const Icon(Icons.more_vert, size: 16),
+          ),
+        ],
       ),
     );
   }
