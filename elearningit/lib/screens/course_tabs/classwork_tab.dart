@@ -462,19 +462,26 @@ class _ClassworkCard extends StatelessWidget {
                 ),
               ),
 
-              // Trailing: Action buttons for instructors
-              if (_isInstructor && item.type == 'assignment')
+              // Trailing: Completion status for students or action buttons for instructors
+              if (!_isInstructor && item.type == 'quiz' && item.isCompleted == true)
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.check,
+                    color: Colors.green.shade700,
+                    size: 20,
+                  ),
+                )
+              else if (_isInstructor && item.type == 'assignment')
                 IconButton(
                   icon: const Icon(Icons.analytics_outlined),
                   onPressed: () => _navigateToTracking(context),
                   tooltip: 'View Tracking',
-                ),
-              if (_isInstructor && item.type == 'material')
-                IconButton(
-                  icon: const Icon(Icons.settings_outlined),
-                  onPressed: () => _navigateToMaterialManagement(context),
-                  tooltip: 'Manage Materials',
-                ),
+                )
             ],
           ),
         ),
