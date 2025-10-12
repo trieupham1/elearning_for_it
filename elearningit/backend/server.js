@@ -28,6 +28,7 @@ const quizRoutes = require('./routes/quizzes');
 const questionRoutes = require('./routes/questions');
 const quizAttemptRoutes = require('./routes/quiz-attempts');
 const materialRoutes = require('./routes/materials');
+const forumRoutes = require('./routes/forum');
 const { router: fileRoutes, initializeGridFS } = require('./routes/files');
 
 app.use('/api/auth', authRoutes);
@@ -45,6 +46,7 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/quiz-attempts', quizAttemptRoutes);
 app.use('/api/materials', materialRoutes);
+app.use('/api/forum', forumRoutes);
 app.use('/api/files', fileRoutes);
 
 // Health check

@@ -7,11 +7,7 @@ class QuizTakingScreen extends StatefulWidget {
   final String quizId;
   final String? attemptId; // null means start new attempt
 
-  const QuizTakingScreen({
-    super.key, 
-    required this.quizId,
-    this.attemptId,
-  });
+  const QuizTakingScreen({super.key, required this.quizId, this.attemptId});
 
   @override
   State<QuizTakingScreen> createState() => _QuizTakingScreenState();
@@ -20,20 +16,20 @@ class QuizTakingScreen extends StatefulWidget {
 class _QuizTakingScreenState extends State<QuizTakingScreen> {
   final QuizService _quizService = QuizService();
   final PageController _pageController = PageController();
-  
+
   QuizAttempt? _attempt;
   bool _isLoading = true;
   String? _error;
-  
+
   // Timer related
   Timer? _timer;
   int _remainingSeconds = 0;
-  
+
   // Navigation
   int _currentQuestionIndex = 0;
   Map<String, int> _questionTimeSpent = {}; // questionId -> seconds
   DateTime? _questionStartTime;
-  
+
   // UI state
   bool _isSubmitting = false;
 
@@ -58,7 +54,7 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
 
     try {
       QuizAttempt attempt;
-      
+
       if (widget.attemptId != null) {
         // Resume existing attempt
         attempt = await _quizService.getQuizAttempt(widget.attemptId!);
@@ -77,7 +73,6 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
 
       _startTimer();
       _startQuestionTimer();
-      
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -88,12 +83,12 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
 
   void _startTimer() {
     if (_attempt == null) return;
-    
+
     final startTime = _attempt!.startTime;
     final durationMs = _attempt!.duration * 60 * 1000;
     final elapsed = DateTime.now().difference(startTime).inMilliseconds;
     _remainingSeconds = ((durationMs - elapsed) / 1000).round();
-    
+
     if (_remainingSeconds <= 0) {
       _autoSubmit();
       return;
@@ -103,7 +98,7 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
       setState(() {
         _remainingSeconds--;
       });
-      
+
       if (_remainingSeconds <= 0) {
         timer.cancel();
         _autoSubmit();
@@ -117,20 +112,21 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
 
   void _saveQuestionTime() {
     if (_questionStartTime == null || _attempt == null) return;
-    
+
     final currentQuestion = _attempt!.questions[_currentQuestionIndex];
     final questionId = currentQuestion['questionId'].toString();
     final timeSpent = DateTime.now().difference(_questionStartTime!).inSeconds;
-    
-    _questionTimeSpent[questionId] = (_questionTimeSpent[questionId] ?? 0) + timeSpent;
+
+    _questionTimeSpent[questionId] =
+        (_questionTimeSpent[questionId] ?? 0) + timeSpent;
   }
 
   Future<void> _saveAnswer(List<String> selectedAnswers) async {
     if (_attempt == null) return;
-    
+
     final currentQuestion = _attempt!.questions[_currentQuestionIndex];
     final questionId = currentQuestion['questionId'].toString();
-    
+
     try {
       await _quizService.saveQuestionAnswer(
         _attempt!.id,
@@ -138,12 +134,11 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
         selectedAnswers,
         timeSpent: _questionTimeSpent[questionId] ?? 0,
       );
-      
+
       // Update local state
       setState(() {
         currentQuestion['selectedAnswer'] = selectedAnswers;
       });
-      
     } catch (e) {
       print('Error saving answer: $e');
       if (mounted) {
@@ -197,20 +192,28 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
     try {
       _saveQuestionTime();
       _timer?.cancel();
-      
+
+      print('🚀 Submitting quiz attempt: ${_attempt!.id}');
       final result = await _quizService.submitQuizAttempt(_attempt!.id);
-      
+      print('✅ Quiz submitted successfully. Result: ${result.id}');
+      print('📊 Score: ${result.score}, Status: ${result.status}');
+
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed(
-          '/quiz-result',
-          arguments: result,
-        );
+        print('🧭 Navigating to quiz result screen...');
+        Navigator.of(
+          context,
+        ).pushReplacementNamed('/quiz-result', arguments: result);
+        print('✅ Navigation command sent');
+      } else {
+        print('⚠️ Widget not mounted, cannot navigate');
       }
     } catch (e) {
+      print('❌ Error submitting quiz: $e');
+      print('Stack trace: ${StackTrace.current}');
       setState(() {
         _isSubmitting = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -224,7 +227,7 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
 
   Future<void> _autoSubmit() async {
     if (_isSubmitting) return;
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Time is up! Submitting quiz automatically...'),
@@ -232,7 +235,7 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
         duration: Duration(seconds: 3),
       ),
     );
-    
+
     await _submitQuiz();
   }
 
@@ -262,7 +265,9 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
               child: Text(
                 _formatTime(_remainingSeconds),
                 style: TextStyle(
-                  color: _remainingSeconds < 300 ? Colors.white : Colors.red.shade700,
+                  color: _remainingSeconds < 300
+                      ? Colors.white
+                      : Colors.red.shade700,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
@@ -273,10 +278,10 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? _buildErrorWidget()
-              : _attempt == null
-                  ? const Center(child: Text('No quiz attempt found'))
-                  : _buildQuizContent(),
+          ? _buildErrorWidget()
+          : _attempt == null
+          ? const Center(child: Text('No quiz attempt found'))
+          : _buildQuizContent(),
       bottomNavigationBar: _attempt != null ? _buildBottomNavigation() : null,
     );
   }
@@ -286,26 +291,16 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red.shade400,
-          ),
+          Icon(Icons.error_outline, size: 64, color: Colors.red.shade400),
           const SizedBox(height: 16),
           Text(
             'Failed to load quiz',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey.shade700,
-            ),
+            style: TextStyle(fontSize: 18, color: Colors.grey.shade700),
           ),
           const SizedBox(height: 8),
           Text(
             _error!,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -323,7 +318,7 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
       children: [
         // Progress indicator
         _buildProgressIndicator(),
-        
+
         // Question content
         Expanded(
           child: PageView.builder(
@@ -348,7 +343,11 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
   Widget _buildProgressIndicator() {
     final totalQuestions = _attempt!.questions.length;
     final answered = _attempt!.questions
-        .where((q) => q['selectedAnswer'] != null && (q['selectedAnswer'] as List).isNotEmpty)
+        .where(
+          (q) =>
+              q['selectedAnswer'] != null &&
+              (q['selectedAnswer'] as List).isNotEmpty,
+        )
         .length;
 
     return Container(
@@ -368,10 +367,7 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
               ),
               Text(
                 '$answered/$totalQuestions answered',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
               ),
             ],
           ),
@@ -403,7 +399,9 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
             decoration: BoxDecoration(
               color: _getDifficultyColor(difficulty).withOpacity(0.1),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: _getDifficultyColor(difficulty).withOpacity(0.3)),
+              border: Border.all(
+                color: _getDifficultyColor(difficulty).withOpacity(0.3),
+              ),
             ),
             child: Text(
               difficulty.toUpperCase(),
@@ -415,7 +413,7 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Question text
           Card(
             child: Padding(
@@ -430,19 +428,21 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Answer choices
           ...choices.asMap().entries.map((entry) {
             final choice = entry.value;
             final choiceText = choice['text'] ?? '';
             final isSelected = selectedAnswer.contains(choiceText);
-            
+
             return Card(
               margin: const EdgeInsets.only(bottom: 8),
               child: ListTile(
                 leading: Radio<String>(
                   value: choiceText,
-                  groupValue: selectedAnswer.isNotEmpty ? selectedAnswer.first : null,
+                  groupValue: selectedAnswer.isNotEmpty
+                      ? selectedAnswer.first
+                      : null,
                   onChanged: (value) {
                     if (value != null) {
                       _saveAnswer([value]);
@@ -454,7 +454,9 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
                   choiceText,
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                   ),
                 ),
                 onTap: () {
@@ -484,7 +486,11 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
   Widget _buildBottomNavigation() {
     final totalQuestions = _attempt!.questions.length;
     final answered = _attempt!.questions
-        .where((q) => q['selectedAnswer'] != null && (q['selectedAnswer'] as List).isNotEmpty)
+        .where(
+          (q) =>
+              q['selectedAnswer'] != null &&
+              (q['selectedAnswer'] as List).isNotEmpty,
+        )
         .length;
 
     return Container(
@@ -513,19 +519,21 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
                 foregroundColor: Colors.white,
               ),
             ),
-          
+
           const Spacer(),
-          
+
           // Submit button (always visible)
           ElevatedButton.icon(
-            onPressed: _isSubmitting ? null : () {
-              if (answered < totalQuestions) {
-                _showSubmitConfirmation();
-              } else {
-                _submitQuiz();
-              }
-            },
-            icon: _isSubmitting 
+            onPressed: _isSubmitting
+                ? null
+                : () {
+                    if (answered < totalQuestions) {
+                      _showSubmitConfirmation();
+                    } else {
+                      _submitQuiz();
+                    }
+                  },
+            icon: _isSubmitting
                 ? const SizedBox(
                     width: 16,
                     height: 16,
@@ -542,9 +550,9 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ),
-          
+
           const Spacer(),
-          
+
           // Next button
           if (_currentQuestionIndex < totalQuestions - 1)
             ElevatedButton.icon(
@@ -564,7 +572,11 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
   void _showSubmitConfirmation() {
     final totalQuestions = _attempt!.questions.length;
     final answered = _attempt!.questions
-        .where((q) => q['selectedAnswer'] != null && (q['selectedAnswer'] as List).isNotEmpty)
+        .where(
+          (q) =>
+              q['selectedAnswer'] != null &&
+              (q['selectedAnswer'] as List).isNotEmpty,
+        )
         .length;
     final unanswered = totalQuestions - answered;
 
@@ -587,10 +599,7 @@ class _QuizTakingScreenState extends State<QuizTakingScreen> {
             const SizedBox(height: 8),
             Text(
               'This action cannot be undone.',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
           ],
         ),
