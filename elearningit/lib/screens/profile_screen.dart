@@ -165,26 +165,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                currentPasswordController.dispose();
-                newPasswordController.dispose();
-                confirmPasswordController.dispose();
-              },
+              onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   try {
-                    // TODO: Call API to change password
-                    // await _authService.changePassword(
-                    //   currentPassword: currentPasswordController.text,
-                    //   newPassword: newPasswordController.text,
-                    // );
+                    // Show loading indicator
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) =>
+                          const Center(child: CircularProgressIndicator()),
+                    );
+
+                    // Call API to change password
+                    await _authService.changePassword(
+                      currentPassword: currentPasswordController.text,
+                      newPassword: newPasswordController.text,
+                    );
 
                     if (context.mounted) {
-                      Navigator.pop(context);
+                      Navigator.pop(context); // Close loading dialog
+                      Navigator.pop(context); // Close change password dialog
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Password changed successfully'),
@@ -194,17 +199,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     }
                   } catch (e) {
                     if (context.mounted) {
+                      Navigator.pop(context); // Close loading dialog
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Failed to change password: $e'),
+                          content: Text(
+                            'Failed to change password: ${e.toString().replaceAll('ApiException: Failed to change password: ', '')}',
+                          ),
                           backgroundColor: Colors.red,
                         ),
                       );
                     }
-                  } finally {
-                    currentPasswordController.dispose();
-                    newPasswordController.dispose();
-                    confirmPasswordController.dispose();
                   }
                 }
               },
@@ -241,7 +245,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (result != null && result.files.isNotEmpty) {
         final file = result.files.first;
-        
+
         // Validate file size (5MB limit)
         if (file.size > 5 * 1024 * 1024) {
           if (mounted) Navigator.pop(context); // Close loading dialog
@@ -258,7 +262,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         // Upload to backend
         final updatedUser = await _authService.updateProfilePicture(file);
-        
+
         setState(() {
           _currentUser = updatedUser;
         });
@@ -291,10 +295,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showEditProfileDialog() {
     final formKey = GlobalKey<FormState>();
     final isInstructor = _currentUser!.role == 'instructor';
-    
+
     final emailController = TextEditingController(text: _currentUser!.email);
-    final phoneController = TextEditingController(text: _currentUser!.phoneNumber ?? '');
-    final departmentController = TextEditingController(text: _currentUser!.department ?? '');
+    final phoneController = TextEditingController(
+      text: _currentUser!.phoneNumber ?? '',
+    );
+    final departmentController = TextEditingController(
+      text: _currentUser!.department ?? '',
+    );
 
     showDialog(
       context: context,
@@ -336,7 +344,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             shape: BoxShape.circle,
                           ),
                           child: IconButton(
-                            icon: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                            icon: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                             onPressed: () => _uploadProfilePicture(),
                           ),
                         ),
@@ -388,7 +400,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       return null;
                     },
                   ),
-                  
+
                   // Department (only for instructors)
                   if (isInstructor) ...[
                     const SizedBox(height: 16),
@@ -409,37 +421,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                emailController.dispose();
-                phoneController.dispose();
-                departmentController.dispose();
-              },
+              onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   try {
-                    // TODO: Call API to update profile
-                    // await _authService.updateProfile(
-                    //   email: emailController.text,
-                    //   phoneNumber: phoneController.text,
-                    //   department: isInstructor ? departmentController.text : null,
-                    // );
+                    // Show loading indicator
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) =>
+                          const Center(child: CircularProgressIndicator()),
+                    );
+
+                    // Prepare update data
+                    final updateData = {
+                      'email': emailController.text,
+                      'phoneNumber': phoneController.text.isNotEmpty
+                          ? phoneController.text
+                          : null,
+                    };
+
+                    // Add department for instructors
+                    if (isInstructor) {
+                      updateData['department'] =
+                          departmentController.text.isNotEmpty
+                          ? departmentController.text
+                          : null;
+                    }
+
+                    // Call API to update profile
+                    final updatedUser = await _authService.updateProfile(
+                      updateData,
+                    );
 
                     if (context.mounted) {
-                      Navigator.pop(context);
+                      Navigator.pop(context); // Close loading dialog
+                      Navigator.pop(context); // Close edit dialog
+
+                      setState(() {
+                        _currentUser = updatedUser;
+                      });
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Profile updated successfully'),
                           backgroundColor: Colors.green,
                         ),
                       );
-                      _loadUserData();
                     }
                   } catch (e) {
                     if (context.mounted) {
+                      Navigator.pop(context); // Close loading dialog
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Failed to update profile: $e'),
@@ -447,10 +482,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       );
                     }
-                  } finally {
-                    emailController.dispose();
-                    phoneController.dispose();
-                    departmentController.dispose();
                   }
                 }
               },
@@ -500,7 +531,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           CircleAvatar(
                             radius: 60,
                             backgroundColor: Theme.of(context).primaryColor,
-                            backgroundImage: _currentUser!.profilePicture != null
+                            backgroundImage:
+                                _currentUser!.profilePicture != null
                                 ? NetworkImage(_currentUser!.profilePicture!)
                                 : null,
                             child: _currentUser!.profilePicture == null
@@ -521,10 +553,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               decoration: BoxDecoration(
                                 color: Theme.of(context).primaryColor,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
                               ),
                               child: IconButton(
-                                icon: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                                icon: const Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                                 onPressed: _uploadProfilePicture,
                                 tooltip: 'Change Avatar',
                               ),
@@ -720,7 +759,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-          );
+    );
   }
 
   Widget _buildInfoRow(
@@ -761,11 +800,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     if (isEditable)
-                      Icon(
-                        Icons.edit,
-                        size: 16,
-                        color: Colors.blue[700],
-                      ),
+                      Icon(Icons.edit, size: 16, color: Colors.blue[700]),
                   ],
                 ),
               ],

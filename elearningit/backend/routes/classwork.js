@@ -3,6 +3,7 @@ const Assignment = require('../models/Assignment');
 const Quiz = require('../models/Quiz');
 const Material = require('../models/Material');
 const QuizAttempt = require('../models/QuizAttempt');
+const Course = require('../models/Course');
 const { authMiddleware, instructorOnly } = require('../middleware/auth');
 const { notifyNewAssignment, notifyNewQuiz, notifyNewMaterial } = require('../utils/notificationHelper');
 
@@ -88,13 +89,24 @@ router.post('/assignments', authMiddleware, instructorOnly, async (req, res) => 
     const assignment = new Assignment(req.body);
     await assignment.save();
     
-    // Send notifications to students
-    await notifyNewAssignment(
-      assignment.courseId,
-      assignment._id,
-      assignment.title,
-      assignment.deadline
-    );
+    // Get course and enrolled students for notifications
+    try {
+      const course = await Course.findById(assignment.courseId);
+      if (course && course.students && course.students.length > 0) {
+        const studentIds = course.students.map(s => s.toString());
+        await notifyNewAssignment(
+          assignment.courseId.toString(),
+          course.title,
+          assignment.title,
+          assignment.deadline,
+          studentIds
+        );
+        console.log(`📬 Sent assignment notifications to ${studentIds.length} students`);
+      }
+    } catch (notifError) {
+      console.error('Error sending assignment notifications:', notifError);
+      // Don't fail the assignment creation if notification fails
+    }
     
     res.status(201).json(assignment);
   } catch (error) {
@@ -108,13 +120,23 @@ router.post('/quizzes', authMiddleware, instructorOnly, async (req, res) => {
     const quiz = new Quiz(req.body);
     await quiz.save();
     
-    // Send notifications to students
-    await notifyNewQuiz(
-      quiz.courseId,
-      quiz._id,
-      quiz.title,
-      quiz.closeDate
-    );
+    // Get course and enrolled students for notifications
+    try {
+      const course = await Course.findById(quiz.courseId);
+      if (course && course.students && course.students.length > 0) {
+        const studentIds = course.students.map(s => s.toString());
+        await notifyNewQuiz(
+          quiz.courseId.toString(),
+          course.title,
+          quiz.title,
+          studentIds
+        );
+        console.log(`📬 Sent quiz notifications to ${studentIds.length} students`);
+      }
+    } catch (notifError) {
+      console.error('Error sending quiz notifications:', notifError);
+      // Don't fail the quiz creation if notification fails
+    }
     
     res.status(201).json(quiz);
   } catch (error) {
@@ -128,12 +150,23 @@ router.post('/materials', authMiddleware, instructorOnly, async (req, res) => {
     const material = new Material(req.body);
     await material.save();
     
-    // Send notifications to students
-    await notifyNewMaterial(
-      material.courseId,
-      material._id,
-      material.title
-    );
+    // Get course and enrolled students for notifications
+    try {
+      const course = await Course.findById(material.courseId);
+      if (course && course.students && course.students.length > 0) {
+        const studentIds = course.students.map(s => s.toString());
+        await notifyNewMaterial(
+          material.courseId.toString(),
+          course.title,
+          material.title,
+          studentIds
+        );
+        console.log(`📬 Sent material notifications to ${studentIds.length} students`);
+      }
+    } catch (notifError) {
+      console.error('Error sending material notifications:', notifError);
+      // Don't fail the material creation if notification fails
+    }
     
     res.status(201).json(material);
   } catch (error) {

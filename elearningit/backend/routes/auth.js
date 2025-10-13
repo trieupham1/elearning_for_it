@@ -133,6 +133,87 @@ router.put('/change-password', auth, async (req, res) => {
   }
 });
 
+// Forgot password - Request password reset
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Don't reveal if email exists or not for security
+      return res.json({ 
+        message: 'If an account exists with this email, a password reset link has been sent.' 
+      });
+    }
+
+    // In a production app, you would:
+    // 1. Generate a secure reset token
+    // 2. Save the token with expiry to the database
+    // 3. Send an email with the reset link
+    // For now, we'll just log it and return success
+    
+    // Generate a temporary reset token (in production, use crypto.randomBytes)
+    const resetToken = jwt.sign(
+      { userId: user._id, purpose: 'password-reset' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    console.log('Password reset requested for:', email);
+    console.log('Reset token (would be sent via email):', resetToken);
+    console.log('Reset link would be: http://yourapp.com/reset-password?token=' + resetToken);
+
+    // TODO: Send email with reset link
+    // await sendPasswordResetEmail(user.email, resetToken);
+
+    res.json({ 
+      message: 'If an account exists with this email, a password reset link has been sent.',
+      // In development, include the token (REMOVE IN PRODUCTION!)
+      ...(process.env.NODE_ENV === 'development' && { resetToken })
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Failed to process password reset request' });
+  }
+});
+
+// Reset password with token
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    // Verify reset token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (decoded.purpose !== 'password-reset') {
+        return res.status(400).json({ message: 'Invalid reset token' });
+      }
+    } catch (err) {
+      return res.status(400).json({ message: 'Invalid or expired reset token' });
+    }
+
+    // Find user
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    console.log('Password reset successful for user:', user.email);
+
+    res.json({ message: 'Password has been reset successfully' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ message: 'Failed to reset password' });
+  }
+});
+
 // Logout (client-side handles token removal, but you can add token blacklist here)
 router.post('/logout', auth, async (req, res) => {
   try {

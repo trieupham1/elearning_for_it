@@ -109,6 +109,34 @@ router.get('/:id/taught-courses', auth, async (req, res) => {
   }
 });
 
+// Update current user's profile (MUST come before /:id route)
+router.put('/profile', auth, async (req, res) => {
+  try {
+    const { password, role, _id, ...updateData } = req.body; // Exclude sensitive fields
+    
+    console.log('Profile update request:', {
+      userId: req.userId,
+      updateData: updateData
+    });
+    
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log('Profile updated successfully:', user._id);
+    res.json(user);
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Update user (admin or self)
 router.put('/:id', auth, async (req, res) => {
   try {

@@ -8,6 +8,7 @@ const Course = require('../models/Course');
 const Group = require('../models/Group');
 const authMiddleware = require('../middleware/auth');
 const { createNotification } = require('../utils/notifications');
+const { notifyAssignmentSubmission, notifyNewAssignment: notifyNewAssignmentHelper } = require('../utils/notificationHelper');
 
 // Middleware to check if user is instructor
 const instructorOnly = async (req, res, next) => {
@@ -40,28 +41,6 @@ const getStudentGroup = async (courseId, studentId) => {
     }
   }
   return { groupId: null, groupName: null };
-};
-
-// Helper function to notify new assignment
-const notifyNewAssignment = async (courseId, assignmentId, title) => {
-  try {
-    const course = await Course.findById(courseId).populate('students');
-    if (course && course.students) {
-      for (const student of course.students) {
-        await createNotification({
-          userId: student._id,
-          type: 'assignment_created',
-          title: 'New Assignment',
-          message: `New assignment posted: ${title}`,
-          relatedId: assignmentId,
-          relatedType: 'assignment',
-          courseId: courseId
-        });
-      }
-    }
-  } catch (error) {
-    console.error('Error sending assignment notifications:', error);
-  }
 };
 
 // Helper function to notify submission graded
@@ -129,8 +108,24 @@ router.post('/', authMiddleware, instructorOnly, async (req, res) => {
 
     await assignment.save();
 
-    // Send notifications to students
-    await notifyNewAssignment(courseId, assignment._id, title);
+    // Send notifications to students using the proper helper
+    try {
+      const course = await Course.findById(courseId);
+      if (course && course.students && course.students.length > 0) {
+        const studentIds = course.students.map(s => s.toString());
+        await notifyNewAssignmentHelper(
+          courseId.toString(),
+          course.title,
+          title,
+          deadline,
+          studentIds
+        );
+        console.log(`📬 Sent assignment notifications to ${studentIds.length} students`);
+      }
+    } catch (notifError) {
+      console.error('Error sending assignment notifications:', notifError);
+      // Don't fail the assignment creation if notification fails
+    }
 
     res.status(201).json(assignment);
   } catch (error) {
@@ -339,6 +334,24 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
     });
 
     await submission.save();
+
+    // Get course and notify instructor
+    try {
+      const course = await Course.findById(assignment.courseId).populate('instructor');
+      if (course && course.instructor) {
+        await notifyAssignmentSubmission(
+          course.instructor._id,
+          course.title,
+          assignment.title,
+          studentName,
+          submission._id.toString()
+        );
+        console.log(`📬 Notification sent to instructor ${course.instructor.username} for assignment submission`);
+      }
+    } catch (notifError) {
+      console.error('Error sending assignment submission notification:', notifError);
+      // Don't fail the submission if notification fails
+    }
 
     res.status(201).json(submission);
   } catch (error) {

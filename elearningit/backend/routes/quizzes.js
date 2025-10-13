@@ -1,7 +1,9 @@
 const express = require('express');
 const Quiz = require('../models/Quiz');
 const Question = require('../models/Question');
+const Course = require('../models/Course');
 const { authMiddleware, instructorOnly } = require('../middleware/auth');
+const { notifyNewQuiz } = require('../utils/notificationHelper');
 
 const router = express.Router();
 
@@ -48,6 +50,24 @@ router.post('/', authMiddleware, instructorOnly, async (req, res) => {
     await quiz.save();
     
     await quiz.populate('createdBy', 'name email');
+    
+    // Send notifications to all enrolled students
+    try {
+      const course = await Course.findById(quiz.courseId);
+      if (course && course.students && course.students.length > 0) {
+        const studentIds = course.students.map(s => s.toString());
+        await notifyNewQuiz(
+          quiz.courseId.toString(),
+          course.title,
+          quiz.title,
+          studentIds
+        );
+        console.log(`📬 Sent quiz notifications to ${studentIds.length} students`);
+      }
+    } catch (notifError) {
+      console.error('Error sending quiz notifications:', notifError);
+      // Don't fail the quiz creation if notification fails
+    }
     
     res.status(201).json(quiz);
   } catch (error) {

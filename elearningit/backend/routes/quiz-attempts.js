@@ -3,7 +3,10 @@ const mongoose = require('mongoose');
 const Quiz = require('../models/Quiz');
 const QuizAttempt = require('../models/QuizAttempt');
 const Question = require('../models/Question');
+const Course = require('../models/Course');
+const User = require('../models/User');
 const { authMiddleware, instructorOnly } = require('../middleware/auth');
+const { notifyQuizAttempt } = require('../utils/notificationHelper');
 
 const router = express.Router();
 
@@ -326,6 +329,36 @@ router.post('/:attemptId/submit', authMiddleware, async (req, res) => {
     attempt.status = 'submitted';
 
     await attempt.save(); // This will trigger the pre-save hook to calculate score
+
+    // Get student, quiz, and course details for notification
+    try {
+      const [student, quiz] = await Promise.all([
+        User.findById(studentId),
+        attempt.populate('quizId')
+      ]);
+
+      if (quiz && quiz.quizId && quiz.quizId.courseId) {
+        const course = await Course.findById(quiz.quizId.courseId).populate('instructor');
+        
+        if (course && course.instructor && student) {
+          const studentName = student.fullName || student.username || student.email || 'Unknown';
+          const scorePercentage = attempt.score ? attempt.score.toFixed(1) : '0';
+          
+          await notifyQuizAttempt(
+            course.instructor._id,
+            course.title,
+            quiz.quizId.title,
+            studentName,
+            `${scorePercentage}%`,
+            attempt._id.toString()
+          );
+          console.log(`📬 Notification sent to instructor ${course.instructor.username} for quiz attempt`);
+        }
+      }
+    } catch (notifError) {
+      console.error('Error sending quiz attempt notification:', notifError);
+      // Don't fail the submission if notification fails
+    }
 
     // Return full results including correct answers
     const result = {
