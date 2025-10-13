@@ -135,7 +135,7 @@ router.put('/change-password', auth, async (req, res) => {
   }
 });
 
-// Forgot password - Request password reset
+// Forgot Password - Send reset email
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -204,15 +204,62 @@ router.post('/reset-password', async (req, res) => {
 
     // Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user password and clear reset fields
     user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
     await user.save();
 
-    console.log('Password reset successful for user:', user.email);
+    console.log(`Password reset successful for user: ${user.email}`);
+    res.json({ message: 'Password has been successfully reset. You can now login with your new password.' });
 
-    res.json({ message: 'Password has been reset successfully' });
   } catch (error) {
     console.error('Reset password error:', error);
-    res.status(500).json({ message: 'Failed to reset password' });
+    res.status(500).json({ message: 'Server error. Please try again later.' });
+  }
+});
+
+// Legacy Reset Password - Update password with token (for backward compatibility)
+router.post('/reset-password-token', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ message: 'Token and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    }
+
+    // Find user with valid reset token
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: new Date() } // Token not expired
+    });
+
+    if (!user) {
+      return res.status(400).json({ 
+        message: 'Invalid or expired reset token. Please request a new password reset.' 
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user password and clear reset fields
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    console.log(`Password reset successful for user: ${user.email} (legacy token method)`);
+    res.json({ message: 'Password has been successfully reset. You can now login with your new password.' });
+
+  } catch (error) {
+    console.error('Reset password (token) error:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
 
