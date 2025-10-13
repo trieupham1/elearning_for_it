@@ -140,66 +140,72 @@ router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Find user by email
-    const user = await User.findOne({ email });
-    if (!user) {
-      // Don't reveal if email exists or not for security
-      return res.json({ 
-        message: 'If an account exists with this email, a password reset link has been sent.' 
-      });
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
     }
 
-    // In a production app, you would:
-    // 1. Generate a secure reset token
-    // 2. Save the token with expiry to the database
-    // 3. Send an email with the reset link
-    // For now, we'll just log it and return success
+    // Find user by email
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     
-    // Generate a temporary reset token (in production, use crypto.randomBytes)
-    const resetToken = jwt.sign(
-      { userId: user._id, purpose: 'password-reset' },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    if (!user) {
+      return res.status(404).json({ message: 'Email not found in our records' });
+    }
 
-    console.log('Password reset requested for:', email);
-    console.log('Reset token (would be sent via email):', resetToken);
-    console.log('Reset link would be: http://yourapp.com/reset-password?token=' + resetToken);
+    // Generate 6-digit verification code
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedCode = crypto.createHash('sha256').update(resetCode).digest('hex');
 
-    // TODO: Send email with reset link
-    // await sendPasswordResetEmail(user.email, resetToken);
+    // Set code and expiry (15 minutes from now for security)
+    user.resetPasswordToken = hashedCode;
+    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    await user.save();
 
+    // Send email with verification code
+    const emailSent = await emailService.sendPasswordResetEmail(user, resetCode);
+    
+    if (!emailSent) {
+      return res.status(500).json({ message: 'Failed to send reset email. Please try again.' });
+    }
+
+    console.log(`Password reset email sent to: ${email}`);
     res.json({ 
-      message: 'If an account exists with this email, a password reset link has been sent.',
-      // In development, include the token (REMOVE IN PRODUCTION!)
-      ...(process.env.NODE_ENV === 'development' && { resetToken })
+      message: 'Verification code has been sent to your email address',
+      email: email 
     });
+
   } catch (error) {
     console.error('Forgot password error:', error);
-    res.status(500).json({ message: 'Failed to process password reset request' });
+    res.status(500).json({ message: 'Server error. Please try again later.' });
   }
 });
 
-// Reset password with token
+// Reset Password - Update password with verification code
 router.post('/reset-password', async (req, res) => {
   try {
-    const { token, newPassword } = req.body;
+    const { email, code, newPassword } = req.body;
 
-    // Verify reset token
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-      if (decoded.purpose !== 'password-reset') {
-        return res.status(400).json({ message: 'Invalid reset token' });
-      }
-    } catch (err) {
-      return res.status(400).json({ message: 'Invalid or expired reset token' });
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({ message: 'Email, verification code, and new password are required' });
     }
 
-    // Find user
-    const user = await User.findById(decoded.userId);
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    }
+
+    // Hash the code to compare with stored hash
+    const hashedCode = crypto.createHash('sha256').update(code).digest('hex');
+
+    // Find user with valid reset code
+    const user = await User.findOne({
+      email: email.toLowerCase().trim(),
+      resetPasswordToken: hashedCode,
+      resetPasswordExpires: { $gt: new Date() } // Code not expired
+    });
+
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(400).json({ 
+        message: 'Invalid or expired verification code. Please request a new password reset.' 
+      });
     }
 
     // Hash new password
