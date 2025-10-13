@@ -11,6 +11,8 @@ import 'screens/student/quiz_result_screen.dart';
 import 'screens/instructor/quiz_settings_screen.dart';
 import 'screens/instructor/create_quiz_screen.dart';
 import 'screens/instructor/create_question_screen.dart';
+import 'screens/forgot_password_screen.dart';
+import 'screens/reset_password_screen.dart';
 import 'models/quiz.dart';
 import 'config/theme.dart';
 
@@ -27,13 +29,15 @@ class ELearningApp extends StatelessWidget {
       title: 'E-Learning System',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
-      initialRoute: '/login',
+      initialRoute: '/',
       routes: {
+        '/': (context) => const LoginScreen(),
         '/login': (context) => const LoginScreen(),
         '/student-home': (context) => const StudentHomeScreen(),
         '/instructor-home': (context) => const InstructorHomeScreen(),
         '/profile': (context) => const ProfileScreen(),
         '/api-test': (context) => const ApiTestScreen(),
+        '/forgot-password': (context) => const ForgotPasswordScreen(),
         '/manage-semesters': (context) => const ManageSemestersScreen(),
         '/manage-courses': (context) => const ManageCoursesScreen(),
         '/manage-students': (context) => const ManageStudentsScreen(),
@@ -80,6 +84,14 @@ class ELearningApp extends StatelessWidget {
             builder: (context) => CreateQuestionScreen(
               courseId: args?['courseId'] ?? '',
               courseName: args?['courseName'] ?? 'Course',
+            ),
+          );
+        }
+        if (settings.name == '/reset-password') {
+          final args = settings.arguments as Map<String, dynamic>?;
+          return MaterialPageRoute(
+            builder: (context) => ResetPasswordScreen(
+              token: args?['token'],
             ),
           );
         }

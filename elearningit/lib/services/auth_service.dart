@@ -197,4 +197,77 @@ class AuthService extends ApiService {
     final user = await getCurrentUser();
     return user != null;
   }
+
+  // Forgot Password - Send reset email
+  Future<void> forgotPassword(String email) async {
+    try {
+      print('🔐 Requesting password reset for: $email');
+      
+      final response = await post(
+        '${ApiConfig.auth}/forgot-password',
+        body: {'email': email},
+        withAuth: false,
+      );
+
+      parseResponse(response);
+      print('✅ Password reset email sent to: $email');
+    } catch (e) {
+      print('❌ Forgot password failed: $e');
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ApiException('Failed to send reset email: $e');
+    }
+  }
+
+  // Reset Password - Update password with verification code
+  Future<void> resetPassword(String email, String code, String newPassword) async {
+    try {
+      print('🔐 Resetting password with verification code');
+      
+      final response = await post(
+        '${ApiConfig.auth}/reset-password',
+        body: {
+          'email': email,
+          'code': code,
+          'newPassword': newPassword,
+        },
+        withAuth: false,
+      );
+
+      parseResponse(response);
+      print('✅ Password reset successful');
+    } catch (e) {
+      print('❌ Password reset failed: $e');
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ApiException('Failed to reset password: $e');
+    }
+  }
+
+  // Legacy method for token-based reset (backward compatibility)
+  Future<void> resetPasswordWithToken(String token, String newPassword) async {
+    try {
+      print('🔐 Resetting password with token (legacy)');
+      
+      final response = await post(
+        '${ApiConfig.auth}/reset-password-token',
+        body: {
+          'token': token,
+          'newPassword': newPassword,
+        },
+        withAuth: false,
+      );
+
+      parseResponse(response);
+      print('✅ Password reset successful');
+    } catch (e) {
+      print('❌ Password reset failed: $e');
+      if (e is ApiException) {
+        rethrow;
+      }
+      throw ApiException('Failed to reset password: $e');
+    }
+  }
 }

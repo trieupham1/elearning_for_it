@@ -14,7 +14,10 @@ const userSchema = new mongoose.Schema({
   profilePicture: { type: String },
   phoneNumber: { type: String },
   bio: { type: String },
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  // Password reset fields
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date }
 }, { 
   timestamps: true
 });

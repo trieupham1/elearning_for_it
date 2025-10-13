@@ -267,6 +267,80 @@ class EmailService {
 
     return this.sendEmail(user.email, subject, html);
   }
+
+  async sendPasswordResetEmail(user, resetCode) {
+    const subject = 'Password Reset Verification Code - E-Learning System';
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #FF5722; color: white; padding: 20px; text-align: center; }
+          .content { padding: 20px; background-color: #f5f5f5; }
+          .warning { background-color: #fff3cd; border-left: 4px solid #ff9800; 
+                     padding: 15px; margin: 15px 0; }
+          .code-box { background-color: #e3f2fd; border: 2px solid #2196f3; 
+                      padding: 20px; margin: 20px 0; text-align: center; border-radius: 10px; }
+          .verification-code { font-size: 32px; font-weight: bold; color: #1976d2; 
+                               letter-spacing: 8px; font-family: monospace; }
+          .footer { padding: 20px; text-align: center; font-size: 12px; color: #666; }
+          .security-note { background-color: #e8f5e9; padding: 15px; margin: 15px 0; 
+                           border-left: 4px solid #4caf50; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🔐 Password Reset Code</h1>
+          </div>
+          <div class="content">
+            <p>Hello ${user.fullName || user.firstName + ' ' + user.lastName},</p>
+            <p>We received a request to reset your password for your E-Learning System account.</p>
+            
+            <div class="warning">
+              <strong>⚠️ Important:</strong> If you did not request this password reset, please ignore this email. Your account is still secure.
+            </div>
+            
+            <p>Use the following verification code to reset your password:</p>
+            
+            <div class="code-box">
+              <p style="margin: 0; color: #666; font-size: 14px;">Your Verification Code:</p>
+              <div class="verification-code">${resetCode}</div>
+              <p style="margin: 10px 0 0 0; color: #666; font-size: 12px;">Enter this code in the password reset form</p>
+            </div>
+            
+            <div class="security-note">
+              <strong>🔒 Security Information:</strong><br>
+              • This code will expire in 15 minutes for security reasons<br>
+              • You can only use this code once<br>
+              • If the code expires, you can request a new password reset<br>
+              • Never share this code with anyone
+            </div>
+            
+            <p><strong>How to use this code:</strong></p>
+            <ol>
+              <li>Go back to the password reset page in your browser</li>
+              <li>Enter your email address</li>
+              <li>Enter the verification code: <strong>${resetCode}</strong></li>
+              <li>Set your new password</li>
+            </ol>
+            
+            <p>If you're having trouble, please contact your instructor or system administrator.</p>
+          </div>
+          <div class="footer">
+            <p>Faculty of Information Technology - E-Learning System</p>
+            <p>This is an automated message, please do not reply to this email.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return this.sendEmail(user.email, subject, html);
+  }
 }
 
 module.exports = new EmailService();
