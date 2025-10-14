@@ -311,56 +311,61 @@ router.post('/:attemptId/submit', authMiddleware, async (req, res) => {
     const { attemptId } = req.params;
     const studentId = req.user.userId;
 
-    const attempt = await QuizAttempt.findOne({
+    // Find attempt regardless of status so we can gracefully handle already-submitted/auto-submitted cases
+    let attempt = await QuizAttempt.findOne({
       _id: attemptId,
-      studentId,
-      status: 'in_progress'
+      studentId
     });
 
     if (!attempt) {
-      return res.status(404).json({ message: 'Active attempt not found' });
+      return res.status(404).json({ message: 'Attempt not found' });
     }
 
-    // Submit the attempt
-    const now = new Date();
-    attempt.endTime = now;
-    attempt.submissionTime = now;
-    attempt.timeSpent = Math.floor((now - attempt.startTime) / 1000); // in seconds
-    attempt.status = 'submitted';
-
-    await attempt.save(); // This will trigger the pre-save hook to calculate score
-
-    // Get student, quiz, and course details for notification
-    try {
-      const [student, quiz] = await Promise.all([
-        User.findById(studentId),
-        attempt.populate('quizId')
-      ]);
-
-      if (quiz && quiz.quizId && quiz.quizId.courseId) {
-        const course = await Course.findById(quiz.quizId.courseId).populate('instructor');
-        
-        if (course && course.instructor && student) {
-          const studentName = student.fullName || student.username || student.email || 'Unknown';
-          const scorePercentage = attempt.score ? attempt.score.toFixed(1) : '0';
-          
-          await notifyQuizAttempt(
-            course.instructor._id,
-            course.title,
-            quiz.quizId.title,
-            studentName,
-            `${scorePercentage}%`,
-            attempt._id.toString()
-          );
-          console.log(`📬 Notification sent to instructor ${course.instructor.username} for quiz attempt`);
-        }
+    // If still in progress, submit it now (and handle expiration)
+    if (attempt.status === 'in_progress') {
+      // Auto-submit if expired
+      if (attempt.isExpired()) {
+        await attempt.autoSubmitIfExpired();
+      } else {
+        const now = new Date();
+        attempt.endTime = now;
+        attempt.submissionTime = now;
+        attempt.timeSpent = Math.floor((now - attempt.startTime) / 1000); // in seconds
+        attempt.status = 'submitted';
+        await attempt.save(); // triggers pre-save hook to calculate score
       }
-    } catch (notifError) {
-      console.error('Error sending quiz attempt notification:', notifError);
-      // Don't fail the submission if notification fails
+
+      // Fire-and-forget notification (do not block response)
+      (async () => {
+        try {
+          const [student, quiz] = await Promise.all([
+            User.findById(studentId),
+            attempt.populate('quizId')
+          ]);
+
+          if (quiz && quiz.quizId && quiz.quizId.courseId) {
+            const course = await Course.findById(quiz.quizId.courseId).populate('instructor');
+            if (course && course.instructor && student) {
+              const studentName = student.fullName || student.username || student.email || 'Unknown';
+              const scorePercentage = attempt.score ? attempt.score.toFixed(1) : '0';
+              await notifyQuizAttempt(
+                course.instructor._id,
+                course.title,
+                quiz.quizId.title,
+                studentName,
+                `${scorePercentage}%`,
+                attempt._id.toString()
+              );
+              console.log(`📬 Notification sent to instructor ${course.instructor.username} for quiz attempt`);
+            }
+          }
+        } catch (notifError) {
+          console.error('Error sending quiz attempt notification:', notifError);
+        }
+      })();
     }
 
-    // Return full results including correct answers
+    // Return full results including correct answers (works for submitted/auto_submitted/completed)
     const result = {
       ...attempt.toObject(),
       questions: attempt.questions.map(q => ({
@@ -374,9 +379,9 @@ router.post('/:attemptId/submit', authMiddleware, async (req, res) => {
       }))
     };
 
-    res.json(result);
+    return res.json(result);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    return res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
