@@ -94,7 +94,7 @@ router.get('/conversations', authMiddleware, async (req, res) => {
 // Send a message
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { receiverId, content, attachments } = req.body;
+    const { receiverId, content, attachments, fileId } = req.body; // Add fileId here
     const senderId = req.user.userId;
     
     // Validate that receiver exists
@@ -114,6 +114,7 @@ router.post('/', authMiddleware, async (req, res) => {
       senderId,
       receiverId,
       content,
+      fileId: fileId || null, // Add fileId to the message
       attachments: attachments || [],
       isRead: false
     });

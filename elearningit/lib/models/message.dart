@@ -2,52 +2,50 @@
 class ChatMessage {
   final String id;
   final String senderId;
-  final String senderName;
-  final String? senderAvatar;
   final String receiverId;
   final String content;
+  final String? fileId; // Add this field
   final DateTime createdAt;
-  final bool isRead;
+  final String senderName;
+  final String? senderAvatar;
 
   ChatMessage({
     required this.id,
     required this.senderId,
-    required this.senderName,
-    this.senderAvatar,
     required this.receiverId,
     required this.content,
+    this.fileId, // Add this parameter
     required this.createdAt,
-    this.isRead = false,
+    required this.senderName,
+    this.senderAvatar,
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     return ChatMessage(
-      id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
-      senderId: json['senderId']?.toString() ?? '',
-      senderName: json['senderName']?.toString().isNotEmpty == true
-          ? json['senderName'].toString()
-          : 'User',
-      senderAvatar: json['senderAvatar'],
-      receiverId: json['receiverId']?.toString() ?? '',
+      id: json['_id'] ?? '',
+      senderId:
+          json['senderId']?['_id']?.toString() ??
+          json['senderId']?.toString() ??
+          '',
+      receiverId:
+          json['receiverId']?['_id']?.toString() ??
+          json['receiverId']?.toString() ??
+          '',
       content: json['content'] ?? '',
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
-          : DateTime.now(),
-      isRead: json['isRead'] ?? false,
+      fileId: json['fileId'], // Add this field
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? DateTime.now().toIso8601String(),
+      ),
+      senderName:
+          json['senderId']?['fullName'] ??
+          json['senderId']?['username'] ??
+          json['senderName'] ??
+          'Unknown',
+      senderAvatar:
+          json['senderAvatar'] ??
+          json['senderId']?['avatar'] ??
+          json['senderId']?['profilePicture'],
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'senderId': senderId,
-      'senderName': senderName,
-      'senderAvatar': senderAvatar,
-      'receiverId': receiverId,
-      'content': content,
-      'createdAt': createdAt.toIso8601String(),
-      'isRead': isRead,
-    };
   }
 }
 

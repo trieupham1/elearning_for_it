@@ -34,79 +34,57 @@ class FileService {
         // Web platform - use bytes directly
         fileBytes = file.bytes!;
       } else if (file.path != null) {
-        // Mobile/Desktop - read from path
-        final fileToUpload = File(file.path!);
-        if (!await fileToUpload.exists()) {
-          throw Exception('File not found: ${file.path}');
+        // Mobile/Desktop - read file from path
+        final ioFile = File(file.path!);
+        if (!await ioFile.exists()) {
+          throw Exception('File not found at path: ${file.path}');
         }
-        fileBytes = await fileToUpload.readAsBytes();
+        fileBytes = await ioFile.readAsBytes();
       } else {
         throw Exception(
-          'File has no path or bytes. Cannot upload file on this platform.',
+          'Unable to access file data (no bytes or path available)',
         );
       }
 
-      // Create multipart request
+      // Get auth token
       final token = await _apiService.getToken();
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
 
+      // Create multipart request
       final request = http.MultipartRequest(
         'POST',
         Uri.parse('${await _getBaseUrl()}/files/upload'),
       );
 
-      if (token != null) {
-        request.headers['Authorization'] = 'Bearer $token';
-      }
+      // Add authorization header
+      request.headers['Authorization'] = 'Bearer $token';
 
-      // Add file
+      // Add file using bytes
       request.files.add(
         http.MultipartFile.fromBytes('file', fileBytes, filename: file.name),
       );
 
-      // Add folder parameter
-      request.fields['folder'] = 'uploads';
+      print('📤 Uploading file: ${file.name} (${fileBytes.length} bytes)');
 
       // Send request
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
+      print('📥 Upload response status: ${response.statusCode}');
+      print('📥 Upload response body: ${response.body}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
 
-        // Get the base URL to construct full URL
-        final baseUrl = await _getBaseUrl(); // e.g., http://localhost:5000/api
-        final fileUrl = data['fileUrl'] ?? '';
-
-        print('DEBUG FileService - baseUrl: $baseUrl');
-        print('DEBUG FileService - fileUrl from backend: $fileUrl');
-
-        // Handle both old format (/api/files/...) and new format (/files/...)
-        String fullUrl;
-        if (fileUrl.startsWith('http')) {
-          fullUrl = fileUrl; // Already full URL
-          print('DEBUG FileService - Using URL as-is (already full): $fullUrl');
-        } else if (fileUrl.startsWith('/api/')) {
-          // Old format: /api/files/... -> use base domain + the path as is
-          // baseUrl is http://localhost:5000/api, extract http://localhost:5000
-          final baseDomain = baseUrl.replaceAll('/api', '');
-          fullUrl = '$baseDomain$fileUrl';
-          print(
-            'DEBUG FileService - Old format, baseDomain: $baseDomain, fullUrl: $fullUrl',
-          );
-        } else {
-          // New format: /files/... -> append to base URL
-          fullUrl = '$baseUrl$fileUrl';
-          print('DEBUG FileService - New format, fullUrl: $fullUrl');
-        }
-
-        print('DEBUG FileService - Final fileUrl being stored: $fullUrl');
-
+        // Return consistent format
         return {
           'fileName': data['fileName'] ?? file.name,
-          'fileUrl': fullUrl,
-          'fileSize': data['fileSize'] ?? file.size,
-          'mimeType':
-              data['mimeType'] ?? file.extension ?? 'application/octet-stream',
+          'fileUrl':
+              data['fileUrl'] ?? data['url'] ?? '/api/files/${data['fileId']}',
+          'fileSize': data['fileSize'] ?? fileBytes.length,
+          'mimeType': data['mimeType'] ?? 'application/octet-stream',
         };
       } else {
         throw Exception(
@@ -114,83 +92,23 @@ class FileService {
         );
       }
     } catch (e) {
-      print('Error uploading file: $e');
-      rethrow;
-    }
-  }
-
-  /// Upload a file from path to the server (legacy method)
-  /// Returns a map with 'url', 'name', and 'size'
-  Future<Map<String, dynamic>> uploadFilePath({
-    required String filePath,
-    required String fileName,
-    String folder = 'uploads',
-  }) async {
-    try {
-      final file = File(filePath);
-      if (!await file.exists()) {
-        throw Exception('File not found: $filePath');
-      }
-
-      final fileBytes = await file.readAsBytes();
-      final fileSize = await file.length();
-
-      // Create multipart request
-      final token = await _apiService.getToken();
-
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse('${await _getBaseUrl()}/files/upload'),
-      );
-
-      if (token != null) {
-        request.headers['Authorization'] = 'Bearer $token';
-      }
-
-      // Add file
-      request.files.add(
-        http.MultipartFile.fromBytes('file', fileBytes, filename: fileName),
-      );
-
-      // Add folder parameter
-      request.fields['folder'] = folder;
-
-      // Send request
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = json.decode(response.body);
-        return {'url': data['url'], 'name': fileName, 'size': fileSize};
-      } else {
-        throw Exception(
-          'Upload failed: ${response.statusCode} - ${response.body}',
-        );
-      }
-    } catch (e) {
-      print('Error uploading file: $e');
+      print('❌ Error uploading file: $e');
       rethrow;
     }
   }
 
   /// Upload multiple files
-  Future<List<Map<String, dynamic>>> uploadFiles({
-    required List<String> filePaths,
-    required List<String> fileNames,
-    String folder = 'uploads',
-  }) async {
+  Future<List<Map<String, dynamic>>> uploadFiles(
+    List<PlatformFile> files,
+  ) async {
     final results = <Map<String, dynamic>>[];
 
-    for (var i = 0; i < filePaths.length; i++) {
+    for (var file in files) {
       try {
-        final result = await uploadFilePath(
-          filePath: filePaths[i],
-          fileName: fileNames[i],
-          folder: folder,
-        );
+        final result = await uploadFile(file);
         results.add(result);
       } catch (e) {
-        print('Failed to upload ${fileNames[i]}: $e');
+        print('Failed to upload ${file.name}: $e');
         // Continue with other files
       }
     }
@@ -206,6 +124,20 @@ class FileService {
       print('File delete not implemented: $fileUrl');
     } catch (e) {
       print('Error deleting file: $e');
+      rethrow;
+    }
+  }
+
+  /// Download a file from the server
+  Future<void> downloadFile(String fileId, String fileName) async {
+    try {
+      final url = '${await _getBaseUrl()}/files/$fileId';
+      // For now, just construct the download URL
+      // In a real app, you might want to use url_launcher or download the file
+      print('Download file from: $url');
+      // TODO: Implement actual download logic
+    } catch (e) {
+      print('Error downloading file: $e');
       rethrow;
     }
   }

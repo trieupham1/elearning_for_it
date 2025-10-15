@@ -30,7 +30,7 @@ class MessageService {
   Future<ChatMessage?> sendMessage({
     required String receiverId,
     required String content,
-    List<Map<String, dynamic>>? attachments,
+    String? fileId, // Add this parameter
   }) async {
     try {
       final response = await _apiService.post(
@@ -38,14 +38,12 @@ class MessageService {
         body: {
           'receiverId': receiverId,
           'content': content,
-          'attachments': attachments ?? [],
+          if (fileId != null) 'fileId': fileId, // Include fileId if provided
         },
       );
 
-      if (response.statusCode == 201) {
-        return ChatMessage.fromJson(json.decode(response.body));
-      }
-      return null;
+      final data = json.decode(response.body);
+      return ChatMessage.fromJson(data);
     } catch (e) {
       print('Error sending message: $e');
       return null;

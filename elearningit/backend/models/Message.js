@@ -5,6 +5,7 @@ const messageSchema = new mongoose.Schema({
   senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   receiverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   content: { type: String, required: true },
+  fileId: { type: String }, // Add fileId field for GridFS file references
   attachments: [{
     fileName: String,
     fileUrl: String,
