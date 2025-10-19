@@ -17,7 +17,10 @@ class StudentDrawer extends StatelessWidget {
               backgroundColor: Colors.white,
               child: Text(
                 'NS',
-                style: TextStyle(fontSize: 24, color: Theme.of(context).primaryColor),
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
             ),
           ),
@@ -33,18 +36,15 @@ class StudentDrawer extends StatelessWidget {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const StudentDashboard()),
+                MaterialPageRoute(
+                  builder: (context) => const StudentDashboard(),
+                ),
               );
             },
           ),
           ListTile(
             leading: const Icon(Icons.calendar_today),
             title: const Text('Calendar'),
-            onTap: () => Navigator.pop(context),
-          ),
-          ListTile(
-            leading: const Icon(Icons.assignment),
-            title: const Text('To-Do'),
             onTap: () => Navigator.pop(context),
           ),
           const Divider(),

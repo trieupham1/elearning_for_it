@@ -5,6 +5,7 @@ import '../models/user.dart';
 import '../screens/instructor_dashboard.dart';
 import '../screens/profile_screen.dart';
 import '../screens/notifications_screen.dart';
+import '../screens/settings_screen.dart';
 
 class InstructorHomeScreen extends StatefulWidget {
   const InstructorHomeScreen({super.key});
@@ -232,7 +233,13 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Settings'),
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.logout),
@@ -287,9 +294,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
             ListTile(
               leading: const Icon(Icons.school, color: Colors.green),
               title: const Text('Course Management'),
-              subtitle: const Text(
-                'Create, edit courses, delete courses',
-              ),
+              subtitle: const Text('Create, edit courses, delete courses'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
                 Navigator.pop(context);

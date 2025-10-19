@@ -31,6 +31,7 @@ const materialRoutes = require('./routes/materials');
 const forumRoutes = require('./routes/forum');
 const dashboardRoutes = require('./routes/dashboard');
 const exportRoutes = require('./routes/export');
+const settingsRoutes = require('./routes/settings');
 const { router: fileRoutes, initializeGridFS } = require('./routes/files');
 
 app.use('/api/auth', authRoutes);
@@ -51,6 +52,7 @@ app.use('/api/materials', materialRoutes);
 app.use('/api/forum', forumRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/export', exportRoutes);
+app.use('/api/settings', settingsRoutes);
 app.use('/api/files', fileRoutes);
 
 // Health check

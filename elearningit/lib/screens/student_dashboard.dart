@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../services/course_service.dart';
 import '../services/semester_service.dart';
 import '../services/dashboard_service.dart';
+import '../services/notification_service.dart';
 import '../models/user.dart';
 import '../models/course.dart';
 import '../models/semester.dart';
@@ -26,6 +27,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   final _courseService = CourseService();
   final _semesterService = SemesterService();
   final _dashboardService = DashboardService();
+  final _notificationService = NotificationService();
 
   User? _currentUser;
   List<Course> _courses = [];
@@ -73,19 +75,34 @@ class _StudentDashboardState extends State<StudentDashboard> {
   Future<void> _refreshDashboardData() async {
     try {
       final dashboardData = await _dashboardService.getDashboardSummary();
-      
+
+      // Also refresh notification count
+      int notificationCount = 0;
+      try {
+        notificationCount = await _notificationService.getUnreadCount();
+      } catch (e) {
+        print('⚠️ Failed to refresh notification count: $e');
+      }
+
       if (mounted) {
         setState(() {
           _dashboardData = dashboardData;
           _lastRefresh = DateTime.now();
-          
+
           // Update stats from dashboard data
           if (dashboardData != null) {
-            _completedAssignments = dashboardData.assignmentStats.submitted;
-            _pendingTasks = dashboardData.assignmentStats.pending;
+            _completedAssignments =
+                dashboardData.assignmentStats.submitted +
+                dashboardData.quizStats.completed;
+            _pendingTasks =
+                dashboardData.assignmentStats.pending +
+                dashboardData.quizStats.pending;
           }
+
+          // Update notification count from notification service
+          _notifications = notificationCount;
         });
-        
+
         print('✅ Dashboard auto-refreshed at ${_lastRefresh}');
       }
     } catch (e) {
@@ -124,9 +141,20 @@ class _StudentDashboardState extends State<StudentDashboard> {
         dashboardData = await _dashboardService.getDashboardSummary();
         print('✅ Dashboard data loaded from backend');
       } catch (dashboardError) {
-        print('⚠️ Failed to load dashboard data, using mock data: $dashboardError');
+        print(
+          '⚠️ Failed to load dashboard data, using mock data: $dashboardError',
+        );
         // Fallback to mock data if backend fails
         dashboardData = DashboardSummary.mock();
+      }
+
+      // Load notification count separately
+      int notificationCount = 0;
+      try {
+        notificationCount = await _notificationService.getUnreadCount();
+        print('✅ Notification count loaded: $notificationCount');
+      } catch (notificationError) {
+        print('⚠️ Failed to load notification count: $notificationError');
       }
 
       setState(() {
@@ -136,13 +164,20 @@ class _StudentDashboardState extends State<StudentDashboard> {
         _totalCourses = courses.length;
         _dashboardData = dashboardData;
         _lastRefresh = DateTime.now();
-        
+
         // Update stats from dashboard data
         if (dashboardData != null) {
-          _completedAssignments = dashboardData.assignmentStats.submitted;
-          _pendingTasks = dashboardData.assignmentStats.pending;
+          _completedAssignments =
+              dashboardData.assignmentStats.submitted +
+              dashboardData.quizStats.completed;
+          _pendingTasks =
+              dashboardData.assignmentStats.pending +
+              dashboardData.quizStats.pending;
         }
-        
+
+        // Use notification service count instead of dashboard API
+        _notifications = notificationCount;
+
         _isLoading = false;
         _errorMessage = null;
       });
@@ -215,17 +250,14 @@ class _StudentDashboardState extends State<StudentDashboard> {
               // Welcome Section
               _buildWelcomeSection(),
               const SizedBox(height: 8),
-              
+
               // Last refresh indicator
               if (_lastRefresh != null)
                 Padding(
                   padding: const EdgeInsets.only(left: 4),
                   child: Text(
                     'Last updated: ${_formatLastRefresh()}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                   ),
                 ),
               const SizedBox(height: 16),
@@ -251,7 +283,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
               ],
 
               // Quiz Performance Section
-              if (_dashboardData != null && _dashboardData!.quizStats.recentScores.isNotEmpty) ...[
+              if (_dashboardData != null &&
+                  _dashboardData!.quizStats.recentScores.isNotEmpty) ...[
                 _buildSectionHeader('Quiz Performance', Icons.bar_chart),
                 const SizedBox(height: 16),
                 _buildQuizPerformanceSection(),
@@ -671,29 +704,6 @@ class _StudentDashboardState extends State<StudentDashboard> {
                         ),
                       ],
                     ),
-                    // Action Buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.assignment, size: 20),
-                          onPressed: isReadOnly ? null : () {},
-                          tooltip: 'Assignments',
-                          color: Colors.grey.shade700,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.folder, size: 20),
-                          onPressed: () {},
-                          tooltip: 'Materials',
-                          color: Colors.grey.shade700,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.more_vert, size: 20),
-                          onPressed: () {},
-                          color: Colors.grey.shade700,
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
@@ -706,7 +716,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   String _formatLastRefresh() {
     if (_lastRefresh == null) return 'Just now';
-    
+
     final diff = DateTime.now().difference(_lastRefresh!);
     if (diff.inSeconds < 60) {
       return 'Just now';
@@ -747,9 +757,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ProgressChart(
-        quizScores: _dashboardData!.quizStats.recentScores,
-      ),
+      child: ProgressChart(quizScores: _dashboardData!.quizStats.recentScores),
     );
   }
 
@@ -757,9 +765,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: RecentActivityList(
-        activities: _dashboardData!.recentActivities,
-      ),
+      child: RecentActivityList(activities: _dashboardData!.recentActivities),
     );
   }
 }

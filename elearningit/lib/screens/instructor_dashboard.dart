@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/course_service.dart';
 import '../services/semester_service.dart';
+import '../services/dashboard_service.dart';
+import '../services/notification_service.dart';
 import '../models/user.dart';
 import '../models/course.dart';
 import '../models/semester.dart';
@@ -18,6 +20,8 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
   final _authService = AuthService();
   final _courseService = CourseService();
   final _semesterService = SemesterService();
+  final _dashboardService = DashboardService();
+  final _notificationService = NotificationService();
 
   List<Course> _courses = [];
   List<Semester> _semesters = [];
@@ -26,11 +30,13 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
   String? _errorMessage;
   User? _currentUser;
 
-  // Semester-specific metrics
+  // Dashboard metrics from API
   int _totalCourses = 0;
   int _totalStudents = 0;
   int _totalAssignments = 0;
   int _totalQuizzes = 0;
+  int _notifications = 0;
+  Map<String, dynamic>? _dashboardData;
 
   @override
   void initState() {
@@ -84,34 +90,50 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
         '=== DEBUG: Loaded ${courses.length} courses for semester ${semester.displayName}',
       );
 
-      // Calculate statistics from courses
-      // Use a Set to track unique students if they appear in multiple courses
-      Set<String> uniqueStudentIds = {};
-
-      for (var course in courses) {
-        print(
-          'Course: ${course.name}, Students count: ${course.students.length}',
-        );
-        // Add student IDs from each course
-        if (course.students.isNotEmpty) {
-          uniqueStudentIds.addAll(course.students);
-        }
+      // Load dashboard data from API
+      Map<String, dynamic>? dashboardData;
+      try {
+        dashboardData = await _dashboardService.getInstructorDashboardSummary();
+        print('✅ Instructor dashboard data loaded from backend');
+      } catch (dashboardError) {
+        print('⚠️ Failed to load dashboard data: $dashboardError');
       }
 
-      print('Total unique students: ${uniqueStudentIds.length}');
-
-      // Use the count of unique students
-      final studentCount = uniqueStudentIds.length;
+      // Load notification count separately using NotificationService
+      int notificationCount = 0;
+      try {
+        notificationCount = await _notificationService.getUnreadCount();
+        print('✅ Notification count loaded: $notificationCount');
+      } catch (notificationError) {
+        print('⚠️ Failed to load notification count: $notificationError');
+      }
 
       setState(() {
         _courses = courses;
-        _totalCourses = courses.length;
-        _totalStudents = studentCount;
-        // For groups, assignments, and quizzes, we'll show 0 for now
-        // These would need separate API calls or be included in the course data
-        _totalAssignments = 0;
-        _totalQuizzes = 0;
         _selectedSemester = semester;
+
+        // Update stats from dashboard data if available
+        if (dashboardData != null) {
+          _totalCourses = dashboardData['totalCourses'] ?? courses.length;
+          _totalStudents = dashboardData['totalStudents'] ?? 0;
+          _totalAssignments = dashboardData['assignmentStats']?['total'] ?? 0;
+          _totalQuizzes = dashboardData['quizStats']?['total'] ?? 0;
+        } else {
+          // Fallback to course-based count
+          _totalCourses = courses.length;
+          Set<String> uniqueStudentIds = {};
+          for (var course in courses) {
+            if (course.students.isNotEmpty) {
+              uniqueStudentIds.addAll(course.students);
+            }
+          }
+          _totalStudents = uniqueStudentIds.length;
+          _totalAssignments = 0;
+          _totalQuizzes = 0;
+        }
+
+        // Use notification service count instead of dashboard API
+        _notifications = notificationCount;
       });
     } catch (e) {
       print('Error loading semester data: $e');
@@ -338,6 +360,12 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
               Colors.purple,
             ),
             _buildStatCard('Quizzes', '$_totalQuizzes', Icons.quiz, Colors.red),
+            _buildStatCard(
+              'Notifications',
+              '$_notifications',
+              Icons.notifications,
+              Colors.teal,
+            ),
           ],
         ),
         const SizedBox(height: 24),

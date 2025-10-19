@@ -5,6 +5,7 @@ class DashboardSummary {
   final List<UpcomingDeadline> upcomingDeadlines;
   final List<RecentActivity> recentActivities;
   final double overallProgress;
+  final int notificationCount;
 
   DashboardSummary({
     required this.totalCourses,
@@ -13,6 +14,7 @@ class DashboardSummary {
     required this.upcomingDeadlines,
     required this.recentActivities,
     required this.overallProgress,
+    this.notificationCount = 0,
   });
 
   factory DashboardSummary.fromJson(Map<String, dynamic> json) {
@@ -20,15 +22,18 @@ class DashboardSummary {
       totalCourses: json['totalCourses'] ?? 0,
       assignmentStats: AssignmentStats.fromJson(json['assignmentStats'] ?? {}),
       quizStats: QuizStats.fromJson(json['quizStats'] ?? {}),
-      upcomingDeadlines: (json['upcomingDeadlines'] as List<dynamic>?)
+      upcomingDeadlines:
+          (json['upcomingDeadlines'] as List<dynamic>?)
               ?.map((e) => UpcomingDeadline.fromJson(e))
               .toList() ??
           [],
-      recentActivities: (json['recentActivities'] as List<dynamic>?)
+      recentActivities:
+          (json['recentActivities'] as List<dynamic>?)
               ?.map((e) => RecentActivity.fromJson(e))
               .toList() ??
           [],
       overallProgress: (json['overallProgress'] ?? 0.0).toDouble(),
+      notificationCount: json['notificationCount'] ?? 0,
     );
   }
 
@@ -41,6 +46,7 @@ class DashboardSummary {
       upcomingDeadlines: UpcomingDeadline.mockList(),
       recentActivities: RecentActivity.mockList(),
       overallProgress: 72.5,
+      notificationCount: 3,
     );
   }
 }
@@ -102,7 +108,8 @@ class QuizStats {
       completed: json['completed'] ?? 0,
       pending: json['pending'] ?? 0,
       averageScore: (json['averageScore'] ?? 0.0).toDouble(),
-      recentScores: (json['recentScores'] as List<dynamic>?)
+      recentScores:
+          (json['recentScores'] as List<dynamic>?)
               ?.map((e) => QuizScore.fromJson(e))
               .toList() ??
           [],
@@ -146,7 +153,9 @@ class QuizScore {
       courseTitle: json['courseTitle'] ?? '',
       score: (json['score'] ?? 0.0).toDouble(),
       maxScore: (json['maxScore'] ?? 100.0).toDouble(),
-      completedAt: DateTime.parse(json['completedAt'] ?? DateTime.now().toIso8601String()),
+      completedAt: DateTime.parse(
+        json['completedAt'] ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 
@@ -208,7 +217,9 @@ class UpcomingDeadline {
       title: json['title'] ?? '',
       courseTitle: json['courseTitle'] ?? '',
       type: json['type'] ?? 'assignment',
-      deadline: DateTime.parse(json['deadline'] ?? DateTime.now().toIso8601String()),
+      deadline: DateTime.parse(
+        json['deadline'] ?? DateTime.now().toIso8601String(),
+      ),
       status: json['status'] ?? 'pending',
     );
   }
@@ -286,7 +297,9 @@ class RecentActivity {
       type: json['type'] ?? '',
       courseTitle: json['courseTitle'] ?? '',
       message: json['message'] ?? '',
-      timestamp: DateTime.parse(json['timestamp'] ?? DateTime.now().toIso8601String()),
+      timestamp: DateTime.parse(
+        json['timestamp'] ?? DateTime.now().toIso8601String(),
+      ),
       score: json['score'] != null ? (json['score'] as num).toDouble() : null,
     );
   }
@@ -322,4 +335,3 @@ class RecentActivity {
     ];
   }
 }
-

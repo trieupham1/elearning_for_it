@@ -6,6 +6,7 @@ const Quiz = require('../models/Quiz');
 const QuizAttempt = require('../models/QuizAttempt');
 const Course = require('../models/Course');
 const Announcement = require('../models/Announcement');
+const Notification = require('../models/Notification');
 const { authMiddleware } = require('../middleware/auth');
 
 const router = express.Router();
@@ -438,6 +439,133 @@ router.get('/student/quizzes', authMiddleware, async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error('Error getting quizzes:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get instructor dashboard summary
+router.get('/instructor/summary', authMiddleware, async (req, res) => {
+  try {
+    const instructorId = req.user.userId;
+    console.log(`📊 Getting dashboard summary for instructor: ${instructorId}`);
+
+    // Get all courses the instructor teaches
+    const courses = await Course.find({ instructor: instructorId })
+      .select('_id name code students')
+      .lean();
+    
+    const courseIds = courses.map(c => c._id);
+    console.log(`📚 Instructor teaches ${courses.length} courses`);
+
+    // Get unique student count across all courses
+    const allStudentIds = new Set();
+    courses.forEach(course => {
+      if (course.students && Array.isArray(course.students)) {
+        course.students.forEach(studentId => allStudentIds.add(studentId.toString()));
+      }
+    });
+    const totalStudents = allStudentIds.size;
+
+    // --- ASSIGNMENT STATISTICS ---
+    const allAssignments = await Assignment.find({ courseId: { $in: courseIds } })
+      .select('_id title courseId deadline')
+      .lean();
+    
+    const totalAssignments = allAssignments.length;
+    
+    // Count submissions
+    const assignmentIds = allAssignments.map(a => a._id);
+    const submissions = await Submission.find({
+      assignmentId: { $in: assignmentIds }
+    }).lean();
+    
+    const totalSubmissions = submissions.length;
+    const gradedSubmissions = submissions.filter(s => s.grade != null).length;
+    const pendingGrading = totalSubmissions - gradedSubmissions;
+
+    const assignmentStats = {
+      total: totalAssignments,
+      totalSubmissions,
+      graded: gradedSubmissions,
+      pendingGrading
+    };
+
+    console.log(`📝 Assignment stats:`, assignmentStats);
+
+    // --- QUIZ STATISTICS ---
+    const allQuizzes = await Quiz.find({ courseId: { $in: courseIds } })
+      .select('_id title courseId status')
+      .lean();
+    
+    const totalQuizzes = allQuizzes.length;
+    const activeQuizzes = allQuizzes.filter(q => q.status === 'active').length;
+    const draftQuizzes = allQuizzes.filter(q => q.status === 'draft').length;
+    
+    // Count quiz attempts
+    const quizIds = allQuizzes.map(q => q._id);
+    const quizAttempts = await QuizAttempt.find({
+      quizId: { $in: quizIds },
+      status: { $in: ['submitted', 'auto_submitted', 'completed'] }
+    }).lean();
+    
+    const totalAttempts = quizAttempts.length;
+
+    const quizStats = {
+      total: totalQuizzes,
+      active: activeQuizzes,
+      draft: draftQuizzes,
+      totalAttempts
+    };
+
+    console.log(`🎯 Quiz stats:`, quizStats);
+
+    // --- RECENT SUBMISSIONS (Need Grading) ---
+    const recentSubmissions = await Submission.find({
+      assignmentId: { $in: assignmentIds },
+      grade: null
+    })
+      .populate('studentId', 'firstName lastName username')
+      .populate({
+        path: 'assignmentId',
+        select: 'title courseId',
+        populate: {
+          path: 'courseId',
+          select: 'name'
+        }
+      })
+      .sort({ submittedAt: -1 })
+      .limit(10)
+      .lean();
+
+    const needGrading = recentSubmissions.map(sub => ({
+      id: sub._id.toString(),
+      studentName: sub.studentId ? 
+        (sub.studentId.firstName && sub.studentId.lastName ? 
+          `${sub.studentId.firstName} ${sub.studentId.lastName}` : 
+          sub.studentId.username) : 
+        'Unknown Student',
+      assignmentTitle: sub.assignmentId?.title || 'Unknown Assignment',
+      courseTitle: sub.assignmentId?.courseId?.name || 'Unknown Course',
+      submittedAt: sub.submittedAt,
+      type: 'assignment'
+    }));
+
+    console.log(`📋 Found ${needGrading.length} submissions needing grading`);
+
+    // --- BUILD RESPONSE ---
+    const dashboardSummary = {
+      totalCourses: courses.length,
+      totalStudents,
+      assignmentStats,
+      quizStats,
+      needGrading
+    };
+
+    console.log(`✅ Instructor dashboard summary prepared`);
+    res.json(dashboardSummary);
+
+  } catch (error) {
+    console.error('❌ Error getting instructor dashboard summary:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

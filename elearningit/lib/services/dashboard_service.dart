@@ -9,16 +9,20 @@ class DashboardService {
   Future<DashboardSummary> getDashboardSummary() async {
     try {
       print('📊 DashboardService: Fetching dashboard summary...');
-      
+
       final response = await _apiService.get('/dashboard/student/summary');
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         print('✅ DashboardService: Dashboard summary loaded successfully');
         return DashboardSummary.fromJson(data);
       } else {
-        print('❌ DashboardService: Failed to load dashboard - Status: ${response.statusCode}');
-        throw Exception('Failed to load dashboard summary: ${response.statusCode}');
+        print(
+          '❌ DashboardService: Failed to load dashboard - Status: ${response.statusCode}',
+        );
+        throw Exception(
+          'Failed to load dashboard summary: ${response.statusCode}',
+        );
       }
     } catch (e) {
       print('❌ DashboardService: Error loading dashboard summary: $e');
@@ -33,9 +37,9 @@ class DashboardService {
       if (status != null) {
         endpoint += '?status=$status';
       }
-      
+
       final response = await _apiService.get(endpoint);
-      
+
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         return data.cast<Map<String, dynamic>>();
@@ -52,7 +56,7 @@ class DashboardService {
   Future<List<Map<String, dynamic>>> getQuizzes() async {
     try {
       final response = await _apiService.get('/dashboard/student/quizzes');
-      
+
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         return data.cast<Map<String, dynamic>>();
@@ -70,5 +74,33 @@ class DashboardService {
     print('🔄 DashboardService: Refreshing dashboard data...');
     return getDashboardSummary();
   }
-}
 
+  /// Get instructor dashboard summary
+  Future<Map<String, dynamic>> getInstructorDashboardSummary() async {
+    try {
+      print('📊 DashboardService: Fetching instructor dashboard summary...');
+
+      final response = await _apiService.get('/dashboard/instructor/summary');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print(
+          '✅ DashboardService: Instructor dashboard summary loaded successfully',
+        );
+        return data;
+      } else {
+        print(
+          '❌ DashboardService: Failed to load instructor dashboard - Status: ${response.statusCode}',
+        );
+        throw Exception(
+          'Failed to load instructor dashboard summary: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      print(
+        '❌ DashboardService: Error loading instructor dashboard summary: $e',
+      );
+      rethrow;
+    }
+  }
+}

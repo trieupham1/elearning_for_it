@@ -5,6 +5,7 @@ import '../models/user.dart';
 import '../screens/student_dashboard.dart';
 import '../screens/profile_screen.dart';
 import '../screens/notifications_screen.dart';
+import '../screens/settings_screen.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -152,7 +153,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   : null,
               child: _currentUser?.profilePicture == null
                   ? Text(
-                      _currentUser?.username.substring(0, 2).toUpperCase() ?? 'U',
+                      _currentUser?.username.substring(0, 2).toUpperCase() ??
+                          'U',
                       style: TextStyle(
                         fontSize: 24,
                         color: Theme.of(context).primaryColor,
@@ -218,11 +220,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               _loadUnreadCount();
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.assignment),
-            title: const Text('To-Do'),
-            onTap: () => Navigator.pop(context),
-          ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.person),
@@ -240,7 +237,13 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Settings'),
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.logout),
