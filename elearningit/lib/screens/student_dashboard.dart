@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../services/auth_service.dart';
 import '../services/course_service.dart';
 import '../services/semester_service.dart';
+import '../services/dashboard_service.dart';
 import '../models/user.dart';
 import '../models/course.dart';
 import '../models/semester.dart';
+import '../models/dashboard_summary.dart';
 import '../screens/course_detail_screen.dart';
 import '../screens/available_courses_screen.dart';
+import '../widgets/dashboard/deadline_timeline.dart';
+import '../widgets/dashboard/progress_chart.dart';
+import '../widgets/dashboard/recent_activity_list.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -19,6 +25,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   final _authService = AuthService();
   final _courseService = CourseService();
   final _semesterService = SemesterService();
+  final _dashboardService = DashboardService();
 
   User? _currentUser;
   List<Course> _courses = [];
@@ -33,10 +40,58 @@ class _StudentDashboardState extends State<StudentDashboard> {
   int _pendingTasks = 4;
   int _notifications = 2;
 
+  // Dashboard data
+  DashboardSummary? _dashboardData;
+
+  // Auto-refresh timer
+  Timer? _refreshTimer;
+  DateTime? _lastRefresh;
+
   @override
   void initState() {
     super.initState();
     _loadData();
+    _startAutoRefresh();
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Start auto-refresh timer (refresh every 2 minutes)
+  void _startAutoRefresh() {
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer.periodic(const Duration(minutes: 2), (timer) {
+      print('🔄 Auto-refreshing dashboard...');
+      _refreshDashboardData();
+    });
+  }
+
+  /// Refresh only dashboard data without reloading courses
+  Future<void> _refreshDashboardData() async {
+    try {
+      final dashboardData = await _dashboardService.getDashboardSummary();
+      
+      if (mounted) {
+        setState(() {
+          _dashboardData = dashboardData;
+          _lastRefresh = DateTime.now();
+          
+          // Update stats from dashboard data
+          if (dashboardData != null) {
+            _completedAssignments = dashboardData.assignmentStats.submitted;
+            _pendingTasks = dashboardData.assignmentStats.pending;
+          }
+        });
+        
+        print('✅ Dashboard auto-refreshed at ${_lastRefresh}');
+      }
+    } catch (e) {
+      print('⚠️ Auto-refresh failed: $e');
+      // Don't show error to user for background refresh
+    }
   }
 
   Future<void> _loadData() async {
@@ -63,11 +118,31 @@ class _StudentDashboardState extends State<StudentDashboard> {
         courses = await _courseService.getCourses(semester: activeSemester.id);
       }
 
+      // Load dashboard data from backend
+      DashboardSummary? dashboardData;
+      try {
+        dashboardData = await _dashboardService.getDashboardSummary();
+        print('✅ Dashboard data loaded from backend');
+      } catch (dashboardError) {
+        print('⚠️ Failed to load dashboard data, using mock data: $dashboardError');
+        // Fallback to mock data if backend fails
+        dashboardData = DashboardSummary.mock();
+      }
+
       setState(() {
         _semesters = semesters;
         _selectedSemester = activeSemester;
         _courses = courses;
         _totalCourses = courses.length;
+        _dashboardData = dashboardData;
+        _lastRefresh = DateTime.now();
+        
+        // Update stats from dashboard data
+        if (dashboardData != null) {
+          _completedAssignments = dashboardData.assignmentStats.submitted;
+          _pendingTasks = dashboardData.assignmentStats.pending;
+        }
+        
         _isLoading = false;
         _errorMessage = null;
       });
@@ -128,7 +203,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: _loadData,
+        onRefresh: () async {
+          print('🔄 Pull-to-refresh triggered');
+          await _loadData();
+        },
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -136,7 +214,21 @@ class _StudentDashboardState extends State<StudentDashboard> {
             children: [
               // Welcome Section
               _buildWelcomeSection(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
+              
+              // Last refresh indicator
+              if (_lastRefresh != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Text(
+                    'Last updated: ${_formatLastRefresh()}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 16),
 
               // Stats Cards
               _buildStatsCards(),
@@ -148,6 +240,31 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
               // Courses Grid
               _buildCoursesGrid(),
+              const SizedBox(height: 32),
+
+              // Upcoming Deadlines Section
+              if (_dashboardData != null) ...[
+                _buildSectionHeader('Upcoming Deadlines', Icons.access_time),
+                const SizedBox(height: 16),
+                _buildDeadlinesSection(),
+                const SizedBox(height: 32),
+              ],
+
+              // Quiz Performance Section
+              if (_dashboardData != null && _dashboardData!.quizStats.recentScores.isNotEmpty) ...[
+                _buildSectionHeader('Quiz Performance', Icons.bar_chart),
+                const SizedBox(height: 16),
+                _buildQuizPerformanceSection(),
+                const SizedBox(height: 32),
+              ],
+
+              // Recent Activity Section
+              if (_dashboardData != null) ...[
+                _buildSectionHeader('Recent Activity', Icons.history),
+                const SizedBox(height: 16),
+                _buildRecentActivitySection(),
+                const SizedBox(height: 80), // Extra space for FAB
+              ],
             ],
           ),
         ),
@@ -583,6 +700,65 @@ class _StudentDashboardState extends State<StudentDashboard> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  String _formatLastRefresh() {
+    if (_lastRefresh == null) return 'Just now';
+    
+    final diff = DateTime.now().difference(_lastRefresh!);
+    if (diff.inSeconds < 60) {
+      return 'Just now';
+    } else if (diff.inMinutes < 60) {
+      return '${diff.inMinutes}m ago';
+    } else {
+      return '${diff.inHours}h ago';
+    }
+  }
+
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, color: Theme.of(context).primaryColor, size: 24),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDeadlinesSection() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: DeadlineTimeline(
+          deadlines: _dashboardData!.upcomingDeadlines.take(5).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuizPerformanceSection() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ProgressChart(
+        quizScores: _dashboardData!.quizStats.recentScores,
+      ),
+    );
+  }
+
+  Widget _buildRecentActivitySection() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: RecentActivityList(
+        activities: _dashboardData!.recentActivities,
       ),
     );
   }
