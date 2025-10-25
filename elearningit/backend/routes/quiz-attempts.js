@@ -6,7 +6,7 @@ const Question = require('../models/Question');
 const Course = require('../models/Course');
 const User = require('../models/User');
 const { authMiddleware, instructorOnly } = require('../middleware/auth');
-const { notifyQuizAttempt } = require('../utils/notificationHelper');
+const { notifyQuizAttempt, sendQuizSubmissionConfirmation } = require('../utils/notificationHelper');
 
 const router = express.Router();
 
@@ -348,6 +348,8 @@ router.post('/:attemptId/submit', authMiddleware, async (req, res) => {
             if (course && course.instructor && student) {
               const studentName = student.fullName || student.username || student.email || 'Unknown';
               const scorePercentage = attempt.score ? attempt.score.toFixed(1) : '0';
+              
+              // Notify instructor
               await notifyQuizAttempt(
                 course.instructor._id,
                 course.title,
@@ -357,6 +359,19 @@ router.post('/:attemptId/submit', authMiddleware, async (req, res) => {
                 attempt._id.toString()
               );
               console.log(`📬 Notification sent to instructor ${course.instructor.username} for quiz attempt`);
+              
+              // Send confirmation email to student
+              await sendQuizSubmissionConfirmation(
+                studentId,
+                quiz.quizId.toObject(),
+                {
+                  attemptNumber: attempt.attemptNumber,
+                  submittedAt: attempt.submissionTime,
+                  score: scorePercentage
+                },
+                course.title
+              );
+              console.log(`📧 Confirmation email sent to student ${studentName}`);
             }
           }
         } catch (notifError) {

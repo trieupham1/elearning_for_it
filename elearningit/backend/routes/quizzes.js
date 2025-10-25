@@ -56,13 +56,15 @@ router.post('/', authMiddleware, instructorOnly, async (req, res) => {
       const course = await Course.findById(quiz.courseId);
       if (course && course.students && course.students.length > 0) {
         const studentIds = course.students.map(s => s.toString());
+        // Pass the full quiz object for email notifications
         await notifyNewQuiz(
           quiz.courseId.toString(),
-          course.title,
+          course.title || course.name || 'Course',
           quiz.title,
-          studentIds
+          studentIds,
+          quiz.toObject() // Pass full quiz data for emails
         );
-        console.log(`📬 Sent quiz notifications to ${studentIds.length} students`);
+        console.log(`📬 Sent quiz notifications to ${studentIds.length} students for "${quiz.title}" in ${course.title || course.name}`);
       }
     } catch (notifError) {
       console.error('Error sending quiz notifications:', notifError);

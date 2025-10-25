@@ -89,6 +89,7 @@ mongoose.connect(process.env.MONGODB_URI)
 function startScheduledTasks() {
   const Quiz = require('./models/Quiz');
   const QuizAttempt = require('./models/QuizAttempt');
+  const { checkDeadlines } = require('./utils/deadlineReminders');
   
   // Auto-close expired quizzes every 5 minutes
   setInterval(async () => {
@@ -131,7 +132,33 @@ function startScheduledTasks() {
     }
   }, 5 * 60 * 1000); // Every 5 minutes
   
-  console.log('📅 Scheduled tasks started - checking for expired quizzes every 5 minutes');
+  // Check for assignment/quiz deadlines and send reminder emails daily at 9 AM
+  const scheduleDeadlineReminders = () => {
+    const now = new Date();
+    const nextRun = new Date();
+    nextRun.setHours(9, 0, 0, 0); // 9:00 AM
+    
+    // If it's past 9 AM today, schedule for tomorrow
+    if (now.getHours() >= 9) {
+      nextRun.setDate(nextRun.getDate() + 1);
+    }
+    
+    const timeUntilNextRun = nextRun.getTime() - now.getTime();
+    
+    setTimeout(async () => {
+      await checkDeadlines();
+      // Schedule next run for tomorrow at 9 AM
+      setInterval(checkDeadlines, 24 * 60 * 60 * 1000); // Every 24 hours
+    }, timeUntilNextRun);
+    
+    console.log(`📧 Deadline reminder emails scheduled to run daily at 9:00 AM (next run: ${nextRun.toLocaleString()})`);
+  };
+  
+  scheduleDeadlineReminders();
+  
+  console.log('📅 Scheduled tasks started:');
+  console.log('   - Checking for expired quizzes every 5 minutes');
+  console.log('   - Checking for deadline reminders daily at 9:00 AM');
 }
 
 module.exports = app;

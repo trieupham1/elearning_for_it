@@ -8,7 +8,7 @@ const Course = require('../models/Course');
 const Group = require('../models/Group');
 const authMiddleware = require('../middleware/auth');
 const { createNotification } = require('../utils/notifications');
-const { notifyAssignmentSubmission, notifyNewAssignment: notifyNewAssignmentHelper } = require('../utils/notificationHelper');
+const { notifyAssignmentSubmission, notifyNewAssignment: notifyNewAssignmentHelper, sendSubmissionConfirmation } = require('../utils/notificationHelper');
 
 // Middleware to check if user is instructor
 const instructorOnly = async (req, res, next) => {
@@ -348,6 +348,15 @@ router.post('/:id/submit', authMiddleware, async (req, res) => {
         );
         console.log(`📬 Notification sent to instructor ${course.instructor.username} for assignment submission`);
       }
+      
+      // Send confirmation email to student
+      await sendSubmissionConfirmation(
+        req.user.userId,
+        assignment.toObject(),
+        submission.toObject(),
+        course ? course.title : 'Course'
+      );
+      console.log(`📧 Confirmation email sent to student ${studentName}`);
     } catch (notifError) {
       console.error('Error sending assignment submission notification:', notifError);
       // Don't fail the submission if notification fails

@@ -114,7 +114,14 @@ router.post('/', authMiddleware, instructorOnly, async (req, res) => {
       const course = await Course.findById(courseId).populate('students', '_id');
       if (course && course.students && course.students.length > 0) {
         const studentIds = course.students.map(s => s._id);
-        await notifyNewAnnouncement(courseId, course.name || 'Course', title, studentIds);
+        // Pass full announcement data for email notifications
+        await notifyNewAnnouncement(
+          courseId, 
+          course.name || 'Course', 
+          title, 
+          studentIds,
+          announcement.toObject() // Pass the full announcement object
+        );
       }
     } catch (notifError) {
       console.error('Error sending notifications:', notifError);

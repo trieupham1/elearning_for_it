@@ -1,8 +1,11 @@
 // utils/notificationHelper.js
 const Notification = require('../models/Notification');
+const User = require('../models/User');
+const emailService = require('./emailService');
 
 /**
  * Helper functions to create notifications for various events
+ * Now includes email notifications for students
  */
 
 // Notify students when new material is uploaded
@@ -22,8 +25,8 @@ async function notifyNewMaterial(courseId, courseName, materialTitle, studentIds
   return await Notification.createBulkNotifications(notifications);
 }
 
-// Notify students when new announcement is posted
-async function notifyNewAnnouncement(courseId, courseName, announcementTitle, studentIds) {
+// Notify students when new announcement is posted (with email)
+async function notifyNewAnnouncement(courseId, courseName, announcementTitle, studentIds, announcementData = {}) {
   const notifications = studentIds.map(studentId => ({
     userId: studentId,
     type: 'announcement',
@@ -36,11 +39,49 @@ async function notifyNewAnnouncement(courseId, courseName, announcementTitle, st
     }
   }));
 
-  return await Notification.createBulkNotifications(notifications);
+  const result = await Notification.createBulkNotifications(notifications);
+  
+  // Send emails to students asynchronously
+  if (announcementData && announcementData._id) {
+    setImmediate(async () => {
+      try {
+        const students = await User.find({ 
+          _id: { $in: studentIds },
+          role: 'student'
+        }).select('email fullName');
+        
+        console.log(`📧 Preparing to send announcement emails to ${students.length} students for "${announcementTitle}"`);
+        
+        let emailsSent = 0;
+        for (const student of students) {
+          if (student.email) {
+            try {
+              await emailService.sendNewAnnouncementEmail(
+                student,
+                announcementData,
+                courseName
+              );
+              emailsSent++;
+            } catch (emailError) {
+              console.error(`❌ Failed to send email to ${student.email}:`, emailError.message);
+            }
+          } else {
+            console.log(`⚠️ Student ${student.fullName} has no email address`);
+          }
+        }
+        
+        console.log(`✅ Successfully sent ${emailsSent} announcement emails`);
+      } catch (error) {
+        console.error('Error sending announcement emails:', error);
+      }
+    });
+  }
+  
+  return result;
 }
 
-// Notify students when new assignment is created
-async function notifyNewAssignment(courseId, courseName, assignmentTitle, dueDate, studentIds) {
+// Notify students when new assignment is created (with email for approaching deadline)
+async function notifyNewAssignment(courseId, courseName, assignmentTitle, dueDate, studentIds, assignmentData = {}) {
   const notifications = studentIds.map(studentId => ({
     userId: studentId,
     type: 'assignment',
@@ -57,8 +98,8 @@ async function notifyNewAssignment(courseId, courseName, assignmentTitle, dueDat
   return await Notification.createBulkNotifications(notifications);
 }
 
-// Notify students when new quiz is available
-async function notifyNewQuiz(courseId, courseName, quizTitle, studentIds) {
+// Notify students when new quiz is available (with email)
+async function notifyNewQuiz(courseId, courseName, quizTitle, studentIds, quizData = {}) {
   const notifications = studentIds.map(studentId => ({
     userId: studentId,
     type: 'quiz',
@@ -71,7 +112,112 @@ async function notifyNewQuiz(courseId, courseName, quizTitle, studentIds) {
     }
   }));
 
-  return await Notification.createBulkNotifications(notifications);
+  const result = await Notification.createBulkNotifications(notifications);
+  
+  // Send emails to students asynchronously
+  if (quizData && quizData._id) {
+    setImmediate(async () => {
+      try {
+        const students = await User.find({ 
+          _id: { $in: studentIds },
+          role: 'student'
+        }).select('email fullName');
+        
+        console.log(`📧 Preparing to send quiz emails to ${students.length} students for "${quizTitle}"`);
+        
+        let emailsSent = 0;
+        for (const student of students) {
+          if (student.email) {
+            try {
+              await emailService.sendQuizAvailableEmail(
+                student,
+                quizData,
+                courseName
+              );
+              emailsSent++;
+            } catch (emailError) {
+              console.error(`❌ Failed to send email to ${student.email}:`, emailError.message);
+            }
+          } else {
+            console.log(`⚠️ Student ${student.fullName} has no email address`);
+          }
+        }
+        
+        console.log(`✅ Successfully sent ${emailsSent} quiz notification emails`);
+      } catch (error) {
+        console.error('Error sending quiz emails:', error);
+      }
+    });
+  }
+  
+  return result;
+}
+
+// Send assignment submission confirmation email
+async function sendSubmissionConfirmation(studentId, assignmentData, submissionData, courseName) {
+  try {
+    const student = await User.findById(studentId).select('email fullName');
+    if (student) {
+      await emailService.sendSubmissionConfirmationEmail(
+        student,
+        assignmentData,
+        submissionData,
+        courseName
+      );
+    }
+  } catch (error) {
+    console.error('Error sending submission confirmation email:', error);
+  }
+}
+
+// Send quiz submission confirmation via email
+async function sendQuizSubmissionConfirmation(studentId, quizData, attemptData, courseName) {
+  try {
+    const student = await User.findById(studentId).select('email fullName');
+    if (!student) return;
+    
+    const subject = `Quiz Submitted: ${quizData.title}`;
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #4CAF50; color: white; padding: 20px; text-align: center; }
+          .content { padding: 20px; background-color: #f5f5f5; }
+          .confirmation { background-color: #e8f5e9; padding: 15px; margin: 15px 0; 
+                          border-radius: 5px; border-left: 4px solid #4CAF50; }
+          .footer { padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>✅ Quiz Submitted</h1>
+          </div>
+          <div class="content">
+            <p>Your quiz submission for <strong>${quizData.title}</strong> in ${courseName} has been received.</p>
+            <div class="confirmation">
+              <strong>Submission Details:</strong><br>
+              Attempt: ${attemptData.attemptNumber || 1}<br>
+              Submitted: ${new Date(attemptData.submittedAt || Date.now()).toLocaleString()}<br>
+              ${attemptData.score !== undefined ? `Score: ${attemptData.score}%` : 'Score: Pending review'}
+            </div>
+            <p>You can view your results and feedback in the course page.</p>
+          </div>
+          <div class="footer">
+            <p>Faculty of Information Technology - E-Learning System</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    await emailService.sendEmail(student.email, subject, html);
+  } catch (error) {
+    console.error('Error sending quiz submission confirmation:', error);
+  }
 }
 
 // Notify instructor when student submits assignment
@@ -176,5 +322,7 @@ module.exports = {
   notifyNewComment,
   notifyPrivateMessage,
   notifyJoinRequest,
-  notifyJoinApproved
+  notifyJoinApproved,
+  sendSubmissionConfirmation,
+  sendQuizSubmissionConfirmation
 };

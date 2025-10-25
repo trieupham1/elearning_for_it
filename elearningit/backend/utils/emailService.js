@@ -5,16 +5,41 @@ const nodemailer = require('nodemailer');
 
 class EmailService {
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      service: process.env.EMAIL_SERVICE || 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-      }
-    });
+    // Check if email is configured
+    this.isConfigured = !!(
+      process.env.EMAIL_SERVICE &&
+      process.env.EMAIL_USER &&
+      process.env.EMAIL_PASSWORD &&
+      process.env.EMAIL_FROM
+    );
+
+    if (!this.isConfigured) {
+      console.warn('⚠️ Email service not configured. Set EMAIL_SERVICE, EMAIL_USER, EMAIL_PASSWORD, and EMAIL_FROM in .env file');
+      console.warn('⚠️ Email notifications will be skipped until configuration is complete');
+      return;
+    }
+
+    try {
+      this.transporter = nodemailer.createTransport({
+        service: process.env.EMAIL_SERVICE || 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD
+        }
+      });
+      console.log('✅ Email service initialized successfully');
+    } catch (error) {
+      console.error('❌ Failed to initialize email service:', error.message);
+      this.isConfigured = false;
+    }
   }
 
   async sendEmail(to, subject, html) {
+    if (!this.isConfigured) {
+      console.log(`📧 Email would be sent to ${to}: ${subject} (Email not configured)`);
+      return false;
+    }
+
     try {
       const mailOptions = {
         from: process.env.EMAIL_FROM,
@@ -24,10 +49,10 @@ class EmailService {
       };
 
       await this.transporter.sendMail(mailOptions);
-      console.log(`Email sent to ${to}`);
+      console.log(`✅ Email sent to ${to}: ${subject}`);
       return true;
     } catch (error) {
-      console.error('Email send error:', error);
+      console.error(`❌ Email send error to ${to}:`, error.message);
       return false;
     }
   }
@@ -54,7 +79,6 @@ class EmailService {
             <h1>📢 New Announcement</h1>
           </div>
           <div class="content">
-            <p>Hello ${user.fullName},</p>
             <p>A new announcement has been posted in <strong>${courseTitle}</strong>:</p>
             <h2>${announcement.title}</h2>
             <div>${announcement.content.substring(0, 200)}...</div>
@@ -96,7 +120,6 @@ class EmailService {
             <h1>⏰ Assignment Deadline Reminder</h1>
           </div>
           <div class="content">
-            <p>Hello ${user.fullName},</p>
             <p>This is a reminder about an upcoming assignment deadline in <strong>${courseTitle}</strong>:</p>
             <h2>${assignment.title}</h2>
             <div class="deadline">
@@ -142,7 +165,6 @@ class EmailService {
             <h1>📝 New Quiz Available</h1>
           </div>
           <div class="content">
-            <p>Hello ${user.fullName},</p>
             <p>A new quiz is now available in <strong>${courseTitle}</strong>:</p>
             <h2>${quiz.title}</h2>
             <div class="quiz-info">
@@ -191,7 +213,6 @@ class EmailService {
             <h1>✅ Submission Confirmed</h1>
           </div>
           <div class="content">
-            <p>Hello ${user.fullName},</p>
             <p>Your submission for <strong>${assignment.title}</strong> in ${courseTitle} has been received.</p>
             <div class="confirmation">
               <strong>Submission Details:</strong><br>
@@ -242,7 +263,6 @@ class EmailService {
             <h1>📊 Assignment Graded</h1>
           </div>
           <div class="content">
-            <p>Hello ${user.fullName},</p>
             <p>Your assignment <strong>${assignment.title}</strong> in ${courseTitle} has been graded.</p>
             <div class="grade">
               <p style="margin: 0; color: #666;">Your Grade</p>
@@ -297,7 +317,6 @@ class EmailService {
             <h1>🔐 Password Reset Code</h1>
           </div>
           <div class="content">
-            <p>Hello ${user.fullName || user.firstName + ' ' + user.lastName},</p>
             <p>We received a request to reset your password for your E-Learning System account.</p>
             
             <div class="warning">
