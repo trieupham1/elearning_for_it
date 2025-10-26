@@ -1,0 +1,174 @@
+{
+  "metadata": {
+    "collection": "forumTopics",
+    "category": "Communication",
+    "exportDate": "2025-10-13T16:00:38.378Z",
+    "count": 7,
+    "includesPasswords": false
+  },
+  "data": [
+    {
+      "_id": "68eb8038e3e44f4087fb9c4b",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "authorId": "68ea917c8f7467f25bbfaea1",
+      "authorName": "Mai Van Manh",
+      "authorRole": "instructor",
+      "title": "flutter ask",
+      "content": "dasdadsa",
+      "attachments": [],
+      "isPinned": false,
+      "isLocked": false,
+      "views": 13,
+      "likes": [],
+      "replyCount": 0,
+      "lastActivityAt": "2025-10-12T10:17:28.810Z",
+      "tags": [
+        "cross app"
+      ],
+      "createdAt": "2025-10-12T10:17:28.821Z",
+      "updatedAt": "2025-10-12T11:11:03.091Z",
+      "__v": 4
+    },
+    {
+      "_id": "68eb8cdf1193e19527203683",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "authorId": "68ea917c8f7467f25bbfaea1",
+      "authorName": "Mai Van Manh",
+      "authorRole": "instructor",
+      "title": "dsad",
+      "content": "dsad",
+      "attachments": [],
+      "isPinned": false,
+      "isLocked": false,
+      "views": 5,
+      "likes": [
+        "68ea917c8f7467f25bbfaea1",
+        "68ea917c8f7467f25bbfaea3"
+      ],
+      "replyCount": 2,
+      "lastActivityAt": "2025-10-12T11:32:41.180Z",
+      "tags": [
+        "dsa"
+      ],
+      "createdAt": "2025-10-12T11:11:27.047Z",
+      "updatedAt": "2025-10-12T11:32:41.181Z",
+      "__v": 4
+    },
+    {
+      "_id": "68eb8e701193e195272036a6",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "authorId": "68ea917c8f7467f25bbfaea1",
+      "authorName": "Mai Van Manh",
+      "authorRole": "instructor",
+      "title": "fqw",
+      "content": "dsaaw",
+      "attachments": [],
+      "isPinned": false,
+      "isLocked": false,
+      "views": 2,
+      "likes": [],
+      "replyCount": 0,
+      "lastActivityAt": "2025-10-12T11:18:08.933Z",
+      "tags": [
+        "fq"
+      ],
+      "createdAt": "2025-10-12T11:18:08.935Z",
+      "updatedAt": "2025-10-12T11:32:35.055Z",
+      "__v": 4
+    },
+    {
+      "_id": "68eb90e31193e1952720371e",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "authorId": "68ea917c8f7467f25bbfaea3",
+      "authorName": "Nguyen Van An",
+      "authorRole": "student",
+      "title": "dsad",
+      "content": "dsad",
+      "attachments": [],
+      "isPinned": false,
+      "isLocked": false,
+      "views": 2,
+      "likes": [],
+      "replyCount": 1,
+      "lastActivityAt": "2025-10-12T11:28:41.986Z",
+      "tags": [
+        "dsa"
+      ],
+      "createdAt": "2025-10-12T11:28:35.161Z",
+      "updatedAt": "2025-10-12T11:32:33.092Z",
+      "__v": 2
+    },
+    {
+      "_id": "68eb91f11193e19527203768",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "authorId": "68ea917c8f7467f25bbfaea3",
+      "authorName": "Nguyen Van An",
+      "authorRole": "student",
+      "title": "dsqqqq",
+      "content": "ds",
+      "attachments": [],
+      "isPinned": false,
+      "isLocked": false,
+      "views": 4,
+      "likes": [
+        "68ea917c8f7467f25bbfaea3"
+      ],
+      "replyCount": 2,
+      "lastActivityAt": "2025-10-12T11:38:23.669Z",
+      "tags": [
+        "ds"
+      ],
+      "createdAt": "2025-10-12T11:33:05.137Z",
+      "updatedAt": "2025-10-12T11:38:23.827Z",
+      "__v": 3
+    },
+    {
+      "_id": "68eba63dd86d14516630477b",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "authorId": "68ea917c8f7467f25bbfaea1",
+      "authorName": "Mai Van Manh",
+      "authorRole": "instructor",
+      "title": "dsad",
+      "content": "dsad",
+      "attachments": [],
+      "isPinned": false,
+      "isLocked": false,
+      "views": 0,
+      "likes": [
+        "68ecf7b0f4bd21c6f0414b1f"
+      ],
+      "replyCount": 0,
+      "lastActivityAt": "2025-10-12T12:59:41.876Z",
+      "tags": [
+        "dsa"
+      ],
+      "createdAt": "2025-10-12T12:59:41.888Z",
+      "updatedAt": "2025-10-13T13:07:07.266Z",
+      "__v": 1
+    },
+    {
+      "_id": "68ebdd4dc4222bdfe86bfae8",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "authorId": "68ea917c8f7467f25bbfaea1",
+      "authorName": "Mai Van Manh",
+      "authorRole": "instructor",
+      "title": "qwe",
+      "content": "ewq",
+      "attachments": [],
+      "isPinned": false,
+      "isLocked": false,
+      "views": 1,
+      "likes": [
+        "68ecf7b0f4bd21c6f0414b1f"
+      ],
+      "replyCount": 0,
+      "lastActivityAt": "2025-10-12T16:54:37.598Z",
+      "tags": [
+        "ew"
+      ],
+      "createdAt": "2025-10-12T16:54:37.599Z",
+      "updatedAt": "2025-10-13T13:07:01.746Z",
+      "__v": 1
+    }
+  ]
+}

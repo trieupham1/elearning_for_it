@@ -1,0 +1,3830 @@
+{
+  "metadata": {
+    "collection": "quizAttempts",
+    "category": "Student Work",
+    "exportDate": "2025-10-13T16:00:38.318Z",
+    "count": 20,
+    "includesPasswords": false
+  },
+  "data": [
+    {
+      "_id": "68eaa047b732dee4c24b4ee6",
+      "quizId": "68eaa032b732dee4c24b4e7d",
+      "studentId": "68ea917d8f7467f25bbfaec3",
+      "attemptNumber": 1,
+      "startTime": "2025-10-11T18:21:59.633Z",
+      "timeSpent": 30,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a421",
+          "questionText": "What is a neural network?",
+          "choices": [
+            {
+              "text": "A network of computers",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4ee8"
+            },
+            {
+              "text": "A computing system inspired by biological neural networks",
+              "isCorrect": true,
+              "_id": "68eaa047b732dee4c24b4ee9"
+            },
+            {
+              "text": "A social network for nerds",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4eea"
+            },
+            {
+              "text": "A type of internet connection",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4eeb"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eaa047b732dee4c24b4ee7"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a42b",
+          "questionText": "What is the purpose of an activation function in neural networks?",
+          "choices": [
+            {
+              "text": "To start the network",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4eed"
+            },
+            {
+              "text": "To introduce non-linearity",
+              "isCorrect": true,
+              "_id": "68eaa047b732dee4c24b4eee"
+            },
+            {
+              "text": "To stop the network",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4eef"
+            },
+            {
+              "text": "To save the network",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4ef0"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eaa047b732dee4c24b4eec"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a412",
+          "questionText": "What is artificial intelligence?",
+          "choices": [
+            {
+              "text": "Computer programs that can think like humans",
+              "isCorrect": true,
+              "_id": "68eaa047b732dee4c24b4ef2"
+            },
+            {
+              "text": "Robots that look like humans",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4ef3"
+            },
+            {
+              "text": "Advanced calculators",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4ef4"
+            },
+            {
+              "text": "Internet of Things devices",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4ef5"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eaa047b732dee4c24b4ef1"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a435",
+          "questionText": "What is the difference between AI and Machine Learning?",
+          "choices": [
+            {
+              "text": "They are the same thing",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4ef7"
+            },
+            {
+              "text": "AI is broader, ML is a subset of AI",
+              "isCorrect": true,
+              "_id": "68eaa047b732dee4c24b4ef8"
+            },
+            {
+              "text": "ML is broader, AI is a subset of ML",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4ef9"
+            },
+            {
+              "text": "They are completely different fields",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4efa"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eaa047b732dee4c24b4ef6"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a430",
+          "questionText": "What is overfitting in machine learning?",
+          "choices": [
+            {
+              "text": "When a model is too big for memory",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4efc"
+            },
+            {
+              "text": "When a model performs well on training data but poorly on new data",
+              "isCorrect": true,
+              "_id": "68eaa047b732dee4c24b4efd"
+            },
+            {
+              "text": "When a model trains too fast",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4efe"
+            },
+            {
+              "text": "When a model uses too much CPU",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4eff"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eaa047b732dee4c24b4efb"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a426",
+          "questionText": "What is deep learning?",
+          "choices": [
+            {
+              "text": "Learning underwater",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f01"
+            },
+            {
+              "text": "Machine learning with neural networks having many layers",
+              "isCorrect": true,
+              "_id": "68eaa047b732dee4c24b4f02"
+            },
+            {
+              "text": "Very intensive studying",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f03"
+            },
+            {
+              "text": "Learning about deep sea creatures",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f04"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eaa047b732dee4c24b4f00"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a43f",
+          "questionText": "What is natural language processing (NLP)?",
+          "choices": [
+            {
+              "text": "Processing natural resources",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f06"
+            },
+            {
+              "text": "Teaching computers to understand human language",
+              "isCorrect": true,
+              "_id": "68eaa047b732dee4c24b4f07"
+            },
+            {
+              "text": "Processing images of nature",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f08"
+            },
+            {
+              "text": "Learning natural sciences",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f09"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eaa047b732dee4c24b4f05"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a43a",
+          "questionText": "What is reinforcement learning?",
+          "choices": [
+            {
+              "text": "Learning with rewards and punishments",
+              "isCorrect": true,
+              "_id": "68eaa047b732dee4c24b4f0b"
+            },
+            {
+              "text": "Learning the same thing repeatedly",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f0c"
+            },
+            {
+              "text": "Learning with a teacher",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f0d"
+            },
+            {
+              "text": "Learning without any data",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f0e"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eaa047b732dee4c24b4f0a"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a41c",
+          "questionText": "Which of the following is a supervised learning algorithm?",
+          "choices": [
+            {
+              "text": "K-means clustering",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f10"
+            },
+            {
+              "text": "Linear regression",
+              "isCorrect": true,
+              "_id": "68eaa047b732dee4c24b4f11"
+            },
+            {
+              "text": "Reinforcement learning",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f12"
+            },
+            {
+              "text": "Genetic algorithms",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f13"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eaa047b732dee4c24b4f0f"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a417",
+          "questionText": "What is machine learning?",
+          "choices": [
+            {
+              "text": "Teaching machines to walk",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f15"
+            },
+            {
+              "text": "Algorithms that learn from data",
+              "isCorrect": true,
+              "_id": "68eaa047b732dee4c24b4f16"
+            },
+            {
+              "text": "Programming machines manually",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f17"
+            },
+            {
+              "text": "Building mechanical devices",
+              "isCorrect": false,
+              "_id": "68eaa047b732dee4c24b4f18"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eaa047b732dee4c24b4f14"
+        }
+      ],
+      "totalQuestions": 10,
+      "correctAnswers": 0,
+      "score": 0,
+      "pointsEarned": 0,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-11T18:21:59.768Z",
+      "updatedAt": "2025-10-11T18:22:30.045Z",
+      "__v": 0,
+      "endTime": "2025-10-11T18:22:30.038Z",
+      "submissionTime": "2025-10-11T18:22:30.038Z"
+    },
+    {
+      "_id": "68eb38e1c64303f125eeea2a",
+      "quizId": "68eaa007b732dee4c24b4e1e",
+      "studentId": "68ea917c8f7467f25bbfaea3",
+      "attemptNumber": 1,
+      "startTime": "2025-10-12T05:13:04.997Z",
+      "timeSpent": 65,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a3cc",
+          "questionText": "Which state management solution is built by the Flutter team?",
+          "choices": [
+            {
+              "text": "Redux",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea2c"
+            },
+            {
+              "text": "MobX",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea2d"
+            },
+            {
+              "text": "Provider",
+              "isCorrect": true,
+              "_id": "68eb38e1c64303f125eeea2e"
+            },
+            {
+              "text": "GetX",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea2f"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "Provider"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68eb38e1c64303f125eeea2b"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3c7",
+          "questionText": "What is the purpose of the BuildContext in Flutter?",
+          "choices": [
+            {
+              "text": "To store application state",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea31"
+            },
+            {
+              "text": "To locate widgets in the widget tree",
+              "isCorrect": true,
+              "_id": "68eb38e1c64303f125eeea32"
+            },
+            {
+              "text": "To manage HTTP connections",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea33"
+            },
+            {
+              "text": "To handle user input",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea34"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "To manage HTTP connections"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb38e1c64303f125eeea30"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3b3",
+          "questionText": "What is a StatefulWidget in Flutter?",
+          "choices": [
+            {
+              "text": "A widget that never changes",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea36"
+            },
+            {
+              "text": "A widget that can change its state during runtime",
+              "isCorrect": true,
+              "_id": "68eb38e1c64303f125eeea37"
+            },
+            {
+              "text": "A widget for displaying images",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea38"
+            },
+            {
+              "text": "A widget for handling HTTP requests",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea39"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "A widget for displaying images"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb38e1c64303f125eeea35"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3bd",
+          "questionText": "What is hot reload in Flutter?",
+          "choices": [
+            {
+              "text": "A feature to restart the entire application",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea3b"
+            },
+            {
+              "text": "A feature to inject updated source code into the running app",
+              "isCorrect": true,
+              "_id": "68eb38e1c64303f125eeea3c"
+            },
+            {
+              "text": "A debugging tool",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea3d"
+            },
+            {
+              "text": "A testing framework",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea3e"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "A feature to inject updated source code into the running app"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68eb38e1c64303f125eeea3a"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d6",
+          "questionText": "Which Flutter layout widget allows children to be positioned absolutely?",
+          "choices": [
+            {
+              "text": "Column",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea40"
+            },
+            {
+              "text": "Row",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea41"
+            },
+            {
+              "text": "Stack",
+              "isCorrect": true,
+              "_id": "68eb38e1c64303f125eeea42"
+            },
+            {
+              "text": "Wrap",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea43"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "Column"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb38e1c64303f125eeea3f"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3a9",
+          "questionText": "What is Flutter?",
+          "choices": [
+            {
+              "text": "A mobile framework by Google",
+              "isCorrect": true,
+              "_id": "68eb38e1c64303f125eeea45"
+            },
+            {
+              "text": "A programming language",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea46"
+            },
+            {
+              "text": "A database system",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea47"
+            },
+            {
+              "text": "An operating system",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea48"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "A programming language"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb38e1c64303f125eeea44"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3c2",
+          "questionText": "Which Flutter widget is used to display scrollable content?",
+          "choices": [
+            {
+              "text": "Container",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea4a"
+            },
+            {
+              "text": "ListView",
+              "isCorrect": true,
+              "_id": "68eb38e1c64303f125eeea4b"
+            },
+            {
+              "text": "Text",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea4c"
+            },
+            {
+              "text": "AppBar",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea4d"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "Container"
+          ],
+          "isCorrect": false,
+          "timeSpent": 1,
+          "_id": "68eb38e1c64303f125eeea49"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3b8",
+          "questionText": "Which method is called when a StatefulWidget is first created?",
+          "choices": [
+            {
+              "text": "build()",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea4f"
+            },
+            {
+              "text": "initState()",
+              "isCorrect": true,
+              "_id": "68eb38e1c64303f125eeea50"
+            },
+            {
+              "text": "dispose()",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea51"
+            },
+            {
+              "text": "setState()",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea52"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "initState()"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68eb38e1c64303f125eeea4e"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d1",
+          "questionText": "What does the async keyword do in Dart?",
+          "choices": [
+            {
+              "text": "Makes a function return a Future",
+              "isCorrect": true,
+              "_id": "68eb38e1c64303f125eeea54"
+            },
+            {
+              "text": "Makes a function run faster",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea55"
+            },
+            {
+              "text": "Prevents errors in code",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea56"
+            },
+            {
+              "text": "Creates a new thread",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea57"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "Makes a function return a Future"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68eb38e1c64303f125eeea53"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3ae",
+          "questionText": "Which programming language is used by Flutter?",
+          "choices": [
+            {
+              "text": "Java",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea59"
+            },
+            {
+              "text": "Kotlin",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea5a"
+            },
+            {
+              "text": "Dart",
+              "isCorrect": true,
+              "_id": "68eb38e1c64303f125eeea5b"
+            },
+            {
+              "text": "Swift",
+              "isCorrect": false,
+              "_id": "68eb38e1c64303f125eeea5c"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "Dart"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68eb38e1c64303f125eeea58"
+        }
+      ],
+      "totalQuestions": 10,
+      "correctAnswers": 5,
+      "score": 50,
+      "pointsEarned": 50,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-12T05:13:05.128Z",
+      "updatedAt": "2025-10-12T05:14:10.948Z",
+      "__v": 26,
+      "endTime": "2025-10-12T05:14:10.944Z",
+      "submissionTime": "2025-10-12T05:14:10.944Z"
+    },
+    {
+      "_id": "68eb3a1ec64303f125eef268",
+      "quizId": "68ea917e8f7467f25bbfaf20",
+      "studentId": "68ea917c8f7467f25bbfaea3",
+      "attemptNumber": 1,
+      "startTime": "2025-10-12T05:18:22.555Z",
+      "timeSpent": 0,
+      "duration": 30,
+      "questions": [],
+      "totalQuestions": 0,
+      "correctAnswers": 0,
+      "score": 0,
+      "pointsEarned": 0,
+      "totalPoints": 100,
+      "status": "in_progress",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-12T05:18:22.667Z",
+      "updatedAt": "2025-10-12T05:18:22.667Z",
+      "__v": 0
+    },
+    {
+      "_id": "68eb48c9cb3975e186993f4d",
+      "quizId": "68eb468669603f2657036ca2",
+      "studentId": "68ea917c8f7467f25bbfaea3",
+      "attemptNumber": 1,
+      "startTime": "2025-10-12T06:20:57.074Z",
+      "timeSpent": 2,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a3b8",
+          "questionText": "Which method is called when a StatefulWidget is first created?",
+          "choices": [
+            {
+              "text": "build()",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f4f"
+            },
+            {
+              "text": "initState()",
+              "isCorrect": true,
+              "_id": "68eb48c9cb3975e186993f50"
+            },
+            {
+              "text": "dispose()",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f51"
+            },
+            {
+              "text": "setState()",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f52"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb48c9cb3975e186993f4e"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3cc",
+          "questionText": "Which state management solution is built by the Flutter team?",
+          "choices": [
+            {
+              "text": "Redux",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f54"
+            },
+            {
+              "text": "MobX",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f55"
+            },
+            {
+              "text": "Provider",
+              "isCorrect": true,
+              "_id": "68eb48c9cb3975e186993f56"
+            },
+            {
+              "text": "GetX",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f57"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb48c9cb3975e186993f53"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d6",
+          "questionText": "Which Flutter layout widget allows children to be positioned absolutely?",
+          "choices": [
+            {
+              "text": "Column",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f59"
+            },
+            {
+              "text": "Row",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f5a"
+            },
+            {
+              "text": "Stack",
+              "isCorrect": true,
+              "_id": "68eb48c9cb3975e186993f5b"
+            },
+            {
+              "text": "Wrap",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f5c"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb48c9cb3975e186993f58"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3bd",
+          "questionText": "What is hot reload in Flutter?",
+          "choices": [
+            {
+              "text": "A feature to restart the entire application",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f5e"
+            },
+            {
+              "text": "A feature to inject updated source code into the running app",
+              "isCorrect": true,
+              "_id": "68eb48c9cb3975e186993f5f"
+            },
+            {
+              "text": "A debugging tool",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f60"
+            },
+            {
+              "text": "A testing framework",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f61"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb48c9cb3975e186993f5d"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3c7",
+          "questionText": "What is the purpose of the BuildContext in Flutter?",
+          "choices": [
+            {
+              "text": "To store application state",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f63"
+            },
+            {
+              "text": "To locate widgets in the widget tree",
+              "isCorrect": true,
+              "_id": "68eb48c9cb3975e186993f64"
+            },
+            {
+              "text": "To manage HTTP connections",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f65"
+            },
+            {
+              "text": "To handle user input",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f66"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb48c9cb3975e186993f62"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3c2",
+          "questionText": "Which Flutter widget is used to display scrollable content?",
+          "choices": [
+            {
+              "text": "Container",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f68"
+            },
+            {
+              "text": "ListView",
+              "isCorrect": true,
+              "_id": "68eb48c9cb3975e186993f69"
+            },
+            {
+              "text": "Text",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f6a"
+            },
+            {
+              "text": "AppBar",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f6b"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb48c9cb3975e186993f67"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d1",
+          "questionText": "What does the async keyword do in Dart?",
+          "choices": [
+            {
+              "text": "Makes a function return a Future",
+              "isCorrect": true,
+              "_id": "68eb48c9cb3975e186993f6d"
+            },
+            {
+              "text": "Makes a function run faster",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f6e"
+            },
+            {
+              "text": "Prevents errors in code",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f6f"
+            },
+            {
+              "text": "Creates a new thread",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f70"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb48c9cb3975e186993f6c"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3b3",
+          "questionText": "What is a StatefulWidget in Flutter?",
+          "choices": [
+            {
+              "text": "A widget that never changes",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f72"
+            },
+            {
+              "text": "A widget that can change its state during runtime",
+              "isCorrect": true,
+              "_id": "68eb48c9cb3975e186993f73"
+            },
+            {
+              "text": "A widget for displaying images",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f74"
+            },
+            {
+              "text": "A widget for handling HTTP requests",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f75"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb48c9cb3975e186993f71"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3ae",
+          "questionText": "Which programming language is used by Flutter?",
+          "choices": [
+            {
+              "text": "Java",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f77"
+            },
+            {
+              "text": "Kotlin",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f78"
+            },
+            {
+              "text": "Dart",
+              "isCorrect": true,
+              "_id": "68eb48c9cb3975e186993f79"
+            },
+            {
+              "text": "Swift",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f7a"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb48c9cb3975e186993f76"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3a9",
+          "questionText": "What is Flutter?",
+          "choices": [
+            {
+              "text": "A mobile framework by Google",
+              "isCorrect": true,
+              "_id": "68eb48c9cb3975e186993f7c"
+            },
+            {
+              "text": "A programming language",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f7d"
+            },
+            {
+              "text": "A database system",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f7e"
+            },
+            {
+              "text": "An operating system",
+              "isCorrect": false,
+              "_id": "68eb48c9cb3975e186993f7f"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb48c9cb3975e186993f7b"
+        }
+      ],
+      "totalQuestions": 10,
+      "correctAnswers": 0,
+      "score": 0,
+      "pointsEarned": 0,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-12T06:20:57.218Z",
+      "updatedAt": "2025-10-12T06:20:59.686Z",
+      "__v": 0,
+      "endTime": "2025-10-12T06:20:59.681Z",
+      "submissionTime": "2025-10-12T06:20:59.681Z"
+    },
+    {
+      "_id": "68eb4926cb3975e18699413a",
+      "quizId": "68eb490ecb3975e1869940bd",
+      "studentId": "68ea917d8f7467f25bbfaec3",
+      "attemptNumber": 1,
+      "startTime": "2025-10-12T06:22:30.184Z",
+      "timeSpent": 2,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a43f",
+          "questionText": "What is natural language processing (NLP)?",
+          "choices": [
+            {
+              "text": "Processing natural resources",
+              "isCorrect": false,
+              "_id": "68eb4926cb3975e18699413c"
+            },
+            {
+              "text": "Teaching computers to understand human language",
+              "isCorrect": true,
+              "_id": "68eb4926cb3975e18699413d"
+            },
+            {
+              "text": "Processing images of nature",
+              "isCorrect": false,
+              "_id": "68eb4926cb3975e18699413e"
+            },
+            {
+              "text": "Learning natural sciences",
+              "isCorrect": false,
+              "_id": "68eb4926cb3975e18699413f"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4926cb3975e18699413b"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a417",
+          "questionText": "What is machine learning?",
+          "choices": [
+            {
+              "text": "Teaching machines to walk",
+              "isCorrect": false,
+              "_id": "68eb4926cb3975e186994141"
+            },
+            {
+              "text": "Algorithms that learn from data",
+              "isCorrect": true,
+              "_id": "68eb4926cb3975e186994142"
+            },
+            {
+              "text": "Programming machines manually",
+              "isCorrect": false,
+              "_id": "68eb4926cb3975e186994143"
+            },
+            {
+              "text": "Building mechanical devices",
+              "isCorrect": false,
+              "_id": "68eb4926cb3975e186994144"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4926cb3975e186994140"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a43a",
+          "questionText": "What is reinforcement learning?",
+          "choices": [
+            {
+              "text": "Learning with rewards and punishments",
+              "isCorrect": true,
+              "_id": "68eb4926cb3975e186994146"
+            },
+            {
+              "text": "Learning the same thing repeatedly",
+              "isCorrect": false,
+              "_id": "68eb4926cb3975e186994147"
+            },
+            {
+              "text": "Learning with a teacher",
+              "isCorrect": false,
+              "_id": "68eb4926cb3975e186994148"
+            },
+            {
+              "text": "Learning without any data",
+              "isCorrect": false,
+              "_id": "68eb4926cb3975e186994149"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4926cb3975e186994145"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a412",
+          "questionText": "What is artificial intelligence?",
+          "choices": [
+            {
+              "text": "Computer programs that can think like humans",
+              "isCorrect": true,
+              "_id": "68eb4926cb3975e18699414b"
+            },
+            {
+              "text": "Robots that look like humans",
+              "isCorrect": false,
+              "_id": "68eb4926cb3975e18699414c"
+            },
+            {
+              "text": "Advanced calculators",
+              "isCorrect": false,
+              "_id": "68eb4926cb3975e18699414d"
+            },
+            {
+              "text": "Internet of Things devices",
+              "isCorrect": false,
+              "_id": "68eb4926cb3975e18699414e"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4926cb3975e18699414a"
+        }
+      ],
+      "totalQuestions": 4,
+      "correctAnswers": 0,
+      "score": 0,
+      "pointsEarned": 0,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-12T06:22:30.307Z",
+      "updatedAt": "2025-10-12T06:22:32.794Z",
+      "__v": 0,
+      "endTime": "2025-10-12T06:22:32.792Z",
+      "submissionTime": "2025-10-12T06:22:32.792Z"
+    },
+    {
+      "_id": "68eb4ac9add2abe0f4b924ea",
+      "quizId": "68eb4ab8add2abe0f4b924b0",
+      "studentId": "68ea917d8f7467f25bbfaec3",
+      "attemptNumber": 1,
+      "startTime": "2025-10-12T06:29:29.215Z",
+      "timeSpent": 7,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a43a",
+          "questionText": "What is reinforcement learning?",
+          "choices": [
+            {
+              "text": "Learning with rewards and punishments",
+              "isCorrect": true,
+              "_id": "68eb4ac9add2abe0f4b924ec"
+            },
+            {
+              "text": "Learning the same thing repeatedly",
+              "isCorrect": false,
+              "_id": "68eb4ac9add2abe0f4b924ed"
+            },
+            {
+              "text": "Learning with a teacher",
+              "isCorrect": false,
+              "_id": "68eb4ac9add2abe0f4b924ee"
+            },
+            {
+              "text": "Learning without any data",
+              "isCorrect": false,
+              "_id": "68eb4ac9add2abe0f4b924ef"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "Learning without any data"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4ac9add2abe0f4b924eb"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a43f",
+          "questionText": "What is natural language processing (NLP)?",
+          "choices": [
+            {
+              "text": "Processing natural resources",
+              "isCorrect": false,
+              "_id": "68eb4ac9add2abe0f4b924f1"
+            },
+            {
+              "text": "Teaching computers to understand human language",
+              "isCorrect": true,
+              "_id": "68eb4ac9add2abe0f4b924f2"
+            },
+            {
+              "text": "Processing images of nature",
+              "isCorrect": false,
+              "_id": "68eb4ac9add2abe0f4b924f3"
+            },
+            {
+              "text": "Learning natural sciences",
+              "isCorrect": false,
+              "_id": "68eb4ac9add2abe0f4b924f4"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "Teaching computers to understand human language"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68eb4ac9add2abe0f4b924f0"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a417",
+          "questionText": "What is machine learning?",
+          "choices": [
+            {
+              "text": "Teaching machines to walk",
+              "isCorrect": false,
+              "_id": "68eb4ac9add2abe0f4b924f6"
+            },
+            {
+              "text": "Algorithms that learn from data",
+              "isCorrect": true,
+              "_id": "68eb4ac9add2abe0f4b924f7"
+            },
+            {
+              "text": "Programming machines manually",
+              "isCorrect": false,
+              "_id": "68eb4ac9add2abe0f4b924f8"
+            },
+            {
+              "text": "Building mechanical devices",
+              "isCorrect": false,
+              "_id": "68eb4ac9add2abe0f4b924f9"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "Teaching machines to walk"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4ac9add2abe0f4b924f5"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a412",
+          "questionText": "What is artificial intelligence?",
+          "choices": [
+            {
+              "text": "Computer programs that can think like humans",
+              "isCorrect": true,
+              "_id": "68eb4ac9add2abe0f4b924fb"
+            },
+            {
+              "text": "Robots that look like humans",
+              "isCorrect": false,
+              "_id": "68eb4ac9add2abe0f4b924fc"
+            },
+            {
+              "text": "Advanced calculators",
+              "isCorrect": false,
+              "_id": "68eb4ac9add2abe0f4b924fd"
+            },
+            {
+              "text": "Internet of Things devices",
+              "isCorrect": false,
+              "_id": "68eb4ac9add2abe0f4b924fe"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "Advanced calculators"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4ac9add2abe0f4b924fa"
+        }
+      ],
+      "totalQuestions": 4,
+      "correctAnswers": 1,
+      "score": 25,
+      "pointsEarned": 25,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-12T06:29:29.350Z",
+      "updatedAt": "2025-10-12T06:29:36.512Z",
+      "__v": 4,
+      "endTime": "2025-10-12T06:29:36.510Z",
+      "submissionTime": "2025-10-12T06:29:36.510Z"
+    },
+    {
+      "_id": "68eb4ad9add2abe0f4b925b1",
+      "quizId": "68eb4ab8add2abe0f4b924b0",
+      "studentId": "68ea917d8f7467f25bbfaec3",
+      "attemptNumber": 2,
+      "startTime": "2025-10-12T06:29:45.262Z",
+      "timeSpent": 4,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a43a",
+          "questionText": "What is reinforcement learning?",
+          "choices": [
+            {
+              "text": "Learning with rewards and punishments",
+              "isCorrect": true,
+              "_id": "68eb4ad9add2abe0f4b925b3"
+            },
+            {
+              "text": "Learning the same thing repeatedly",
+              "isCorrect": false,
+              "_id": "68eb4ad9add2abe0f4b925b4"
+            },
+            {
+              "text": "Learning with a teacher",
+              "isCorrect": false,
+              "_id": "68eb4ad9add2abe0f4b925b5"
+            },
+            {
+              "text": "Learning without any data",
+              "isCorrect": false,
+              "_id": "68eb4ad9add2abe0f4b925b6"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "Learning with a teacher"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4ad9add2abe0f4b925b2"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a412",
+          "questionText": "What is artificial intelligence?",
+          "choices": [
+            {
+              "text": "Computer programs that can think like humans",
+              "isCorrect": true,
+              "_id": "68eb4ad9add2abe0f4b925b8"
+            },
+            {
+              "text": "Robots that look like humans",
+              "isCorrect": false,
+              "_id": "68eb4ad9add2abe0f4b925b9"
+            },
+            {
+              "text": "Advanced calculators",
+              "isCorrect": false,
+              "_id": "68eb4ad9add2abe0f4b925ba"
+            },
+            {
+              "text": "Internet of Things devices",
+              "isCorrect": false,
+              "_id": "68eb4ad9add2abe0f4b925bb"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4ad9add2abe0f4b925b7"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a43f",
+          "questionText": "What is natural language processing (NLP)?",
+          "choices": [
+            {
+              "text": "Processing natural resources",
+              "isCorrect": false,
+              "_id": "68eb4ad9add2abe0f4b925bd"
+            },
+            {
+              "text": "Teaching computers to understand human language",
+              "isCorrect": true,
+              "_id": "68eb4ad9add2abe0f4b925be"
+            },
+            {
+              "text": "Processing images of nature",
+              "isCorrect": false,
+              "_id": "68eb4ad9add2abe0f4b925bf"
+            },
+            {
+              "text": "Learning natural sciences",
+              "isCorrect": false,
+              "_id": "68eb4ad9add2abe0f4b925c0"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4ad9add2abe0f4b925bc"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a417",
+          "questionText": "What is machine learning?",
+          "choices": [
+            {
+              "text": "Teaching machines to walk",
+              "isCorrect": false,
+              "_id": "68eb4ad9add2abe0f4b925c2"
+            },
+            {
+              "text": "Algorithms that learn from data",
+              "isCorrect": true,
+              "_id": "68eb4ad9add2abe0f4b925c3"
+            },
+            {
+              "text": "Programming machines manually",
+              "isCorrect": false,
+              "_id": "68eb4ad9add2abe0f4b925c4"
+            },
+            {
+              "text": "Building mechanical devices",
+              "isCorrect": false,
+              "_id": "68eb4ad9add2abe0f4b925c5"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4ad9add2abe0f4b925c1"
+        }
+      ],
+      "totalQuestions": 4,
+      "correctAnswers": 0,
+      "score": 0,
+      "pointsEarned": 0,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-12T06:29:45.385Z",
+      "updatedAt": "2025-10-12T06:29:49.560Z",
+      "__v": 1,
+      "endTime": "2025-10-12T06:29:49.559Z",
+      "submissionTime": "2025-10-12T06:29:49.559Z"
+    },
+    {
+      "_id": "68eb4b1dadd2abe0f4b9264a",
+      "quizId": "68eb4ab8add2abe0f4b924b0",
+      "studentId": "68ea917d8f7467f25bbfaec3",
+      "attemptNumber": 3,
+      "startTime": "2025-10-12T06:30:53.268Z",
+      "timeSpent": 7,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a43f",
+          "questionText": "What is natural language processing (NLP)?",
+          "choices": [
+            {
+              "text": "Processing natural resources",
+              "isCorrect": false,
+              "_id": "68eb4b1dadd2abe0f4b9264c"
+            },
+            {
+              "text": "Teaching computers to understand human language",
+              "isCorrect": true,
+              "_id": "68eb4b1dadd2abe0f4b9264d"
+            },
+            {
+              "text": "Processing images of nature",
+              "isCorrect": false,
+              "_id": "68eb4b1dadd2abe0f4b9264e"
+            },
+            {
+              "text": "Learning natural sciences",
+              "isCorrect": false,
+              "_id": "68eb4b1dadd2abe0f4b9264f"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "Processing images of nature"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4b1dadd2abe0f4b9264b"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a43a",
+          "questionText": "What is reinforcement learning?",
+          "choices": [
+            {
+              "text": "Learning with rewards and punishments",
+              "isCorrect": true,
+              "_id": "68eb4b1dadd2abe0f4b92651"
+            },
+            {
+              "text": "Learning the same thing repeatedly",
+              "isCorrect": false,
+              "_id": "68eb4b1dadd2abe0f4b92652"
+            },
+            {
+              "text": "Learning with a teacher",
+              "isCorrect": false,
+              "_id": "68eb4b1dadd2abe0f4b92653"
+            },
+            {
+              "text": "Learning without any data",
+              "isCorrect": false,
+              "_id": "68eb4b1dadd2abe0f4b92654"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "Learning with rewards and punishments"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68eb4b1dadd2abe0f4b92650"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a417",
+          "questionText": "What is machine learning?",
+          "choices": [
+            {
+              "text": "Teaching machines to walk",
+              "isCorrect": false,
+              "_id": "68eb4b1dadd2abe0f4b92656"
+            },
+            {
+              "text": "Algorithms that learn from data",
+              "isCorrect": true,
+              "_id": "68eb4b1dadd2abe0f4b92657"
+            },
+            {
+              "text": "Programming machines manually",
+              "isCorrect": false,
+              "_id": "68eb4b1dadd2abe0f4b92658"
+            },
+            {
+              "text": "Building mechanical devices",
+              "isCorrect": false,
+              "_id": "68eb4b1dadd2abe0f4b92659"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "Building mechanical devices"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4b1dadd2abe0f4b92655"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a412",
+          "questionText": "What is artificial intelligence?",
+          "choices": [
+            {
+              "text": "Computer programs that can think like humans",
+              "isCorrect": true,
+              "_id": "68eb4b1dadd2abe0f4b9265b"
+            },
+            {
+              "text": "Robots that look like humans",
+              "isCorrect": false,
+              "_id": "68eb4b1dadd2abe0f4b9265c"
+            },
+            {
+              "text": "Advanced calculators",
+              "isCorrect": false,
+              "_id": "68eb4b1dadd2abe0f4b9265d"
+            },
+            {
+              "text": "Internet of Things devices",
+              "isCorrect": false,
+              "_id": "68eb4b1dadd2abe0f4b9265e"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "Advanced calculators"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb4b1dadd2abe0f4b9265a"
+        }
+      ],
+      "totalQuestions": 4,
+      "correctAnswers": 1,
+      "score": 25,
+      "pointsEarned": 25,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-12T06:30:53.393Z",
+      "updatedAt": "2025-10-12T06:31:00.806Z",
+      "__v": 5,
+      "endTime": "2025-10-12T06:31:00.805Z",
+      "submissionTime": "2025-10-12T06:31:00.805Z"
+    },
+    {
+      "_id": "68eb614421cd04dd42f600b8",
+      "quizId": "68eb468669603f2657036ca2",
+      "studentId": "68ea917c8f7467f25bbfaea3",
+      "attemptNumber": 2,
+      "startTime": "2025-10-12T08:05:24.140Z",
+      "timeSpent": 88,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a3cc",
+          "questionText": "Which state management solution is built by the Flutter team?",
+          "choices": [
+            {
+              "text": "Redux",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600ba"
+            },
+            {
+              "text": "MobX",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600bb"
+            },
+            {
+              "text": "Provider",
+              "isCorrect": true,
+              "_id": "68eb614421cd04dd42f600bc"
+            },
+            {
+              "text": "GetX",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600bd"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "Provider"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68eb614421cd04dd42f600b9"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3c7",
+          "questionText": "What is the purpose of the BuildContext in Flutter?",
+          "choices": [
+            {
+              "text": "To store application state",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600bf"
+            },
+            {
+              "text": "To locate widgets in the widget tree",
+              "isCorrect": true,
+              "_id": "68eb614421cd04dd42f600c0"
+            },
+            {
+              "text": "To manage HTTP connections",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600c1"
+            },
+            {
+              "text": "To handle user input",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600c2"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "To locate widgets in the widget tree"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68eb614421cd04dd42f600be"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3b3",
+          "questionText": "What is a StatefulWidget in Flutter?",
+          "choices": [
+            {
+              "text": "A widget that never changes",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600c4"
+            },
+            {
+              "text": "A widget that can change its state during runtime",
+              "isCorrect": true,
+              "_id": "68eb614421cd04dd42f600c5"
+            },
+            {
+              "text": "A widget for displaying images",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600c6"
+            },
+            {
+              "text": "A widget for handling HTTP requests",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600c7"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "A widget that can change its state during runtime"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68eb614421cd04dd42f600c3"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d1",
+          "questionText": "What does the async keyword do in Dart?",
+          "choices": [
+            {
+              "text": "Makes a function return a Future",
+              "isCorrect": true,
+              "_id": "68eb614421cd04dd42f600c9"
+            },
+            {
+              "text": "Makes a function run faster",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600ca"
+            },
+            {
+              "text": "Prevents errors in code",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600cb"
+            },
+            {
+              "text": "Creates a new thread",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600cc"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "Makes a function return a Future"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68eb614421cd04dd42f600c8"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3a9",
+          "questionText": "What is Flutter?",
+          "choices": [
+            {
+              "text": "A mobile framework by Google",
+              "isCorrect": true,
+              "_id": "68eb614421cd04dd42f600ce"
+            },
+            {
+              "text": "A programming language",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600cf"
+            },
+            {
+              "text": "A database system",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600d0"
+            },
+            {
+              "text": "An operating system",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600d1"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "A programming language"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb614421cd04dd42f600cd"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3ae",
+          "questionText": "Which programming language is used by Flutter?",
+          "choices": [
+            {
+              "text": "Java",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600d3"
+            },
+            {
+              "text": "Kotlin",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600d4"
+            },
+            {
+              "text": "Dart",
+              "isCorrect": true,
+              "_id": "68eb614421cd04dd42f600d5"
+            },
+            {
+              "text": "Swift",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600d6"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "Java"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb614421cd04dd42f600d2"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3b8",
+          "questionText": "Which method is called when a StatefulWidget is first created?",
+          "choices": [
+            {
+              "text": "build()",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600d8"
+            },
+            {
+              "text": "initState()",
+              "isCorrect": true,
+              "_id": "68eb614421cd04dd42f600d9"
+            },
+            {
+              "text": "dispose()",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600da"
+            },
+            {
+              "text": "setState()",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600db"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "initState()"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68eb614421cd04dd42f600d7"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d6",
+          "questionText": "Which Flutter layout widget allows children to be positioned absolutely?",
+          "choices": [
+            {
+              "text": "Column",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600dd"
+            },
+            {
+              "text": "Row",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600de"
+            },
+            {
+              "text": "Stack",
+              "isCorrect": true,
+              "_id": "68eb614421cd04dd42f600df"
+            },
+            {
+              "text": "Wrap",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600e0"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "Column"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb614421cd04dd42f600dc"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3bd",
+          "questionText": "What is hot reload in Flutter?",
+          "choices": [
+            {
+              "text": "A feature to restart the entire application",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600e2"
+            },
+            {
+              "text": "A feature to inject updated source code into the running app",
+              "isCorrect": true,
+              "_id": "68eb614421cd04dd42f600e3"
+            },
+            {
+              "text": "A debugging tool",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600e4"
+            },
+            {
+              "text": "A testing framework",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600e5"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb614421cd04dd42f600e1"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3c2",
+          "questionText": "Which Flutter widget is used to display scrollable content?",
+          "choices": [
+            {
+              "text": "Container",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600e7"
+            },
+            {
+              "text": "ListView",
+              "isCorrect": true,
+              "_id": "68eb614421cd04dd42f600e8"
+            },
+            {
+              "text": "Text",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600e9"
+            },
+            {
+              "text": "AppBar",
+              "isCorrect": false,
+              "_id": "68eb614421cd04dd42f600ea"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "AppBar"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb614421cd04dd42f600e6"
+        }
+      ],
+      "totalQuestions": 10,
+      "correctAnswers": 5,
+      "score": 50,
+      "pointsEarned": 50,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-12T08:05:24.266Z",
+      "updatedAt": "2025-10-12T08:06:52.450Z",
+      "__v": 11,
+      "endTime": "2025-10-12T08:06:52.446Z",
+      "submissionTime": "2025-10-12T08:06:52.446Z"
+    },
+    {
+      "_id": "68eb61dd21cd04dd42f60429",
+      "quizId": "68eb468669603f2657036ca2",
+      "studentId": "68ea917c8f7467f25bbfaea3",
+      "attemptNumber": 3,
+      "startTime": "2025-10-12T08:07:57.085Z",
+      "timeSpent": 71,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a3b3",
+          "questionText": "What is a StatefulWidget in Flutter?",
+          "choices": [
+            {
+              "text": "A widget that never changes",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f6042b"
+            },
+            {
+              "text": "A widget that can change its state during runtime",
+              "isCorrect": true,
+              "_id": "68eb61dd21cd04dd42f6042c"
+            },
+            {
+              "text": "A widget for displaying images",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f6042d"
+            },
+            {
+              "text": "A widget for handling HTTP requests",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f6042e"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "A widget that can change its state during runtime"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68eb61dd21cd04dd42f6042a"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3a9",
+          "questionText": "What is Flutter?",
+          "choices": [
+            {
+              "text": "A mobile framework by Google",
+              "isCorrect": true,
+              "_id": "68eb61dd21cd04dd42f60430"
+            },
+            {
+              "text": "A programming language",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60431"
+            },
+            {
+              "text": "A database system",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60432"
+            },
+            {
+              "text": "An operating system",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60433"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb61dd21cd04dd42f6042f"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3c7",
+          "questionText": "What is the purpose of the BuildContext in Flutter?",
+          "choices": [
+            {
+              "text": "To store application state",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60435"
+            },
+            {
+              "text": "To locate widgets in the widget tree",
+              "isCorrect": true,
+              "_id": "68eb61dd21cd04dd42f60436"
+            },
+            {
+              "text": "To manage HTTP connections",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60437"
+            },
+            {
+              "text": "To handle user input",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60438"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb61dd21cd04dd42f60434"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3cc",
+          "questionText": "Which state management solution is built by the Flutter team?",
+          "choices": [
+            {
+              "text": "Redux",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f6043a"
+            },
+            {
+              "text": "MobX",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f6043b"
+            },
+            {
+              "text": "Provider",
+              "isCorrect": true,
+              "_id": "68eb61dd21cd04dd42f6043c"
+            },
+            {
+              "text": "GetX",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f6043d"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb61dd21cd04dd42f60439"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3bd",
+          "questionText": "What is hot reload in Flutter?",
+          "choices": [
+            {
+              "text": "A feature to restart the entire application",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f6043f"
+            },
+            {
+              "text": "A feature to inject updated source code into the running app",
+              "isCorrect": true,
+              "_id": "68eb61dd21cd04dd42f60440"
+            },
+            {
+              "text": "A debugging tool",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60441"
+            },
+            {
+              "text": "A testing framework",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60442"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb61dd21cd04dd42f6043e"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3b8",
+          "questionText": "Which method is called when a StatefulWidget is first created?",
+          "choices": [
+            {
+              "text": "build()",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60444"
+            },
+            {
+              "text": "initState()",
+              "isCorrect": true,
+              "_id": "68eb61dd21cd04dd42f60445"
+            },
+            {
+              "text": "dispose()",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60446"
+            },
+            {
+              "text": "setState()",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60447"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb61dd21cd04dd42f60443"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d6",
+          "questionText": "Which Flutter layout widget allows children to be positioned absolutely?",
+          "choices": [
+            {
+              "text": "Column",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60449"
+            },
+            {
+              "text": "Row",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f6044a"
+            },
+            {
+              "text": "Stack",
+              "isCorrect": true,
+              "_id": "68eb61dd21cd04dd42f6044b"
+            },
+            {
+              "text": "Wrap",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f6044c"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb61dd21cd04dd42f60448"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d1",
+          "questionText": "What does the async keyword do in Dart?",
+          "choices": [
+            {
+              "text": "Makes a function return a Future",
+              "isCorrect": true,
+              "_id": "68eb61dd21cd04dd42f6044e"
+            },
+            {
+              "text": "Makes a function run faster",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f6044f"
+            },
+            {
+              "text": "Prevents errors in code",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60450"
+            },
+            {
+              "text": "Creates a new thread",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60451"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb61dd21cd04dd42f6044d"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3ae",
+          "questionText": "Which programming language is used by Flutter?",
+          "choices": [
+            {
+              "text": "Java",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60453"
+            },
+            {
+              "text": "Kotlin",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60454"
+            },
+            {
+              "text": "Dart",
+              "isCorrect": true,
+              "_id": "68eb61dd21cd04dd42f60455"
+            },
+            {
+              "text": "Swift",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60456"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb61dd21cd04dd42f60452"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3c2",
+          "questionText": "Which Flutter widget is used to display scrollable content?",
+          "choices": [
+            {
+              "text": "Container",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f60458"
+            },
+            {
+              "text": "ListView",
+              "isCorrect": true,
+              "_id": "68eb61dd21cd04dd42f60459"
+            },
+            {
+              "text": "Text",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f6045a"
+            },
+            {
+              "text": "AppBar",
+              "isCorrect": false,
+              "_id": "68eb61dd21cd04dd42f6045b"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb61dd21cd04dd42f60457"
+        }
+      ],
+      "totalQuestions": 10,
+      "correctAnswers": 1,
+      "score": 10,
+      "pointsEarned": 10,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-12T08:07:57.214Z",
+      "updatedAt": "2025-10-12T08:09:09.012Z",
+      "__v": 1,
+      "endTime": "2025-10-12T08:09:09.008Z",
+      "submissionTime": "2025-10-12T08:09:09.008Z"
+    },
+    {
+      "_id": "68eb623221cd04dd42f605b4",
+      "quizId": "68eb468669603f2657036ca2",
+      "studentId": "68ea917c8f7467f25bbfaea3",
+      "attemptNumber": 4,
+      "startTime": "2025-10-12T08:09:22.845Z",
+      "timeSpent": 4,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a3c7",
+          "questionText": "What is the purpose of the BuildContext in Flutter?",
+          "choices": [
+            {
+              "text": "To store application state",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605b6"
+            },
+            {
+              "text": "To locate widgets in the widget tree",
+              "isCorrect": true,
+              "_id": "68eb623221cd04dd42f605b7"
+            },
+            {
+              "text": "To manage HTTP connections",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605b8"
+            },
+            {
+              "text": "To handle user input",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605b9"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb623221cd04dd42f605b5"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3b8",
+          "questionText": "Which method is called when a StatefulWidget is first created?",
+          "choices": [
+            {
+              "text": "build()",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605bb"
+            },
+            {
+              "text": "initState()",
+              "isCorrect": true,
+              "_id": "68eb623221cd04dd42f605bc"
+            },
+            {
+              "text": "dispose()",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605bd"
+            },
+            {
+              "text": "setState()",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605be"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb623221cd04dd42f605ba"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d6",
+          "questionText": "Which Flutter layout widget allows children to be positioned absolutely?",
+          "choices": [
+            {
+              "text": "Column",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605c0"
+            },
+            {
+              "text": "Row",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605c1"
+            },
+            {
+              "text": "Stack",
+              "isCorrect": true,
+              "_id": "68eb623221cd04dd42f605c2"
+            },
+            {
+              "text": "Wrap",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605c3"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb623221cd04dd42f605bf"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3cc",
+          "questionText": "Which state management solution is built by the Flutter team?",
+          "choices": [
+            {
+              "text": "Redux",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605c5"
+            },
+            {
+              "text": "MobX",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605c6"
+            },
+            {
+              "text": "Provider",
+              "isCorrect": true,
+              "_id": "68eb623221cd04dd42f605c7"
+            },
+            {
+              "text": "GetX",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605c8"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb623221cd04dd42f605c4"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3bd",
+          "questionText": "What is hot reload in Flutter?",
+          "choices": [
+            {
+              "text": "A feature to restart the entire application",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605ca"
+            },
+            {
+              "text": "A feature to inject updated source code into the running app",
+              "isCorrect": true,
+              "_id": "68eb623221cd04dd42f605cb"
+            },
+            {
+              "text": "A debugging tool",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605cc"
+            },
+            {
+              "text": "A testing framework",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605cd"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb623221cd04dd42f605c9"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d1",
+          "questionText": "What does the async keyword do in Dart?",
+          "choices": [
+            {
+              "text": "Makes a function return a Future",
+              "isCorrect": true,
+              "_id": "68eb623221cd04dd42f605cf"
+            },
+            {
+              "text": "Makes a function run faster",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605d0"
+            },
+            {
+              "text": "Prevents errors in code",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605d1"
+            },
+            {
+              "text": "Creates a new thread",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605d2"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb623221cd04dd42f605ce"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3a9",
+          "questionText": "What is Flutter?",
+          "choices": [
+            {
+              "text": "A mobile framework by Google",
+              "isCorrect": true,
+              "_id": "68eb623221cd04dd42f605d4"
+            },
+            {
+              "text": "A programming language",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605d5"
+            },
+            {
+              "text": "A database system",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605d6"
+            },
+            {
+              "text": "An operating system",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605d7"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb623221cd04dd42f605d3"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3b3",
+          "questionText": "What is a StatefulWidget in Flutter?",
+          "choices": [
+            {
+              "text": "A widget that never changes",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605d9"
+            },
+            {
+              "text": "A widget that can change its state during runtime",
+              "isCorrect": true,
+              "_id": "68eb623221cd04dd42f605da"
+            },
+            {
+              "text": "A widget for displaying images",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605db"
+            },
+            {
+              "text": "A widget for handling HTTP requests",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605dc"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb623221cd04dd42f605d8"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3ae",
+          "questionText": "Which programming language is used by Flutter?",
+          "choices": [
+            {
+              "text": "Java",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605de"
+            },
+            {
+              "text": "Kotlin",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605df"
+            },
+            {
+              "text": "Dart",
+              "isCorrect": true,
+              "_id": "68eb623221cd04dd42f605e0"
+            },
+            {
+              "text": "Swift",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605e1"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb623221cd04dd42f605dd"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3c2",
+          "questionText": "Which Flutter widget is used to display scrollable content?",
+          "choices": [
+            {
+              "text": "Container",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605e3"
+            },
+            {
+              "text": "ListView",
+              "isCorrect": true,
+              "_id": "68eb623221cd04dd42f605e4"
+            },
+            {
+              "text": "Text",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605e5"
+            },
+            {
+              "text": "AppBar",
+              "isCorrect": false,
+              "_id": "68eb623221cd04dd42f605e6"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb623221cd04dd42f605e2"
+        }
+      ],
+      "totalQuestions": 10,
+      "correctAnswers": 0,
+      "score": 0,
+      "pointsEarned": 0,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-12T08:09:22.965Z",
+      "updatedAt": "2025-10-12T08:09:27.203Z",
+      "__v": 0,
+      "endTime": "2025-10-12T08:09:27.199Z",
+      "submissionTime": "2025-10-12T08:09:27.199Z"
+    },
+    {
+      "_id": "68eb6472e9542461f8148b6f",
+      "quizId": "68eb4ab8add2abe0f4b924b0",
+      "studentId": "68ea917d8f7467f25bbfaec3",
+      "attemptNumber": 4,
+      "startTime": "2025-10-12T08:18:58.490Z",
+      "timeSpent": 3,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a417",
+          "questionText": "What is machine learning?",
+          "choices": [
+            {
+              "text": "Teaching machines to walk",
+              "isCorrect": false,
+              "_id": "68eb6472e9542461f8148b71"
+            },
+            {
+              "text": "Algorithms that learn from data",
+              "isCorrect": true,
+              "_id": "68eb6472e9542461f8148b72"
+            },
+            {
+              "text": "Programming machines manually",
+              "isCorrect": false,
+              "_id": "68eb6472e9542461f8148b73"
+            },
+            {
+              "text": "Building mechanical devices",
+              "isCorrect": false,
+              "_id": "68eb6472e9542461f8148b74"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb6472e9542461f8148b70"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a412",
+          "questionText": "What is artificial intelligence?",
+          "choices": [
+            {
+              "text": "Computer programs that can think like humans",
+              "isCorrect": true,
+              "_id": "68eb6472e9542461f8148b76"
+            },
+            {
+              "text": "Robots that look like humans",
+              "isCorrect": false,
+              "_id": "68eb6472e9542461f8148b77"
+            },
+            {
+              "text": "Advanced calculators",
+              "isCorrect": false,
+              "_id": "68eb6472e9542461f8148b78"
+            },
+            {
+              "text": "Internet of Things devices",
+              "isCorrect": false,
+              "_id": "68eb6472e9542461f8148b79"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb6472e9542461f8148b75"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a43f",
+          "questionText": "What is natural language processing (NLP)?",
+          "choices": [
+            {
+              "text": "Processing natural resources",
+              "isCorrect": false,
+              "_id": "68eb6472e9542461f8148b7b"
+            },
+            {
+              "text": "Teaching computers to understand human language",
+              "isCorrect": true,
+              "_id": "68eb6472e9542461f8148b7c"
+            },
+            {
+              "text": "Processing images of nature",
+              "isCorrect": false,
+              "_id": "68eb6472e9542461f8148b7d"
+            },
+            {
+              "text": "Learning natural sciences",
+              "isCorrect": false,
+              "_id": "68eb6472e9542461f8148b7e"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb6472e9542461f8148b7a"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a43a",
+          "questionText": "What is reinforcement learning?",
+          "choices": [
+            {
+              "text": "Learning with rewards and punishments",
+              "isCorrect": true,
+              "_id": "68eb6472e9542461f8148b80"
+            },
+            {
+              "text": "Learning the same thing repeatedly",
+              "isCorrect": false,
+              "_id": "68eb6472e9542461f8148b81"
+            },
+            {
+              "text": "Learning with a teacher",
+              "isCorrect": false,
+              "_id": "68eb6472e9542461f8148b82"
+            },
+            {
+              "text": "Learning without any data",
+              "isCorrect": false,
+              "_id": "68eb6472e9542461f8148b83"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb6472e9542461f8148b7f"
+        }
+      ],
+      "totalQuestions": 4,
+      "correctAnswers": 0,
+      "score": 0,
+      "pointsEarned": 0,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-12T08:18:58.625Z",
+      "updatedAt": "2025-10-12T08:19:02.120Z",
+      "__v": 0,
+      "endTime": "2025-10-12T08:19:02.118Z",
+      "submissionTime": "2025-10-12T08:19:02.118Z"
+    },
+    {
+      "_id": "68eb697eb495681d24f26203",
+      "quizId": "68eb6904b495681d24f261a4",
+      "studentId": "68ea917c8f7467f25bbfaea3",
+      "attemptNumber": 1,
+      "startTime": "2025-10-12T08:40:30.491Z",
+      "timeSpent": 2,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a3d1",
+          "questionText": "What does the async keyword do in Dart?",
+          "choices": [
+            {
+              "text": "Makes a function return a Future",
+              "isCorrect": true,
+              "_id": "68eb697eb495681d24f26205"
+            },
+            {
+              "text": "Makes a function run faster",
+              "isCorrect": false,
+              "_id": "68eb697eb495681d24f26206"
+            },
+            {
+              "text": "Prevents errors in code",
+              "isCorrect": false,
+              "_id": "68eb697eb495681d24f26207"
+            },
+            {
+              "text": "Creates a new thread",
+              "isCorrect": false,
+              "_id": "68eb697eb495681d24f26208"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "Prevents errors in code"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68eb697eb495681d24f26204"
+        }
+      ],
+      "totalQuestions": 1,
+      "correctAnswers": 0,
+      "score": 0,
+      "pointsEarned": 0,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-12T08:40:30.613Z",
+      "updatedAt": "2025-10-12T08:40:32.660Z",
+      "__v": 1,
+      "endTime": "2025-10-12T08:40:32.659Z",
+      "submissionTime": "2025-10-12T08:40:32.659Z"
+    },
+    {
+      "_id": "68ecf84bf4bd21c6f0414ba8",
+      "quizId": "68eb6904b495681d24f261a4",
+      "studentId": "68ecf7b0f4bd21c6f0414b1f",
+      "attemptNumber": 1,
+      "startTime": "2025-10-13T13:02:03.593Z",
+      "timeSpent": 8,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a3d1",
+          "questionText": "What does the async keyword do in Dart?",
+          "choices": [
+            {
+              "text": "Makes a function return a Future",
+              "isCorrect": true,
+              "_id": "68ecf84bf4bd21c6f0414baa"
+            },
+            {
+              "text": "Makes a function run faster",
+              "isCorrect": false,
+              "_id": "68ecf84bf4bd21c6f0414bab"
+            },
+            {
+              "text": "Prevents errors in code",
+              "isCorrect": false,
+              "_id": "68ecf84bf4bd21c6f0414bac"
+            },
+            {
+              "text": "Creates a new thread",
+              "isCorrect": false,
+              "_id": "68ecf84bf4bd21c6f0414bad"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "Makes a function return a Future"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68ecf84bf4bd21c6f0414ba9"
+        }
+      ],
+      "totalQuestions": 1,
+      "correctAnswers": 1,
+      "score": 100,
+      "pointsEarned": 100,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-13T13:02:03.704Z",
+      "updatedAt": "2025-10-13T13:02:12.097Z",
+      "__v": 11,
+      "endTime": "2025-10-13T13:02:12.096Z",
+      "submissionTime": "2025-10-13T13:02:12.096Z"
+    },
+    {
+      "_id": "68ecf8fcf4bd21c6f0414c37",
+      "quizId": "68eba65ad86d1451663047b8",
+      "studentId": "68ecf7b0f4bd21c6f0414b1f",
+      "attemptNumber": 1,
+      "startTime": "2025-10-13T13:05:00.593Z",
+      "timeSpent": 2,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a3cc",
+          "questionText": "Which state management solution is built by the Flutter team?",
+          "choices": [
+            {
+              "text": "Redux",
+              "isCorrect": false,
+              "_id": "68ecf8fcf4bd21c6f0414c39"
+            },
+            {
+              "text": "MobX",
+              "isCorrect": false,
+              "_id": "68ecf8fcf4bd21c6f0414c3a"
+            },
+            {
+              "text": "Provider",
+              "isCorrect": true,
+              "_id": "68ecf8fcf4bd21c6f0414c3b"
+            },
+            {
+              "text": "GetX",
+              "isCorrect": false,
+              "_id": "68ecf8fcf4bd21c6f0414c3c"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "Provider"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68ecf8fcf4bd21c6f0414c38"
+        }
+      ],
+      "totalQuestions": 1,
+      "correctAnswers": 1,
+      "score": 100,
+      "pointsEarned": 100,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-13T13:05:00.708Z",
+      "updatedAt": "2025-10-13T13:05:02.768Z",
+      "__v": 1,
+      "endTime": "2025-10-13T13:05:02.767Z",
+      "submissionTime": "2025-10-13T13:05:02.767Z"
+    },
+    {
+      "_id": "68ecf9e8f4bd21c6f0414cd5",
+      "quizId": "68eb468669603f2657036ca2",
+      "studentId": "68ecf7b0f4bd21c6f0414b1f",
+      "attemptNumber": 1,
+      "startTime": "2025-10-13T13:08:56.521Z",
+      "timeSpent": 19,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a3b3",
+          "questionText": "What is a StatefulWidget in Flutter?",
+          "choices": [
+            {
+              "text": "A widget that never changes",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cd7"
+            },
+            {
+              "text": "A widget that can change its state during runtime",
+              "isCorrect": true,
+              "_id": "68ecf9e8f4bd21c6f0414cd8"
+            },
+            {
+              "text": "A widget for displaying images",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cd9"
+            },
+            {
+              "text": "A widget for handling HTTP requests",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cda"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "A widget that can change its state during runtime"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68ecf9e8f4bd21c6f0414cd6"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3c7",
+          "questionText": "What is the purpose of the BuildContext in Flutter?",
+          "choices": [
+            {
+              "text": "To store application state",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cdc"
+            },
+            {
+              "text": "To locate widgets in the widget tree",
+              "isCorrect": true,
+              "_id": "68ecf9e8f4bd21c6f0414cdd"
+            },
+            {
+              "text": "To manage HTTP connections",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cde"
+            },
+            {
+              "text": "To handle user input",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cdf"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "To locate widgets in the widget tree"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68ecf9e8f4bd21c6f0414cdb"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3ae",
+          "questionText": "Which programming language is used by Flutter?",
+          "choices": [
+            {
+              "text": "Java",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414ce1"
+            },
+            {
+              "text": "Kotlin",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414ce2"
+            },
+            {
+              "text": "Dart",
+              "isCorrect": true,
+              "_id": "68ecf9e8f4bd21c6f0414ce3"
+            },
+            {
+              "text": "Swift",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414ce4"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "Dart"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68ecf9e8f4bd21c6f0414ce0"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3cc",
+          "questionText": "Which state management solution is built by the Flutter team?",
+          "choices": [
+            {
+              "text": "Redux",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414ce6"
+            },
+            {
+              "text": "MobX",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414ce7"
+            },
+            {
+              "text": "Provider",
+              "isCorrect": true,
+              "_id": "68ecf9e8f4bd21c6f0414ce8"
+            },
+            {
+              "text": "GetX",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414ce9"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "MobX"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecf9e8f4bd21c6f0414ce5"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d1",
+          "questionText": "What does the async keyword do in Dart?",
+          "choices": [
+            {
+              "text": "Makes a function return a Future",
+              "isCorrect": true,
+              "_id": "68ecf9e8f4bd21c6f0414ceb"
+            },
+            {
+              "text": "Makes a function run faster",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cec"
+            },
+            {
+              "text": "Prevents errors in code",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414ced"
+            },
+            {
+              "text": "Creates a new thread",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cee"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "Prevents errors in code"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecf9e8f4bd21c6f0414cea"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d6",
+          "questionText": "Which Flutter layout widget allows children to be positioned absolutely?",
+          "choices": [
+            {
+              "text": "Column",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cf0"
+            },
+            {
+              "text": "Row",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cf1"
+            },
+            {
+              "text": "Stack",
+              "isCorrect": true,
+              "_id": "68ecf9e8f4bd21c6f0414cf2"
+            },
+            {
+              "text": "Wrap",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cf3"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "Stack"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68ecf9e8f4bd21c6f0414cef"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3a9",
+          "questionText": "What is Flutter?",
+          "choices": [
+            {
+              "text": "A mobile framework by Google",
+              "isCorrect": true,
+              "_id": "68ecf9e8f4bd21c6f0414cf5"
+            },
+            {
+              "text": "A programming language",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cf6"
+            },
+            {
+              "text": "A database system",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cf7"
+            },
+            {
+              "text": "An operating system",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cf8"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "A mobile framework by Google"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68ecf9e8f4bd21c6f0414cf4"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3bd",
+          "questionText": "What is hot reload in Flutter?",
+          "choices": [
+            {
+              "text": "A feature to restart the entire application",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cfa"
+            },
+            {
+              "text": "A feature to inject updated source code into the running app",
+              "isCorrect": true,
+              "_id": "68ecf9e8f4bd21c6f0414cfb"
+            },
+            {
+              "text": "A debugging tool",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cfc"
+            },
+            {
+              "text": "A testing framework",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cfd"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "A testing framework"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecf9e8f4bd21c6f0414cf9"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3c2",
+          "questionText": "Which Flutter widget is used to display scrollable content?",
+          "choices": [
+            {
+              "text": "Container",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414cff"
+            },
+            {
+              "text": "ListView",
+              "isCorrect": true,
+              "_id": "68ecf9e8f4bd21c6f0414d00"
+            },
+            {
+              "text": "Text",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414d01"
+            },
+            {
+              "text": "AppBar",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414d02"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [
+            "ListView"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68ecf9e8f4bd21c6f0414cfe"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3b8",
+          "questionText": "Which method is called when a StatefulWidget is first created?",
+          "choices": [
+            {
+              "text": "build()",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414d04"
+            },
+            {
+              "text": "initState()",
+              "isCorrect": true,
+              "_id": "68ecf9e8f4bd21c6f0414d05"
+            },
+            {
+              "text": "dispose()",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414d06"
+            },
+            {
+              "text": "setState()",
+              "isCorrect": false,
+              "_id": "68ecf9e8f4bd21c6f0414d07"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [
+            "initState()"
+          ],
+          "isCorrect": true,
+          "timeSpent": 0,
+          "_id": "68ecf9e8f4bd21c6f0414d03"
+        }
+      ],
+      "totalQuestions": 10,
+      "correctAnswers": 7,
+      "score": 70,
+      "pointsEarned": 70,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-13T13:08:56.641Z",
+      "updatedAt": "2025-10-13T13:09:16.452Z",
+      "__v": 10,
+      "endTime": "2025-10-13T13:09:16.449Z",
+      "submissionTime": "2025-10-13T13:09:16.449Z"
+    },
+    {
+      "_id": "68ecfb55f4bd21c6f0414f80",
+      "quizId": "68ebdc1ec4222bdfe86bfabc",
+      "studentId": "68ea917c8f7467f25bbfaea3",
+      "attemptNumber": 1,
+      "startTime": "2025-10-13T13:15:00.993Z",
+      "timeSpent": 1,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a3c7",
+          "questionText": "What is the purpose of the BuildContext in Flutter?",
+          "choices": [
+            {
+              "text": "To store application state",
+              "isCorrect": false,
+              "_id": "68ecfb55f4bd21c6f0414f82"
+            },
+            {
+              "text": "To locate widgets in the widget tree",
+              "isCorrect": true,
+              "_id": "68ecfb55f4bd21c6f0414f83"
+            },
+            {
+              "text": "To manage HTTP connections",
+              "isCorrect": false,
+              "_id": "68ecfb55f4bd21c6f0414f84"
+            },
+            {
+              "text": "To handle user input",
+              "isCorrect": false,
+              "_id": "68ecfb55f4bd21c6f0414f85"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "To manage HTTP connections"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecfb55f4bd21c6f0414f81"
+        }
+      ],
+      "totalQuestions": 1,
+      "correctAnswers": 0,
+      "score": 0,
+      "pointsEarned": 0,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-13T13:15:01.103Z",
+      "updatedAt": "2025-10-13T13:15:02.907Z",
+      "__v": 1,
+      "endTime": "2025-10-13T13:15:02.905Z",
+      "submissionTime": "2025-10-13T13:15:02.905Z"
+    },
+    {
+      "_id": "68ecff837d67674c4099f40d",
+      "quizId": "68ea917e8f7467f25bbfaf20",
+      "studentId": "68ecf7b0f4bd21c6f0414b1f",
+      "attemptNumber": 1,
+      "startTime": "2025-10-13T13:32:51.356Z",
+      "timeSpent": 0,
+      "duration": 30,
+      "questions": [],
+      "totalQuestions": 0,
+      "correctAnswers": 0,
+      "score": 0,
+      "pointsEarned": 0,
+      "totalPoints": 100,
+      "status": "in_progress",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-13T13:32:51.468Z",
+      "updatedAt": "2025-10-13T13:32:51.468Z",
+      "__v": 0
+    },
+    {
+      "_id": "68ecff8e7d67674c4099f468",
+      "quizId": "68eaa007b732dee4c24b4e1e",
+      "studentId": "68ecf7b0f4bd21c6f0414b1f",
+      "attemptNumber": 1,
+      "startTime": "2025-10-13T13:33:02.878Z",
+      "timeSpent": 3,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a3c7",
+          "questionText": "What is the purpose of the BuildContext in Flutter?",
+          "choices": [
+            {
+              "text": "To store application state",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f46a"
+            },
+            {
+              "text": "To locate widgets in the widget tree",
+              "isCorrect": true,
+              "_id": "68ecff8e7d67674c4099f46b"
+            },
+            {
+              "text": "To manage HTTP connections",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f46c"
+            },
+            {
+              "text": "To handle user input",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f46d"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "To manage HTTP connections"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecff8e7d67674c4099f469"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3cc",
+          "questionText": "Which state management solution is built by the Flutter team?",
+          "choices": [
+            {
+              "text": "Redux",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f46f"
+            },
+            {
+              "text": "MobX",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f470"
+            },
+            {
+              "text": "Provider",
+              "isCorrect": true,
+              "_id": "68ecff8e7d67674c4099f471"
+            },
+            {
+              "text": "GetX",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f472"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecff8e7d67674c4099f46e"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d1",
+          "questionText": "What does the async keyword do in Dart?",
+          "choices": [
+            {
+              "text": "Makes a function return a Future",
+              "isCorrect": true,
+              "_id": "68ecff8e7d67674c4099f474"
+            },
+            {
+              "text": "Makes a function run faster",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f475"
+            },
+            {
+              "text": "Prevents errors in code",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f476"
+            },
+            {
+              "text": "Creates a new thread",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f477"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecff8e7d67674c4099f473"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3d6",
+          "questionText": "Which Flutter layout widget allows children to be positioned absolutely?",
+          "choices": [
+            {
+              "text": "Column",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f479"
+            },
+            {
+              "text": "Row",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f47a"
+            },
+            {
+              "text": "Stack",
+              "isCorrect": true,
+              "_id": "68ecff8e7d67674c4099f47b"
+            },
+            {
+              "text": "Wrap",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f47c"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecff8e7d67674c4099f478"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3a9",
+          "questionText": "What is Flutter?",
+          "choices": [
+            {
+              "text": "A mobile framework by Google",
+              "isCorrect": true,
+              "_id": "68ecff8e7d67674c4099f47e"
+            },
+            {
+              "text": "A programming language",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f47f"
+            },
+            {
+              "text": "A database system",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f480"
+            },
+            {
+              "text": "An operating system",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f481"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecff8e7d67674c4099f47d"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3ae",
+          "questionText": "Which programming language is used by Flutter?",
+          "choices": [
+            {
+              "text": "Java",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f483"
+            },
+            {
+              "text": "Kotlin",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f484"
+            },
+            {
+              "text": "Dart",
+              "isCorrect": true,
+              "_id": "68ecff8e7d67674c4099f485"
+            },
+            {
+              "text": "Swift",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f486"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecff8e7d67674c4099f482"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3b3",
+          "questionText": "What is a StatefulWidget in Flutter?",
+          "choices": [
+            {
+              "text": "A widget that never changes",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f488"
+            },
+            {
+              "text": "A widget that can change its state during runtime",
+              "isCorrect": true,
+              "_id": "68ecff8e7d67674c4099f489"
+            },
+            {
+              "text": "A widget for displaying images",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f48a"
+            },
+            {
+              "text": "A widget for handling HTTP requests",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f48b"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecff8e7d67674c4099f487"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3b8",
+          "questionText": "Which method is called when a StatefulWidget is first created?",
+          "choices": [
+            {
+              "text": "build()",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f48d"
+            },
+            {
+              "text": "initState()",
+              "isCorrect": true,
+              "_id": "68ecff8e7d67674c4099f48e"
+            },
+            {
+              "text": "dispose()",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f48f"
+            },
+            {
+              "text": "setState()",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f490"
+            }
+          ],
+          "difficulty": "medium",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecff8e7d67674c4099f48c"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3bd",
+          "questionText": "What is hot reload in Flutter?",
+          "choices": [
+            {
+              "text": "A feature to restart the entire application",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f492"
+            },
+            {
+              "text": "A feature to inject updated source code into the running app",
+              "isCorrect": true,
+              "_id": "68ecff8e7d67674c4099f493"
+            },
+            {
+              "text": "A debugging tool",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f494"
+            },
+            {
+              "text": "A testing framework",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f495"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecff8e7d67674c4099f491"
+        },
+        {
+          "questionId": "68ea9ece7d085a84d428a3c2",
+          "questionText": "Which Flutter widget is used to display scrollable content?",
+          "choices": [
+            {
+              "text": "Container",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f497"
+            },
+            {
+              "text": "ListView",
+              "isCorrect": true,
+              "_id": "68ecff8e7d67674c4099f498"
+            },
+            {
+              "text": "Text",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f499"
+            },
+            {
+              "text": "AppBar",
+              "isCorrect": false,
+              "_id": "68ecff8e7d67674c4099f49a"
+            }
+          ],
+          "difficulty": "easy",
+          "selectedAnswer": [],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ecff8e7d67674c4099f496"
+        }
+      ],
+      "totalQuestions": 10,
+      "correctAnswers": 0,
+      "score": 0,
+      "pointsEarned": 0,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-13T13:33:03.002Z",
+      "updatedAt": "2025-10-13T13:33:06.138Z",
+      "__v": 1,
+      "endTime": "2025-10-13T13:33:06.132Z",
+      "submissionTime": "2025-10-13T13:33:06.132Z"
+    },
+    {
+      "_id": "68ed00267d67674c4099f6ad",
+      "quizId": "68ebdc1ec4222bdfe86bfabc",
+      "studentId": "68ecf7b0f4bd21c6f0414b1f",
+      "attemptNumber": 1,
+      "startTime": "2025-10-13T13:35:34.565Z",
+      "timeSpent": 1,
+      "duration": 30,
+      "questions": [
+        {
+          "questionId": "68ea9ece7d085a84d428a3c7",
+          "questionText": "What is the purpose of the BuildContext in Flutter?",
+          "choices": [
+            {
+              "text": "To store application state",
+              "isCorrect": false,
+              "_id": "68ed00267d67674c4099f6af"
+            },
+            {
+              "text": "To locate widgets in the widget tree",
+              "isCorrect": true,
+              "_id": "68ed00267d67674c4099f6b0"
+            },
+            {
+              "text": "To manage HTTP connections",
+              "isCorrect": false,
+              "_id": "68ed00267d67674c4099f6b1"
+            },
+            {
+              "text": "To handle user input",
+              "isCorrect": false,
+              "_id": "68ed00267d67674c4099f6b2"
+            }
+          ],
+          "difficulty": "hard",
+          "selectedAnswer": [
+            "To manage HTTP connections"
+          ],
+          "isCorrect": false,
+          "timeSpent": 0,
+          "_id": "68ed00267d67674c4099f6ae"
+        }
+      ],
+      "totalQuestions": 1,
+      "correctAnswers": 0,
+      "score": 0,
+      "pointsEarned": 0,
+      "totalPoints": 100,
+      "status": "submitted",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "createdAt": "2025-10-13T13:35:34.671Z",
+      "updatedAt": "2025-10-13T13:35:36.565Z",
+      "__v": 1,
+      "endTime": "2025-10-13T13:35:36.564Z",
+      "submissionTime": "2025-10-13T13:35:36.564Z"
+    }
+  ]
+}

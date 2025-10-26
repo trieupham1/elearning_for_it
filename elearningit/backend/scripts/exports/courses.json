@@ -1,0 +1,115 @@
+{
+  "metadata": {
+    "collection": "courses",
+    "category": "Academic Structure",
+    "exportDate": "2025-10-13T16:00:37.732Z",
+    "count": 4,
+    "includesPasswords": false
+  },
+  "data": [
+    {
+      "_id": "68ea917d8f7467f25bbfaed0",
+      "code": "DB502042",
+      "name": "Database Management Systems",
+      "description": "Advanced concepts in database design, SQL, and NoSQL databases",
+      "instructor": "68ea917c8f7467f25bbfaea1",
+      "semester": "68ea917d8f7467f25bbfaecd",
+      "students": [
+        "68ea917c8f7467f25bbfaead",
+        "68ea917c8f7467f25bbfaeaf",
+        "68ea917c8f7467f25bbfaeb1",
+        "68ea917c8f7467f25bbfaeb3",
+        "68ea917c8f7467f25bbfaeb5",
+        "68ea917c8f7467f25bbfaeb7",
+        "68ea917c8f7467f25bbfaeb9",
+        "68ea917d8f7467f25bbfaebb",
+        "68ea917d8f7467f25bbfaebd",
+        "68ea917d8f7467f25bbfaebf"
+      ],
+      "sessions": 15,
+      "color": "#4CAF50",
+      "__v": 0,
+      "createdAt": "2025-10-11T17:18:53.611Z",
+      "updatedAt": "2025-10-11T17:18:53.611Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaecf",
+      "code": "CPM502071",
+      "name": "Cross-Platform Mobile Application Development",
+      "description": "Learn Flutter and Dart for building cross-platform mobile applications",
+      "instructor": "68ea917c8f7467f25bbfaea1",
+      "semester": "68ea917d8f7467f25bbfaecd",
+      "students": [
+        "68ea917c8f7467f25bbfaea3",
+        "68ea917c8f7467f25bbfaea5",
+        "68ea917c8f7467f25bbfaea7",
+        "68ea917c8f7467f25bbfaea9",
+        "68ea917c8f7467f25bbfaeab",
+        "68ea917c8f7467f25bbfaead",
+        "68ea917c8f7467f25bbfaeaf",
+        "68ea917c8f7467f25bbfaeb1",
+        "68ea917c8f7467f25bbfaeb3",
+        "68ea917c8f7467f25bbfaeb5",
+        "68ece38a2523f69600863632",
+        "68ecf7b0f4bd21c6f0414b1f"
+      ],
+      "sessions": 15,
+      "color": "#2196F3",
+      "__v": 2,
+      "createdAt": "2025-10-11T17:18:53.611Z",
+      "updatedAt": "2025-10-13T13:01:13.003Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaed1",
+      "code": "AI502083",
+      "name": "Artificial Intelligence",
+      "description": "Introduction to AI concepts, machine learning, and neural networks",
+      "instructor": "68ea917c8f7467f25bbfaea1",
+      "semester": "68ea917d8f7467f25bbfaecd",
+      "students": [
+        "68ea917c8f7467f25bbfaeb3",
+        "68ea917c8f7467f25bbfaeb5",
+        "68ea917c8f7467f25bbfaeb7",
+        "68ea917c8f7467f25bbfaeb9",
+        "68ea917d8f7467f25bbfaebb",
+        "68ea917d8f7467f25bbfaebd",
+        "68ea917d8f7467f25bbfaebf",
+        "68ea917d8f7467f25bbfaec1",
+        "68ea917d8f7467f25bbfaec3",
+        "68ea917d8f7467f25bbfaec5"
+      ],
+      "sessions": 15,
+      "color": "#9C27B0",
+      "__v": 0,
+      "createdAt": "2025-10-11T17:18:53.611Z",
+      "updatedAt": "2025-10-11T17:18:53.611Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaed2",
+      "code": "WEB502031",
+      "name": "Web Programming and Applications",
+      "description": "HTML, CSS, JavaScript, and modern web frameworks",
+      "instructor": "68ea917c8f7467f25bbfaea1",
+      "semester": "68ea917d8f7467f25bbfaecb",
+      "students": [
+        "68ea917c8f7467f25bbfaea3",
+        "68ea917c8f7467f25bbfaea5",
+        "68ea917c8f7467f25bbfaea7",
+        "68ea917c8f7467f25bbfaea9",
+        "68ea917c8f7467f25bbfaeab",
+        "68ea917c8f7467f25bbfaead",
+        "68ea917c8f7467f25bbfaeaf",
+        "68ea917c8f7467f25bbfaeb1",
+        "68ea917c8f7467f25bbfaeb3",
+        "68ea917c8f7467f25bbfaeb5",
+        "68ea917c8f7467f25bbfaeb7",
+        "68ea917c8f7467f25bbfaeb9"
+      ],
+      "sessions": 15,
+      "color": "#FF9800",
+      "__v": 0,
+      "createdAt": "2025-10-11T17:18:53.612Z",
+      "updatedAt": "2025-10-11T17:18:53.612Z"
+    }
+  ]
+}

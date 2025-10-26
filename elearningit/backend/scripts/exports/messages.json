@@ -1,0 +1,58 @@
+{
+  "metadata": {
+    "collection": "messages",
+    "category": "Communication",
+    "exportDate": "2025-10-13T16:00:38.497Z",
+    "count": 4,
+    "includesPasswords": false
+  },
+  "data": [
+    {
+      "_id": "68ea95a324a7c757f7c974e8",
+      "senderId": "68ea917c8f7467f25bbfaea1",
+      "receiverId": "68ea917c8f7467f25bbfaea1",
+      "content": "Hello",
+      "attachments": [],
+      "isRead": true,
+      "createdAt": "2025-10-11T17:36:35.344Z",
+      "updatedAt": "2025-10-11T17:36:36.001Z",
+      "__v": 0,
+      "readAt": "2025-10-11T17:36:36.001Z"
+    },
+    {
+      "_id": "68ea95b324a7c757f7c974f3",
+      "senderId": "68ea917c8f7467f25bbfaea1",
+      "receiverId": "68ea917c8f7467f25bbfaea1",
+      "content": "Chào các em",
+      "attachments": [],
+      "isRead": true,
+      "createdAt": "2025-10-11T17:36:51.006Z",
+      "updatedAt": "2025-10-11T17:36:51.443Z",
+      "__v": 0,
+      "readAt": "2025-10-11T17:36:51.443Z"
+    },
+    {
+      "_id": "68eadd17189f7736ee1fcb61",
+      "senderId": "68ea917c8f7467f25bbfaea1",
+      "receiverId": "68ea917c8f7467f25bbfaea1",
+      "content": "làm bài chưa",
+      "attachments": [],
+      "isRead": true,
+      "createdAt": "2025-10-11T22:41:27.432Z",
+      "updatedAt": "2025-10-11T22:41:27.821Z",
+      "__v": 0,
+      "readAt": "2025-10-11T22:41:27.821Z"
+    },
+    {
+      "_id": "68eadd7c189f7736ee1fcb87",
+      "senderId": "68ea917c8f7467f25bbfaea1",
+      "receiverId": "68ea917d8f7467f25bbfaec3",
+      "content": "Chao em",
+      "attachments": [],
+      "isRead": false,
+      "createdAt": "2025-10-11T22:43:08.419Z",
+      "updatedAt": "2025-10-11T22:43:08.419Z",
+      "__v": 0
+    }
+  ]
+}

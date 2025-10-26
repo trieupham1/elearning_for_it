@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "collection": "forumReplies",
+    "category": "Communication",
+    "exportDate": "2025-10-13T16:00:38.436Z",
+    "count": 5,
+    "includesPasswords": false
+  },
+  "data": [
+    {
+      "_id": "68eb90d11193e1952720370b",
+      "topicId": "68eb8cdf1193e19527203683",
+      "authorId": "68ea917c8f7467f25bbfaea3",
+      "authorName": "Nguyen Van An",
+      "authorRole": "student",
+      "content": "sdads",
+      "parentReplyId": null,
+      "attachments": [],
+      "likes": [],
+      "isEdited": false,
+      "createdAt": "2025-10-12T11:28:17.916Z",
+      "updatedAt": "2025-10-12T11:28:17.916Z",
+      "__v": 0
+    },
+    {
+      "_id": "68eb90e91193e19527203727",
+      "topicId": "68eb90e31193e1952720371e",
+      "authorId": "68ea917c8f7467f25bbfaea3",
+      "authorName": "Nguyen Van An",
+      "authorRole": "student",
+      "content": "dsada",
+      "parentReplyId": null,
+      "attachments": [],
+      "likes": [],
+      "isEdited": false,
+      "createdAt": "2025-10-12T11:28:41.930Z",
+      "updatedAt": "2025-10-12T11:28:41.930Z",
+      "__v": 0
+    },
+    {
+      "_id": "68eb91d91193e19527203762",
+      "topicId": "68eb8cdf1193e19527203683",
+      "authorId": "68ea917c8f7467f25bbfaea3",
+      "authorName": "Nguyen Van An",
+      "authorRole": "student",
+      "content": "dsa",
+      "parentReplyId": null,
+      "attachments": [],
+      "likes": [],
+      "isEdited": false,
+      "createdAt": "2025-10-12T11:32:41.126Z",
+      "updatedAt": "2025-10-12T11:32:41.126Z",
+      "__v": 0
+    },
+    {
+      "_id": "68eb93281193e195272037a3",
+      "topicId": "68eb91f11193e19527203768",
+      "authorId": "68ea917c8f7467f25bbfaea3",
+      "authorName": "Nguyen Van An",
+      "authorRole": "student",
+      "content": "dddddd",
+      "parentReplyId": null,
+      "attachments": [],
+      "likes": [],
+      "isEdited": false,
+      "createdAt": "2025-10-12T11:38:16.015Z",
+      "updatedAt": "2025-10-12T11:38:16.015Z",
+      "__v": 0
+    },
+    {
+      "_id": "68eb932f1193e195272037ab",
+      "topicId": "68eb91f11193e19527203768",
+      "authorId": "68ea917c8f7467f25bbfaea3",
+      "authorName": "Nguyen Van An",
+      "authorRole": "student",
+      "content": "dddd",
+      "parentReplyId": "68eb93281193e195272037a3",
+      "attachments": [],
+      "likes": [],
+      "isEdited": false,
+      "createdAt": "2025-10-12T11:38:23.608Z",
+      "updatedAt": "2025-10-12T11:38:23.608Z",
+      "__v": 0
+    }
+  ]
+}

@@ -1,0 +1,1380 @@
+{
+  "metadata": {
+    "collection": "notifications",
+    "category": "System",
+    "exportDate": "2025-10-13T16:00:38.558Z",
+    "count": 85,
+    "includesPasswords": false
+  },
+  "data": [
+    {
+      "_id": "68ea95a324a7c757f7c974ec",
+      "userId": "68ea917c8f7467f25bbfaea1",
+      "type": "message",
+      "title": "New Message",
+      "message": "Mai Van Manh: Hello...",
+      "data": {
+        "senderName": "Mai Van Manh"
+      },
+      "isRead": true,
+      "createdAt": "2025-10-11T17:36:35.756Z",
+      "updatedAt": "2025-10-11T17:37:56.938Z",
+      "__v": 0,
+      "readAt": "2025-10-11T17:37:56.938Z"
+    },
+    {
+      "_id": "68ea95b324a7c757f7c974f7",
+      "userId": "68ea917c8f7467f25bbfaea1",
+      "type": "message",
+      "title": "New Message",
+      "message": "Mai Van Manh: Chào các em...",
+      "data": {
+        "senderName": "Mai Van Manh"
+      },
+      "isRead": true,
+      "createdAt": "2025-10-11T17:36:51.205Z",
+      "updatedAt": "2025-10-11T17:37:56.938Z",
+      "__v": 0,
+      "readAt": "2025-10-11T17:37:56.938Z"
+    },
+    {
+      "_id": "68ead799a4edbe8b85aa080c",
+      "userId": "68ea917c8f7467f25bbfaeb3",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"Chatgpt\" uploaded in Artificial Intelligence",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaed1",
+        "courseName": "Artificial Intelligence",
+        "materialTitle": "Chatgpt"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-11T22:18:01.073Z",
+      "updatedAt": "2025-10-11T22:18:01.073Z"
+    },
+    {
+      "_id": "68eadd17189f7736ee1fcb65",
+      "userId": "68ea917c8f7467f25bbfaea1",
+      "type": "message",
+      "title": "New Message",
+      "message": "Mai Van Manh: làm bài chưa...",
+      "data": {
+        "senderName": "Mai Van Manh"
+      },
+      "isRead": true,
+      "createdAt": "2025-10-11T22:41:27.626Z",
+      "updatedAt": "2025-10-12T05:11:18.378Z",
+      "__v": 0,
+      "readAt": "2025-10-12T05:11:18.377Z"
+    },
+    {
+      "_id": "68eadd7c189f7736ee1fcb8b",
+      "userId": "68ea917d8f7467f25bbfaec3",
+      "type": "message",
+      "title": "New Message",
+      "message": "Mai Van Manh: Chao em...",
+      "data": {
+        "senderName": "Mai Van Manh"
+      },
+      "isRead": true,
+      "createdAt": "2025-10-11T22:43:08.597Z",
+      "updatedAt": "2025-10-11T22:43:44.103Z",
+      "__v": 0,
+      "readAt": "2025-10-11T22:43:44.103Z"
+    },
+    {
+      "_id": "68eb3785c64303f125eee8da",
+      "userId": "68ea917c8f7467f25bbfaea7",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"Final project\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "Final project"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T05:07:17.040Z",
+      "updatedAt": "2025-10-12T05:07:17.040Z"
+    },
+    {
+      "_id": "68eb3785c64303f125eee8d9",
+      "userId": "68ea917c8f7467f25bbfaea5",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"Final project\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "Final project"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T05:07:17.040Z",
+      "updatedAt": "2025-10-12T05:07:17.040Z"
+    },
+    {
+      "_id": "68eb3785c64303f125eee8dd",
+      "userId": "68ea917c8f7467f25bbfaead",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"Final project\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "Final project"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T05:07:17.040Z",
+      "updatedAt": "2025-10-12T05:07:17.040Z"
+    },
+    {
+      "_id": "68eb3785c64303f125eee8e0",
+      "userId": "68ea917c8f7467f25bbfaeb3",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"Final project\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "Final project"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T05:07:17.040Z",
+      "updatedAt": "2025-10-12T05:07:17.040Z"
+    },
+    {
+      "_id": "68eb3785c64303f125eee8d8",
+      "userId": "68ea917c8f7467f25bbfaea3",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"Final project\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "Final project"
+      },
+      "isRead": true,
+      "__v": 0,
+      "createdAt": "2025-10-12T05:07:17.040Z",
+      "updatedAt": "2025-10-12T05:12:48.625Z",
+      "readAt": "2025-10-12T05:12:48.625Z"
+    },
+    {
+      "_id": "68eb3785c64303f125eee8db",
+      "userId": "68ea917c8f7467f25bbfaea9",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"Final project\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "Final project"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T05:07:17.040Z",
+      "updatedAt": "2025-10-12T05:07:17.040Z"
+    },
+    {
+      "_id": "68eb3785c64303f125eee8de",
+      "userId": "68ea917c8f7467f25bbfaeaf",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"Final project\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "Final project"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T05:07:17.040Z",
+      "updatedAt": "2025-10-12T05:07:17.040Z"
+    },
+    {
+      "_id": "68eb3785c64303f125eee8df",
+      "userId": "68ea917c8f7467f25bbfaeb1",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"Final project\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "Final project"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T05:07:17.040Z",
+      "updatedAt": "2025-10-12T05:07:17.040Z"
+    },
+    {
+      "_id": "68eb3785c64303f125eee8dc",
+      "userId": "68ea917c8f7467f25bbfaeab",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"Final project\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "Final project"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T05:07:17.040Z",
+      "updatedAt": "2025-10-12T05:07:17.040Z"
+    },
+    {
+      "_id": "68eb3785c64303f125eee8e1",
+      "userId": "68ea917c8f7467f25bbfaeb5",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"Final project\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "Final project"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T05:07:17.040Z",
+      "updatedAt": "2025-10-12T05:07:17.040Z"
+    },
+    {
+      "_id": "68eb68c8b495681d24f26148",
+      "userId": "68ea917c8f7467f25bbfaea7",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:37:28.408Z",
+      "updatedAt": "2025-10-12T08:37:28.408Z"
+    },
+    {
+      "_id": "68eb68c8b495681d24f2614a",
+      "userId": "68ea917c8f7467f25bbfaeab",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:37:28.408Z",
+      "updatedAt": "2025-10-12T08:37:28.408Z"
+    },
+    {
+      "_id": "68eb68c8b495681d24f2614b",
+      "userId": "68ea917c8f7467f25bbfaead",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:37:28.408Z",
+      "updatedAt": "2025-10-12T08:37:28.408Z"
+    },
+    {
+      "_id": "68eb68c8b495681d24f2614c",
+      "userId": "68ea917c8f7467f25bbfaeaf",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:37:28.408Z",
+      "updatedAt": "2025-10-12T08:37:28.408Z"
+    },
+    {
+      "_id": "68eb68c8b495681d24f2614e",
+      "userId": "68ea917c8f7467f25bbfaeb3",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:37:28.408Z",
+      "updatedAt": "2025-10-12T08:37:28.408Z"
+    },
+    {
+      "_id": "68eb68c8b495681d24f26147",
+      "userId": "68ea917c8f7467f25bbfaea5",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:37:28.408Z",
+      "updatedAt": "2025-10-12T08:37:28.408Z"
+    },
+    {
+      "_id": "68eb68c8b495681d24f2614f",
+      "userId": "68ea917c8f7467f25bbfaeb5",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:37:28.408Z",
+      "updatedAt": "2025-10-12T08:37:28.408Z"
+    },
+    {
+      "_id": "68eb68c8b495681d24f26149",
+      "userId": "68ea917c8f7467f25bbfaea9",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:37:28.408Z",
+      "updatedAt": "2025-10-12T08:37:28.408Z"
+    },
+    {
+      "_id": "68eb68c8b495681d24f2614d",
+      "userId": "68ea917c8f7467f25bbfaeb1",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:37:28.408Z",
+      "updatedAt": "2025-10-12T08:37:28.408Z"
+    },
+    {
+      "_id": "68eb68c8b495681d24f26146",
+      "userId": "68ea917c8f7467f25bbfaea3",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": true,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:37:28.408Z",
+      "updatedAt": "2025-10-12T08:44:44.067Z",
+      "readAt": "2025-10-12T08:44:44.067Z"
+    },
+    {
+      "_id": "68eb692db495681d24f261b3",
+      "userId": "68ea917c8f7467f25bbfaea7",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"ds\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:39:09.429Z",
+      "updatedAt": "2025-10-12T08:39:09.429Z"
+    },
+    {
+      "_id": "68eb692db495681d24f261b1",
+      "userId": "68ea917c8f7467f25bbfaea3",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"ds\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "ds"
+      },
+      "isRead": true,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:39:09.428Z",
+      "updatedAt": "2025-10-12T08:44:44.067Z",
+      "readAt": "2025-10-12T08:44:44.067Z"
+    },
+    {
+      "_id": "68eb692db495681d24f261b6",
+      "userId": "68ea917c8f7467f25bbfaead",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"ds\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:39:09.429Z",
+      "updatedAt": "2025-10-12T08:39:09.429Z"
+    },
+    {
+      "_id": "68eb692db495681d24f261b8",
+      "userId": "68ea917c8f7467f25bbfaeb1",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"ds\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:39:09.429Z",
+      "updatedAt": "2025-10-12T08:39:09.429Z"
+    },
+    {
+      "_id": "68eb692db495681d24f261ba",
+      "userId": "68ea917c8f7467f25bbfaeb5",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"ds\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:39:09.429Z",
+      "updatedAt": "2025-10-12T08:39:09.429Z"
+    },
+    {
+      "_id": "68eb692db495681d24f261b2",
+      "userId": "68ea917c8f7467f25bbfaea5",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"ds\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:39:09.428Z",
+      "updatedAt": "2025-10-12T08:39:09.428Z"
+    },
+    {
+      "_id": "68eb692db495681d24f261b4",
+      "userId": "68ea917c8f7467f25bbfaea9",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"ds\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:39:09.429Z",
+      "updatedAt": "2025-10-12T08:39:09.429Z"
+    },
+    {
+      "_id": "68eb692db495681d24f261b5",
+      "userId": "68ea917c8f7467f25bbfaeab",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"ds\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:39:09.429Z",
+      "updatedAt": "2025-10-12T08:39:09.429Z"
+    },
+    {
+      "_id": "68eb692db495681d24f261b9",
+      "userId": "68ea917c8f7467f25bbfaeb3",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"ds\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:39:09.429Z",
+      "updatedAt": "2025-10-12T08:39:09.429Z"
+    },
+    {
+      "_id": "68eb692db495681d24f261b7",
+      "userId": "68ea917c8f7467f25bbfaeaf",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"ds\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T08:39:09.429Z",
+      "updatedAt": "2025-10-12T08:39:09.429Z"
+    },
+    {
+      "_id": "68eba695d86d1451663047c1",
+      "userId": "68ea917c8f7467f25bbfaea3",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"da\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "da"
+      },
+      "isRead": true,
+      "__v": 0,
+      "createdAt": "2025-10-12T13:01:09.862Z",
+      "updatedAt": "2025-10-12T16:48:00.004Z",
+      "readAt": "2025-10-12T16:47:59.999Z"
+    },
+    {
+      "_id": "68eba695d86d1451663047c3",
+      "userId": "68ea917c8f7467f25bbfaea7",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"da\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "da"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T13:01:09.863Z",
+      "updatedAt": "2025-10-12T13:01:09.863Z"
+    },
+    {
+      "_id": "68eba695d86d1451663047c5",
+      "userId": "68ea917c8f7467f25bbfaeab",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"da\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "da"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T13:01:09.863Z",
+      "updatedAt": "2025-10-12T13:01:09.863Z"
+    },
+    {
+      "_id": "68eba695d86d1451663047c4",
+      "userId": "68ea917c8f7467f25bbfaea9",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"da\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "da"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T13:01:09.863Z",
+      "updatedAt": "2025-10-12T13:01:09.863Z"
+    },
+    {
+      "_id": "68eba695d86d1451663047c9",
+      "userId": "68ea917c8f7467f25bbfaeb3",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"da\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "da"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T13:01:09.863Z",
+      "updatedAt": "2025-10-12T13:01:09.863Z"
+    },
+    {
+      "_id": "68eba695d86d1451663047ca",
+      "userId": "68ea917c8f7467f25bbfaeb5",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"da\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "da"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T13:01:09.863Z",
+      "updatedAt": "2025-10-12T13:01:09.863Z"
+    },
+    {
+      "_id": "68eba695d86d1451663047c2",
+      "userId": "68ea917c8f7467f25bbfaea5",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"da\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "da"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T13:01:09.863Z",
+      "updatedAt": "2025-10-12T13:01:09.863Z"
+    },
+    {
+      "_id": "68eba695d86d1451663047c6",
+      "userId": "68ea917c8f7467f25bbfaead",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"da\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "da"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T13:01:09.863Z",
+      "updatedAt": "2025-10-12T13:01:09.863Z"
+    },
+    {
+      "_id": "68eba695d86d1451663047c7",
+      "userId": "68ea917c8f7467f25bbfaeaf",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"da\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "da"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T13:01:09.863Z",
+      "updatedAt": "2025-10-12T13:01:09.863Z"
+    },
+    {
+      "_id": "68eba695d86d1451663047c8",
+      "userId": "68ea917c8f7467f25bbfaeb1",
+      "type": "material",
+      "title": "New Material Available",
+      "message": "New material \"da\" uploaded in Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "materialTitle": "da"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T13:01:09.863Z",
+      "updatedAt": "2025-10-12T13:01:09.863Z"
+    },
+    {
+      "_id": "68ebdbf4c4222bdfe86bfa57",
+      "userId": "68ea917c8f7467f25bbfaea5",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:48:52.810Z",
+      "updatedAt": "2025-10-12T16:48:52.810Z"
+    },
+    {
+      "_id": "68ebdbf4c4222bdfe86bfa58",
+      "userId": "68ea917c8f7467f25bbfaea7",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:48:52.810Z",
+      "updatedAt": "2025-10-12T16:48:52.810Z"
+    },
+    {
+      "_id": "68ebdbf4c4222bdfe86bfa59",
+      "userId": "68ea917c8f7467f25bbfaea9",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:48:52.810Z",
+      "updatedAt": "2025-10-12T16:48:52.810Z"
+    },
+    {
+      "_id": "68ebdbf4c4222bdfe86bfa5a",
+      "userId": "68ea917c8f7467f25bbfaeab",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:48:52.810Z",
+      "updatedAt": "2025-10-12T16:48:52.810Z"
+    },
+    {
+      "_id": "68ebdbf4c4222bdfe86bfa5b",
+      "userId": "68ea917c8f7467f25bbfaead",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:48:52.810Z",
+      "updatedAt": "2025-10-12T16:48:52.810Z"
+    },
+    {
+      "_id": "68ebdbf4c4222bdfe86bfa5d",
+      "userId": "68ea917c8f7467f25bbfaeb1",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:48:52.810Z",
+      "updatedAt": "2025-10-12T16:48:52.810Z"
+    },
+    {
+      "_id": "68ebdbf4c4222bdfe86bfa5e",
+      "userId": "68ea917c8f7467f25bbfaeb3",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:48:52.810Z",
+      "updatedAt": "2025-10-12T16:48:52.810Z"
+    },
+    {
+      "_id": "68ebdbf4c4222bdfe86bfa56",
+      "userId": "68ea917c8f7467f25bbfaea3",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": true,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:48:52.810Z",
+      "updatedAt": "2025-10-13T09:19:50.104Z",
+      "readAt": "2025-10-13T09:19:50.103Z"
+    },
+    {
+      "_id": "68ebdbf4c4222bdfe86bfa5c",
+      "userId": "68ea917c8f7467f25bbfaeaf",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:48:52.810Z",
+      "updatedAt": "2025-10-12T16:48:52.810Z"
+    },
+    {
+      "_id": "68ebdbf4c4222bdfe86bfa5f",
+      "userId": "68ea917c8f7467f25bbfaeb5",
+      "type": "announcement",
+      "title": "New Announcement",
+      "message": "New announcement in Cross-Platform Mobile Application Development: ds",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "announcementTitle": "ds"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:48:52.810Z",
+      "updatedAt": "2025-10-12T16:48:52.810Z"
+    },
+    {
+      "_id": "68ebdc10c4222bdfe86bfa7f",
+      "userId": "68ea917c8f7467f25bbfaea5",
+      "type": "assignment",
+      "title": "New Assignment",
+      "message": "New assignment \"dsas\" in undefined. Due: 2025-10-19T23:59:00.000",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "assignmentTitle": "dsas",
+        "dueDate": "2025-10-19T23:59:00.000"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:49:20.436Z",
+      "updatedAt": "2025-10-12T16:49:20.436Z"
+    },
+    {
+      "_id": "68ebdc10c4222bdfe86bfa85",
+      "userId": "68ea917c8f7467f25bbfaeb1",
+      "type": "assignment",
+      "title": "New Assignment",
+      "message": "New assignment \"dsas\" in undefined. Due: 2025-10-19T23:59:00.000",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "assignmentTitle": "dsas",
+        "dueDate": "2025-10-19T23:59:00.000"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:49:20.436Z",
+      "updatedAt": "2025-10-12T16:49:20.436Z"
+    },
+    {
+      "_id": "68ebdc10c4222bdfe86bfa86",
+      "userId": "68ea917c8f7467f25bbfaeb3",
+      "type": "assignment",
+      "title": "New Assignment",
+      "message": "New assignment \"dsas\" in undefined. Due: 2025-10-19T23:59:00.000",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "assignmentTitle": "dsas",
+        "dueDate": "2025-10-19T23:59:00.000"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:49:20.436Z",
+      "updatedAt": "2025-10-12T16:49:20.436Z"
+    },
+    {
+      "_id": "68ebdc10c4222bdfe86bfa7e",
+      "userId": "68ea917c8f7467f25bbfaea3",
+      "type": "assignment",
+      "title": "New Assignment",
+      "message": "New assignment \"dsas\" in undefined. Due: 2025-10-19T23:59:00.000",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "assignmentTitle": "dsas",
+        "dueDate": "2025-10-19T23:59:00.000"
+      },
+      "isRead": true,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:49:20.436Z",
+      "updatedAt": "2025-10-13T09:19:47.965Z",
+      "readAt": "2025-10-13T09:19:47.965Z"
+    },
+    {
+      "_id": "68ebdc10c4222bdfe86bfa80",
+      "userId": "68ea917c8f7467f25bbfaea7",
+      "type": "assignment",
+      "title": "New Assignment",
+      "message": "New assignment \"dsas\" in undefined. Due: 2025-10-19T23:59:00.000",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "assignmentTitle": "dsas",
+        "dueDate": "2025-10-19T23:59:00.000"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:49:20.436Z",
+      "updatedAt": "2025-10-12T16:49:20.436Z"
+    },
+    {
+      "_id": "68ebdc10c4222bdfe86bfa83",
+      "userId": "68ea917c8f7467f25bbfaead",
+      "type": "assignment",
+      "title": "New Assignment",
+      "message": "New assignment \"dsas\" in undefined. Due: 2025-10-19T23:59:00.000",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "assignmentTitle": "dsas",
+        "dueDate": "2025-10-19T23:59:00.000"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:49:20.436Z",
+      "updatedAt": "2025-10-12T16:49:20.436Z"
+    },
+    {
+      "_id": "68ebdc10c4222bdfe86bfa84",
+      "userId": "68ea917c8f7467f25bbfaeaf",
+      "type": "assignment",
+      "title": "New Assignment",
+      "message": "New assignment \"dsas\" in undefined. Due: 2025-10-19T23:59:00.000",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "assignmentTitle": "dsas",
+        "dueDate": "2025-10-19T23:59:00.000"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:49:20.436Z",
+      "updatedAt": "2025-10-12T16:49:20.436Z"
+    },
+    {
+      "_id": "68ebdc10c4222bdfe86bfa82",
+      "userId": "68ea917c8f7467f25bbfaeab",
+      "type": "assignment",
+      "title": "New Assignment",
+      "message": "New assignment \"dsas\" in undefined. Due: 2025-10-19T23:59:00.000",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "assignmentTitle": "dsas",
+        "dueDate": "2025-10-19T23:59:00.000"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:49:20.436Z",
+      "updatedAt": "2025-10-12T16:49:20.436Z"
+    },
+    {
+      "_id": "68ebdc10c4222bdfe86bfa81",
+      "userId": "68ea917c8f7467f25bbfaea9",
+      "type": "assignment",
+      "title": "New Assignment",
+      "message": "New assignment \"dsas\" in undefined. Due: 2025-10-19T23:59:00.000",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "assignmentTitle": "dsas",
+        "dueDate": "2025-10-19T23:59:00.000"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:49:20.436Z",
+      "updatedAt": "2025-10-12T16:49:20.436Z"
+    },
+    {
+      "_id": "68ebdc10c4222bdfe86bfa87",
+      "userId": "68ea917c8f7467f25bbfaeb5",
+      "type": "assignment",
+      "title": "New Assignment",
+      "message": "New assignment \"dsas\" in undefined. Due: 2025-10-19T23:59:00.000",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "assignmentTitle": "dsas",
+        "dueDate": "2025-10-19T23:59:00.000"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-12T16:49:20.436Z",
+      "updatedAt": "2025-10-12T16:49:20.436Z"
+    },
+    {
+      "_id": "68ecc4124497da6dfa7a2faa",
+      "userId": "68ea917c8f7467f25bbfaea3",
+      "type": "quiz",
+      "title": "New Quiz Available",
+      "message": "New quiz \"qwe\" is now available in undefined",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "quizTitle": "qwe"
+      },
+      "isRead": true,
+      "__v": 0,
+      "createdAt": "2025-10-13T09:19:14.203Z",
+      "updatedAt": "2025-10-13T09:19:49.204Z",
+      "readAt": "2025-10-13T09:19:49.204Z"
+    },
+    {
+      "_id": "68ecc4124497da6dfa7a2fab",
+      "userId": "68ea917c8f7467f25bbfaea5",
+      "type": "quiz",
+      "title": "New Quiz Available",
+      "message": "New quiz \"qwe\" is now available in undefined",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "quizTitle": "qwe"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-13T09:19:14.204Z",
+      "updatedAt": "2025-10-13T09:19:14.204Z"
+    },
+    {
+      "_id": "68ecc4124497da6dfa7a2fac",
+      "userId": "68ea917c8f7467f25bbfaea7",
+      "type": "quiz",
+      "title": "New Quiz Available",
+      "message": "New quiz \"qwe\" is now available in undefined",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "quizTitle": "qwe"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-13T09:19:14.204Z",
+      "updatedAt": "2025-10-13T09:19:14.204Z"
+    },
+    {
+      "_id": "68ecc4124497da6dfa7a2fad",
+      "userId": "68ea917c8f7467f25bbfaea9",
+      "type": "quiz",
+      "title": "New Quiz Available",
+      "message": "New quiz \"qwe\" is now available in undefined",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "quizTitle": "qwe"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-13T09:19:14.204Z",
+      "updatedAt": "2025-10-13T09:19:14.204Z"
+    },
+    {
+      "_id": "68ecc4124497da6dfa7a2fae",
+      "userId": "68ea917c8f7467f25bbfaeab",
+      "type": "quiz",
+      "title": "New Quiz Available",
+      "message": "New quiz \"qwe\" is now available in undefined",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "quizTitle": "qwe"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-13T09:19:14.204Z",
+      "updatedAt": "2025-10-13T09:19:14.204Z"
+    },
+    {
+      "_id": "68ecc4124497da6dfa7a2faf",
+      "userId": "68ea917c8f7467f25bbfaead",
+      "type": "quiz",
+      "title": "New Quiz Available",
+      "message": "New quiz \"qwe\" is now available in undefined",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "quizTitle": "qwe"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-13T09:19:14.204Z",
+      "updatedAt": "2025-10-13T09:19:14.204Z"
+    },
+    {
+      "_id": "68ecc4124497da6dfa7a2fb0",
+      "userId": "68ea917c8f7467f25bbfaeaf",
+      "type": "quiz",
+      "title": "New Quiz Available",
+      "message": "New quiz \"qwe\" is now available in undefined",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "quizTitle": "qwe"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-13T09:19:14.204Z",
+      "updatedAt": "2025-10-13T09:19:14.204Z"
+    },
+    {
+      "_id": "68ecc4124497da6dfa7a2fb3",
+      "userId": "68ea917c8f7467f25bbfaeb5",
+      "type": "quiz",
+      "title": "New Quiz Available",
+      "message": "New quiz \"qwe\" is now available in undefined",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "quizTitle": "qwe"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-13T09:19:14.204Z",
+      "updatedAt": "2025-10-13T09:19:14.204Z"
+    },
+    {
+      "_id": "68ecc4124497da6dfa7a2fb1",
+      "userId": "68ea917c8f7467f25bbfaeb1",
+      "type": "quiz",
+      "title": "New Quiz Available",
+      "message": "New quiz \"qwe\" is now available in undefined",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "quizTitle": "qwe"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-13T09:19:14.204Z",
+      "updatedAt": "2025-10-13T09:19:14.204Z"
+    },
+    {
+      "_id": "68ecc4124497da6dfa7a2fb2",
+      "userId": "68ea917c8f7467f25bbfaeb3",
+      "type": "quiz",
+      "title": "New Quiz Available",
+      "message": "New quiz \"qwe\" is now available in undefined",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "quizTitle": "qwe"
+      },
+      "isRead": false,
+      "__v": 0,
+      "createdAt": "2025-10-13T09:19:14.204Z",
+      "updatedAt": "2025-10-13T09:19:14.204Z"
+    },
+    {
+      "_id": "68ecedb94c5f8eb9cb934a09",
+      "userId": "68ea917c8f7467f25bbfaea1",
+      "type": "course_join_request",
+      "title": "Course Join Request",
+      "message": "Tran Manh Khang has requested to join Cross-Platform Mobile Application Development (Group 1)",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "courseCode": "CPM502071",
+        "studentId": "68ece38a2523f69600863632",
+        "studentName": "Tran Manh Khang",
+        "studentEmail": "kxckhang123@gmail.com",
+        "groupId": "68ea917d8f7467f25bbfaed4",
+        "groupName": "Group 1"
+      },
+      "isRead": true,
+      "createdAt": "2025-10-13T12:16:57.665Z",
+      "updatedAt": "2025-10-13T12:58:07.425Z",
+      "__v": 0,
+      "readAt": "2025-10-13T12:58:07.424Z"
+    },
+    {
+      "_id": "68ecf75ff4bd21c6f0414b19",
+      "userId": "68ece38a2523f69600863632",
+      "type": "message",
+      "title": "Join Request Approved",
+      "message": "Your request to join Cross-Platform Mobile Application Development has been approved!",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development"
+      },
+      "isRead": false,
+      "createdAt": "2025-10-13T12:58:07.483Z",
+      "updatedAt": "2025-10-13T12:58:07.483Z",
+      "__v": 0
+    },
+    {
+      "_id": "68ecf7c6f4bd21c6f0414b30",
+      "userId": "68ecf7b0f4bd21c6f0414b1f",
+      "type": "course_invite",
+      "title": "Course Invitation",
+      "message": "You have been invited to join Cross-Platform Mobile Application Development (Group 2)",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "courseCode": "CPM502071",
+        "instructorId": "68ea917c8f7467f25bbfaea1",
+        "groupId": "68ea917d8f7467f25bbfaed5",
+        "groupName": "Group 2"
+      },
+      "isRead": true,
+      "__v": 0,
+      "createdAt": "2025-10-13T12:59:50.905Z",
+      "updatedAt": "2025-10-13T13:01:13.218Z",
+      "readAt": "2025-10-13T13:01:13.218Z"
+    },
+    {
+      "_id": "68ecf819f4bd21c6f0414b3f",
+      "userId": "68ea917c8f7467f25bbfaea1",
+      "type": "message",
+      "title": "Course Invitation Accepted",
+      "message": "Pham Quoc Trieu has accepted your invitation to join Cross-Platform Mobile Application Development",
+      "data": {
+        "courseId": "68ea917d8f7467f25bbfaecf",
+        "courseName": "Cross-Platform Mobile Application Development",
+        "studentId": "68ecf7b0f4bd21c6f0414b1f",
+        "studentName": "Pham Quoc Trieu"
+      },
+      "isRead": false,
+      "createdAt": "2025-10-13T13:01:13.288Z",
+      "updatedAt": "2025-10-13T13:01:13.288Z",
+      "__v": 0
+    },
+    {
+      "_id": "68ecf854f4bd21c6f0414c07",
+      "userId": "68ea917c8f7467f25bbfaea1",
+      "type": "quiz_attempt",
+      "title": "Quiz Completed",
+      "message": "Pham Quoc Trieu completed \"ds\" in undefined. Score: 100.0%",
+      "data": {
+        "quizTitle": "ds",
+        "studentName": "Pham Quoc Trieu",
+        "score": "100.0%",
+        "attemptId": "68ecf84bf4bd21c6f0414ba8"
+      },
+      "isRead": false,
+      "createdAt": "2025-10-13T13:02:12.321Z",
+      "updatedAt": "2025-10-13T13:02:12.321Z",
+      "__v": 0
+    },
+    {
+      "_id": "68ecf8fef4bd21c6f0414c50",
+      "userId": "68ea917c8f7467f25bbfaea1",
+      "type": "quiz_attempt",
+      "title": "Quiz Completed",
+      "message": "Pham Quoc Trieu completed \"da\" in undefined. Score: 100.0%",
+      "data": {
+        "quizTitle": "da",
+        "studentName": "Pham Quoc Trieu",
+        "score": "100.0%",
+        "attemptId": "68ecf8fcf4bd21c6f0414c37"
+      },
+      "isRead": false,
+      "createdAt": "2025-10-13T13:05:02.988Z",
+      "updatedAt": "2025-10-13T13:05:02.988Z",
+      "__v": 0
+    },
+    {
+      "_id": "68ecf9fcf4bd21c6f0414f49",
+      "userId": "68ea917c8f7467f25bbfaea1",
+      "type": "quiz_attempt",
+      "title": "Quiz Completed",
+      "message": "Pham Quoc Trieu completed \"Flutter\" in undefined. Score: 70.0%",
+      "data": {
+        "quizTitle": "Flutter",
+        "studentName": "Pham Quoc Trieu",
+        "score": "70.0%",
+        "attemptId": "68ecf9e8f4bd21c6f0414cd5"
+      },
+      "isRead": false,
+      "createdAt": "2025-10-13T13:09:16.676Z",
+      "updatedAt": "2025-10-13T13:09:16.676Z",
+      "__v": 0
+    },
+    {
+      "_id": "68ecfb57f4bd21c6f0414f99",
+      "userId": "68ea917c8f7467f25bbfaea1",
+      "type": "quiz_attempt",
+      "title": "Quiz Completed",
+      "message": "Nguyen Van An completed \"sa\" in undefined. Score: 0%",
+      "data": {
+        "quizTitle": "sa",
+        "studentName": "Nguyen Van An",
+        "score": "0%",
+        "attemptId": "68ecfb55f4bd21c6f0414f80"
+      },
+      "isRead": false,
+      "createdAt": "2025-10-13T13:15:03.133Z",
+      "updatedAt": "2025-10-13T13:15:03.133Z",
+      "__v": 0
+    },
+    {
+      "_id": "68ecff927d67674c4099f508",
+      "userId": "68ea917c8f7467f25bbfaea1",
+      "type": "quiz_attempt",
+      "title": "Quiz Completed",
+      "message": "Pham Quoc Trieu completed \"Flutter run\" in undefined. Score: 0%",
+      "data": {
+        "quizTitle": "Flutter run",
+        "studentName": "Pham Quoc Trieu",
+        "score": "0%",
+        "attemptId": "68ecff8e7d67674c4099f468"
+      },
+      "isRead": false,
+      "createdAt": "2025-10-13T13:33:06.358Z",
+      "updatedAt": "2025-10-13T13:33:06.358Z",
+      "__v": 0
+    },
+    {
+      "_id": "68ed00287d67674c4099f6c6",
+      "userId": "68ea917c8f7467f25bbfaea1",
+      "type": "quiz_attempt",
+      "title": "Quiz Completed",
+      "message": "Pham Quoc Trieu completed \"sa\" in undefined. Score: 0%",
+      "data": {
+        "quizTitle": "sa",
+        "studentName": "Pham Quoc Trieu",
+        "score": "0%",
+        "attemptId": "68ed00267d67674c4099f6ad"
+      },
+      "isRead": false,
+      "createdAt": "2025-10-13T13:35:36.793Z",
+      "updatedAt": "2025-10-13T13:35:36.793Z",
+      "__v": 0
+    }
+  ]
+}

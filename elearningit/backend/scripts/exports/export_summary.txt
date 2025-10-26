@@ -1,0 +1,69 @@
+E-LEARNING DATABASE EXPORT SUMMARY
+==========================================
+Export Date: 2025-10-13T16:00:38.625Z
+Total Collections: 16
+Total Records: 226
+
+COLLECTION BREAKDOWN:
+====================
+
+AUTHENTICATION:
+---------------
+✓ users: 23 records
+
+ACADEMIC STRUCTURE:
+-------------------
+✓ semesters: 2 records
+✓ courses: 4 records
+✓ groups: 11 records
+
+COURSE CONTENT:
+---------------
+✓ announcements: 2 records
+✓ assignments: 5 records
+
+STUDENT WORK:
+-------------
+✓ submissions: 3 records
+✓ quizAttempts: 20 records
+
+COURSE RESOURCES:
+-----------------
+✓ materials: 5 records
+
+ASSESSMENT:
+-----------
+✓ questions: 42 records
+✓ quizzes: 8 records
+
+COMMUNICATION:
+--------------
+✓ forumTopics: 7 records
+✓ forumReplies: 5 records
+✓ messages: 4 records
+
+SYSTEM:
+-------
+✓ notifications: 85 records
+
+INTERACTION:
+------------
+✓ comments: 0 records
+
+EXPORT CONFIGURATION:
+====================
+Include Passwords: false
+Include Timestamps: true
+Prettify JSON: true
+Separate Files: true
+Export Path: ./exports
+
+USAGE NOTES:
+============
+- Password fields are EXCLUDED in user exports
+- All ObjectIds are preserved for maintaining relationships
+- Timestamps show original creation/modification dates
+- Use this export for backup, migration, or development seeding
+
+END OF SUMMARY
+==============

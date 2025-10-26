@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "collection": "semesters",
+    "category": "Academic Structure",
+    "exportDate": "2025-10-13T16:00:37.614Z",
+    "count": 2,
+    "includesPasswords": false
+  },
+  "data": [
+    {
+      "_id": "68ea917d8f7467f25bbfaecb",
+      "code": "2024-2",
+      "name": "Semester 2, Academic Year 2024-2025",
+      "year": 2024,
+      "startDate": "2025-01-15T00:00:00.000Z",
+      "endDate": "2025-05-30T00:00:00.000Z",
+      "isActive": false,
+      "createdAt": "2025-10-11T17:18:53.486Z",
+      "updatedAt": "2025-10-11T17:18:53.486Z",
+      "__v": 0
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaecd",
+      "code": "2025-1",
+      "name": "Semester 1, Academic Year 2025-2026",
+      "year": 2025,
+      "startDate": "2025-08-01T00:00:00.000Z",
+      "endDate": "2026-01-15T00:00:00.000Z",
+      "isActive": true,
+      "createdAt": "2025-10-11T17:18:53.540Z",
+      "updatedAt": "2025-10-11T17:18:53.540Z",
+      "__v": 0
+    }
+  ]
+}

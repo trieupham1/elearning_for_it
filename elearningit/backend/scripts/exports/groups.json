@@ -1,0 +1,182 @@
+{
+  "metadata": {
+    "collection": "groups",
+    "category": "Academic Structure",
+    "exportDate": "2025-10-13T16:00:37.789Z",
+    "count": 11,
+    "includesPasswords": false
+  },
+  "data": [
+    {
+      "_id": "68ea917d8f7467f25bbfaed4",
+      "name": "Group 1",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "members": [
+        "68ea917c8f7467f25bbfaea3",
+        "68ea917c8f7467f25bbfaea5",
+        "68ea917c8f7467f25bbfaea7",
+        "68ece38a2523f69600863632"
+      ],
+      "createdBy": "68ea917c8f7467f25bbfaea3",
+      "description": "Study group 1 for Cross-Platform Mobile Application Development",
+      "__v": 1,
+      "createdAt": "2025-10-11T17:18:53.686Z",
+      "updatedAt": "2025-10-13T12:58:07.367Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaed6",
+      "name": "Group 3",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "members": [
+        "68ea917c8f7467f25bbfaeaf",
+        "68ea917c8f7467f25bbfaeb1",
+        "68ea917c8f7467f25bbfaeb3"
+      ],
+      "createdBy": "68ea917c8f7467f25bbfaea3",
+      "description": "Study group 3 for Cross-Platform Mobile Application Development",
+      "__v": 0,
+      "createdAt": "2025-10-11T17:18:53.687Z",
+      "updatedAt": "2025-10-11T17:18:53.687Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaed7",
+      "name": "Group 1",
+      "courseId": "68ea917d8f7467f25bbfaed0",
+      "members": [
+        "68ea917c8f7467f25bbfaea3",
+        "68ea917c8f7467f25bbfaea5",
+        "68ea917c8f7467f25bbfaea7"
+      ],
+      "createdBy": "68ea917c8f7467f25bbfaea3",
+      "description": "Study group 1 for Database Management Systems",
+      "__v": 0,
+      "createdAt": "2025-10-11T17:18:53.687Z",
+      "updatedAt": "2025-10-11T17:18:53.687Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaed8",
+      "name": "Group 2",
+      "courseId": "68ea917d8f7467f25bbfaed0",
+      "members": [
+        "68ea917c8f7467f25bbfaea9",
+        "68ea917c8f7467f25bbfaeab",
+        "68ea917c8f7467f25bbfaead"
+      ],
+      "createdBy": "68ea917c8f7467f25bbfaea3",
+      "description": "Study group 2 for Database Management Systems",
+      "__v": 0,
+      "createdAt": "2025-10-11T17:18:53.688Z",
+      "updatedAt": "2025-10-11T17:18:53.688Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaedb",
+      "name": "Group 2",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "members": [
+        "68ea917c8f7467f25bbfaea9",
+        "68ea917c8f7467f25bbfaeab",
+        "68ea917c8f7467f25bbfaead"
+      ],
+      "createdBy": "68ea917c8f7467f25bbfaea3",
+      "description": "Study group 2 for Artificial Intelligence",
+      "__v": 0,
+      "createdAt": "2025-10-11T17:18:53.689Z",
+      "updatedAt": "2025-10-11T17:18:53.689Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaedc",
+      "name": "Group 3",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "members": [
+        "68ea917c8f7467f25bbfaeaf",
+        "68ea917c8f7467f25bbfaeb1",
+        "68ea917c8f7467f25bbfaeb3"
+      ],
+      "createdBy": "68ea917c8f7467f25bbfaea3",
+      "description": "Study group 3 for Artificial Intelligence",
+      "__v": 0,
+      "createdAt": "2025-10-11T17:18:53.689Z",
+      "updatedAt": "2025-10-11T17:18:53.689Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaed9",
+      "name": "Group 3",
+      "courseId": "68ea917d8f7467f25bbfaed0",
+      "members": [
+        "68ea917c8f7467f25bbfaeaf",
+        "68ea917c8f7467f25bbfaeb1",
+        "68ea917c8f7467f25bbfaeb3"
+      ],
+      "createdBy": "68ea917c8f7467f25bbfaea3",
+      "description": "Study group 3 for Database Management Systems",
+      "__v": 0,
+      "createdAt": "2025-10-11T17:18:53.688Z",
+      "updatedAt": "2025-10-11T17:18:53.688Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaeda",
+      "name": "Group 1",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "members": [
+        "68ea917c8f7467f25bbfaea3",
+        "68ea917c8f7467f25bbfaea5",
+        "68ea917c8f7467f25bbfaea7"
+      ],
+      "createdBy": "68ea917c8f7467f25bbfaea3",
+      "description": "Study group 1 for Artificial Intelligence",
+      "__v": 0,
+      "createdAt": "2025-10-11T17:18:53.688Z",
+      "updatedAt": "2025-10-11T17:18:53.688Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaedd",
+      "name": "Group 1",
+      "courseId": "68ea917d8f7467f25bbfaed2",
+      "members": [
+        "68ea917c8f7467f25bbfaea3",
+        "68ea917c8f7467f25bbfaea5",
+        "68ea917c8f7467f25bbfaea7",
+        "68ea917c8f7467f25bbfaea9",
+        "68ea917c8f7467f25bbfaeab"
+      ],
+      "createdBy": "68ea917c8f7467f25bbfaea3",
+      "description": "Study group 1 for Web Programming and Applications",
+      "__v": 0,
+      "createdAt": "2025-10-11T17:18:53.689Z",
+      "updatedAt": "2025-10-11T17:18:53.689Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaed5",
+      "name": "Group 2",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "members": [
+        "68ea917c8f7467f25bbfaea9",
+        "68ea917c8f7467f25bbfaeab",
+        "68ea917c8f7467f25bbfaead",
+        "68ecf7b0f4bd21c6f0414b1f"
+      ],
+      "createdBy": "68ea917c8f7467f25bbfaea3",
+      "description": "Study group 2 for Cross-Platform Mobile Application Development",
+      "__v": 1,
+      "createdAt": "2025-10-11T17:18:53.687Z",
+      "updatedAt": "2025-10-13T13:01:13.128Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaede",
+      "name": "Group 2",
+      "courseId": "68ea917d8f7467f25bbfaed2",
+      "members": [
+        "68ea917c8f7467f25bbfaead",
+        "68ea917c8f7467f25bbfaeaf",
+        "68ea917c8f7467f25bbfaeb1",
+        "68ea917c8f7467f25bbfaeb3",
+        "68ea917c8f7467f25bbfaeb5"
+      ],
+      "createdBy": "68ea917c8f7467f25bbfaea3",
+      "description": "Study group 2 for Web Programming and Applications",
+      "__v": 0,
+      "createdAt": "2025-10-11T17:18:53.689Z",
+      "updatedAt": "2025-10-11T17:18:53.689Z"
+    }
+  ]
+}

@@ -1,0 +1,193 @@
+{
+  "metadata": {
+    "collection": "materials",
+    "category": "Course Resources",
+    "exportDate": "2025-10-13T16:00:38.022Z",
+    "count": 5,
+    "includesPasswords": false
+  },
+  "data": [
+    {
+      "_id": "68ea917e8f7467f25bbfaf22",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "title": "Lecture 01: Introduction to Flutter",
+      "description": "Slides and resources for the first lecture covering Flutter basics",
+      "files": [
+        {
+          "mimeType": "application/pdf",
+          "_id": "68ea917e8f7467f25bbfaf23"
+        }
+      ],
+      "links": [],
+      "viewedBy": [
+        {
+          "userId": "68ea917c8f7467f25bbfaea1",
+          "viewedAt": "2025-10-12T05:02:06.685Z",
+          "_id": "68eb364ec64303f125eee85b"
+        },
+        {
+          "userId": "68ea917c8f7467f25bbfaea3",
+          "viewedAt": "2025-10-12T05:19:17.880Z",
+          "_id": "68eb3a55c64303f125eef3a8"
+        }
+      ],
+      "downloadedBy": [
+        {
+          "userId": "68ea917c8f7467f25bbfaea1",
+          "fileName": "Unknown file",
+          "downloadedAt": "2025-10-12T05:04:11.985Z",
+          "_id": "68eb36cbc64303f125eee87e"
+        },
+        {
+          "userId": "68ea917c8f7467f25bbfaea1",
+          "fileName": "Unknown file",
+          "downloadedAt": "2025-10-12T05:04:19.651Z",
+          "_id": "68eb36d3c64303f125eee885"
+        },
+        {
+          "userId": "68ea917c8f7467f25bbfaea3",
+          "fileName": "Unknown file",
+          "downloadedAt": "2025-10-12T08:31:57.426Z",
+          "_id": "68eb677db495681d24f260cf"
+        }
+      ],
+      "__v": 5,
+      "createdAt": "2025-10-11T17:18:54.416Z",
+      "updatedAt": "2025-10-12T08:31:57.440Z"
+    },
+    {
+      "_id": "68ea917e8f7467f25bbfaf24",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "title": "Lecture 02: Widgets and Layouts",
+      "description": "Understanding Flutter widgets and layout system",
+      "files": [
+        {
+          "mimeType": "application/pdf",
+          "_id": "68ea917e8f7467f25bbfaf25"
+        }
+      ],
+      "links": [],
+      "viewedBy": [
+        {
+          "userId": "68ea917c8f7467f25bbfaea1",
+          "viewedAt": "2025-10-12T05:02:12.414Z",
+          "_id": "68eb3654c64303f125eee864"
+        },
+        {
+          "userId": "68ea917c8f7467f25bbfaea3",
+          "viewedAt": "2025-10-12T05:19:21.624Z",
+          "_id": "68eb3a59c64303f125eef3b4"
+        }
+      ],
+      "downloadedBy": [],
+      "__v": 2,
+      "createdAt": "2025-10-11T17:18:54.416Z",
+      "updatedAt": "2025-10-12T05:19:21.624Z"
+    },
+    {
+      "_id": "68ead798a4edbe8b85aa0808",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "title": "Chatgpt",
+      "description": null,
+      "files": [
+        {
+          "fileName": "diagram.png",
+          "fileUrl": "/files/68ead798a4edbe8b85aa0800",
+          "fileSize": 1411875,
+          "mimeType": "application/octet-stream",
+          "_id": "68ead798a4edbe8b85aa0809"
+        }
+      ],
+      "links": [
+        "chatgpt.com"
+      ],
+      "viewedBy": [
+        {
+          "userId": "68ea917d8f7467f25bbfaec3",
+          "viewedAt": "2025-10-11T22:18:29.086Z",
+          "_id": "68ead7b5a4edbe8b85aa0835"
+        },
+        {
+          "userId": "68ea917c8f7467f25bbfaea1",
+          "viewedAt": "2025-10-12T08:35:59.881Z",
+          "_id": "68eb686fe9542461f814908c"
+        }
+      ],
+      "downloadedBy": [
+        {
+          "userId": "68ea917d8f7467f25bbfaec3",
+          "fileName": "diagram.png",
+          "downloadedAt": "2025-10-11T22:18:32.491Z",
+          "_id": "68ead7b8a4edbe8b85aa083b"
+        },
+        {
+          "userId": "68ea917d8f7467f25bbfaec3",
+          "fileName": "diagram.png",
+          "downloadedAt": "2025-10-11T22:20:02.476Z",
+          "_id": "68ead812a4edbe8b85aa0842"
+        },
+        {
+          "userId": "68ea917d8f7467f25bbfaec3",
+          "fileName": "diagram.png",
+          "downloadedAt": "2025-10-11T22:23:25.965Z",
+          "_id": "68ead8dd5187213bf6475236"
+        },
+        {
+          "userId": "68ea917d8f7467f25bbfaec3",
+          "fileName": "diagram.png",
+          "downloadedAt": "2025-10-11T22:39:39.780Z",
+          "_id": "68eadcab189f7736ee1fcb47"
+        }
+      ],
+      "createdAt": "2025-10-11T22:18:00.944Z",
+      "updatedAt": "2025-10-12T08:35:59.883Z",
+      "__v": 6
+    },
+    {
+      "_id": "68eb692db495681d24f261ae",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "title": "ds",
+      "description": "ds",
+      "files": [],
+      "links": [
+        "https://www.google.com/"
+      ],
+      "viewedBy": [
+        {
+          "userId": "68ea917c8f7467f25bbfaea1",
+          "viewedAt": "2025-10-12T08:39:13.373Z",
+          "_id": "68eb6931b495681d24f261c2"
+        },
+        {
+          "userId": "68ea917c8f7467f25bbfaea3",
+          "viewedAt": "2025-10-12T08:40:49.956Z",
+          "_id": "68eb6991b495681d24f26236"
+        }
+      ],
+      "downloadedBy": [],
+      "createdAt": "2025-10-12T08:39:09.304Z",
+      "updatedAt": "2025-10-12T08:40:49.957Z",
+      "__v": 2
+    },
+    {
+      "_id": "68eba695d86d1451663047be",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "title": "da",
+      "description": "da",
+      "files": [],
+      "links": [
+        "https://www.youtube.com/"
+      ],
+      "viewedBy": [],
+      "downloadedBy": [],
+      "createdAt": "2025-10-12T13:01:09.726Z",
+      "updatedAt": "2025-10-12T13:01:09.726Z",
+      "__v": 0
+    }
+  ]
+}

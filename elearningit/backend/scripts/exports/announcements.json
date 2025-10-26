@@ -1,0 +1,103 @@
+{
+  "metadata": {
+    "collection": "announcements",
+    "category": "Course Content",
+    "exportDate": "2025-10-13T16:00:37.848Z",
+    "count": 2,
+    "includesPasswords": false
+  },
+  "data": [
+    {
+      "_id": "68ea917d8f7467f25bbfaee2",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "title": "Lab Session Schedule",
+      "content": "Lab sessions will be held every Monday and Wednesday. Please check the schedule for your group.",
+      "authorId": "68ea917c8f7467f25bbfaea1",
+      "authorName": "Mai Van Manh",
+      "groupIds": [],
+      "attachments": [],
+      "comments": [
+        {
+          "userId": "68ea917c8f7467f25bbfaea1",
+          "userName": "Mai Van Manh",
+          "text": "Ok thầy",
+          "createdAt": "2025-10-11T17:38:36.224Z",
+          "_id": "68ea961c24a7c757f7c97527"
+        },
+        {
+          "userId": "68ea917c8f7467f25bbfaea1",
+          "userName": "Mai Van Manh",
+          "text": "chao moi nguoi",
+          "createdAt": "2025-10-12T05:11:53.956Z",
+          "_id": "68eb3899c64303f125eee992"
+        }
+      ],
+      "viewedBy": [
+        {
+          "userId": "68ea917c8f7467f25bbfaea1",
+          "viewedAt": "2025-10-11T17:21:19.625Z",
+          "_id": "68ea920f24a7c757f7c973ca"
+        },
+        {
+          "userId": "68ea917c8f7467f25bbfaea3",
+          "viewedAt": "2025-10-12T05:17:30.192Z",
+          "_id": "68eb39eac64303f125eef1ed"
+        },
+        {
+          "userId": "68ecf7b0f4bd21c6f0414b1f",
+          "viewedAt": "2025-10-13T13:01:36.117Z",
+          "_id": "68ecf830f4bd21c6f0414b77"
+        }
+      ],
+      "downloadedBy": [],
+      "__v": 5,
+      "createdAt": "2025-10-11T17:18:53.773Z",
+      "updatedAt": "2025-10-13T13:01:36.118Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaee0",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "title": "Welcome to Cross-Platform Mobile Development!",
+      "content": "Welcome to the course! We will be learning Flutter and Dart to build amazing mobile applications.Please review the syllabus attached below.",
+      "authorId": "68ea917c8f7467f25bbfaea1",
+      "authorName": "Mai Van Manh",
+      "groupIds": [],
+      "attachments": [
+        {
+          "mimeType": "application/pdf",
+          "_id": "68ea917d8f7467f25bbfaee1"
+        }
+      ],
+      "comments": [
+        {
+          "userId": "68ea917c8f7467f25bbfaea1",
+          "userName": "Mai Van Manh",
+          "text": "gà",
+          "createdAt": "2025-10-11T17:24:24.038Z",
+          "_id": "68ea92c824a7c757f7c973f3"
+        }
+      ],
+      "viewedBy": [
+        {
+          "userId": "68ea917c8f7467f25bbfaea1",
+          "viewedAt": "2025-10-11T17:24:19.590Z",
+          "_id": "68ea92c324a7c757f7c973ed"
+        },
+        {
+          "userId": "68ea917c8f7467f25bbfaea3",
+          "viewedAt": "2025-10-12T08:04:10.227Z",
+          "_id": "68eb60fa21cd04dd42f5fe5e"
+        },
+        {
+          "userId": "68ecf7b0f4bd21c6f0414b1f",
+          "viewedAt": "2025-10-13T13:01:33.723Z",
+          "_id": "68ecf82df4bd21c6f0414b5e"
+        }
+      ],
+      "downloadedBy": [],
+      "__v": 4,
+      "createdAt": "2025-10-11T17:18:53.772Z",
+      "updatedAt": "2025-10-13T13:01:33.726Z"
+    }
+  ]
+}

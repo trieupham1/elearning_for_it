@@ -1,0 +1,152 @@
+{
+  "metadata": {
+    "collection": "assignments",
+    "category": "Course Content",
+    "exportDate": "2025-10-13T16:00:37.906Z",
+    "count": 5,
+    "includesPasswords": false
+  },
+  "data": [
+    {
+      "_id": "68ea917d8f7467f25bbfaee4",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "createdByName": "Mai Van Manh",
+      "title": "Lab 01: Flutter Basics",
+      "description": "Complete the basic Flutter exercises including widget creation and state management.",
+      "groupIds": [],
+      "startDate": "2025-10-11T17:18:53.829Z",
+      "deadline": "2025-10-18T17:18:52.125Z",
+      "allowLateSubmission": false,
+      "maxAttempts": 1,
+      "allowedFileTypes": [],
+      "maxFileSize": 10485760,
+      "attachments": [
+        {
+          "mimeType": "application/pdf",
+          "_id": "68ea917d8f7467f25bbfaee5"
+        }
+      ],
+      "points": 100,
+      "viewedBy": [
+        {
+          "userId": "68ea917c8f7467f25bbfaea1",
+          "viewedAt": "2025-10-11T17:23:52.226Z",
+          "_id": "68ea92a824a7c757f7c973d5"
+        },
+        {
+          "userId": "68ea917c8f7467f25bbfaea3",
+          "viewedAt": "2025-10-12T05:17:51.745Z",
+          "_id": "68eb39ffc64303f125eef252"
+        }
+      ],
+      "__v": 2,
+      "createdAt": "2025-10-11T17:18:53.830Z",
+      "updatedAt": "2025-10-12T05:17:51.746Z"
+    },
+    {
+      "_id": "68ea917d8f7467f25bbfaee6",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "createdByName": "Mai Van Manh",
+      "title": "Lab 02: State Management",
+      "description": "Implement state management using Provider and Riverpod.",
+      "groupIds": [],
+      "startDate": "2025-10-11T17:18:53.829Z",
+      "deadline": "2025-10-25T17:18:52.125Z",
+      "allowLateSubmission": false,
+      "maxAttempts": 1,
+      "allowedFileTypes": [],
+      "maxFileSize": 10485760,
+      "attachments": [],
+      "points": 100,
+      "viewedBy": [
+        {
+          "userId": "68ea917c8f7467f25bbfaea1",
+          "viewedAt": "2025-10-12T04:59:51.780Z",
+          "_id": "68eb35c7c64303f125eee80a"
+        },
+        {
+          "userId": "68ea917c8f7467f25bbfaea3",
+          "viewedAt": "2025-10-12T05:18:12.965Z",
+          "_id": "68eb3a14c64303f125eef259"
+        }
+      ],
+      "__v": 2,
+      "createdAt": "2025-10-11T17:18:53.830Z",
+      "updatedAt": "2025-10-12T05:18:12.965Z"
+    },
+    {
+      "_id": "68eb68e3b495681d24f26173",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "createdByName": "Mai Van Manh",
+      "title": "ds",
+      "description": "ds",
+      "groupIds": [],
+      "startDate": "2025-10-12T08:37:00.000Z",
+      "deadline": "2025-10-19T16:59:00.000Z",
+      "allowLateSubmission": true,
+      "lateDeadline": "2025-10-21T16:59:00.000Z",
+      "maxAttempts": 1,
+      "allowedFileTypes": [],
+      "maxFileSize": 10485760,
+      "attachments": [],
+      "points": 100,
+      "viewedBy": [
+        {
+          "userId": "68ea917c8f7467f25bbfaea3",
+          "viewedAt": "2025-10-12T08:40:14.345Z",
+          "_id": "68eb696eb495681d24f261e0"
+        }
+      ],
+      "createdAt": "2025-10-12T08:37:55.857Z",
+      "updatedAt": "2025-10-12T08:40:14.346Z",
+      "__v": 1
+    },
+    {
+      "_id": "68eba648d86d145166304787",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "createdByName": "Mai Van Manh",
+      "title": "ds",
+      "description": "ds",
+      "groupIds": [],
+      "startDate": "2025-10-12T12:59:00.000Z",
+      "deadline": "2025-10-19T16:59:00.000Z",
+      "allowLateSubmission": false,
+      "lateDeadline": null,
+      "maxAttempts": 1,
+      "allowedFileTypes": [],
+      "maxFileSize": 10485760,
+      "attachments": [],
+      "points": 100,
+      "viewedBy": [],
+      "createdAt": "2025-10-12T12:59:52.774Z",
+      "updatedAt": "2025-10-12T12:59:52.774Z",
+      "__v": 0
+    },
+    {
+      "_id": "68ebdc10c4222bdfe86bfa7b",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "createdByName": "Mai Van Manh",
+      "title": "dsas",
+      "description": "aas",
+      "groupIds": [],
+      "startDate": "2025-10-12T16:49:00.000Z",
+      "deadline": "2025-10-19T16:59:00.000Z",
+      "allowLateSubmission": false,
+      "lateDeadline": null,
+      "maxAttempts": 1,
+      "allowedFileTypes": [],
+      "maxFileSize": 10485760,
+      "attachments": [],
+      "points": 100,
+      "viewedBy": [],
+      "createdAt": "2025-10-12T16:49:20.309Z",
+      "updatedAt": "2025-10-12T16:49:20.309Z",
+      "__v": 0
+    }
+  ]
+}

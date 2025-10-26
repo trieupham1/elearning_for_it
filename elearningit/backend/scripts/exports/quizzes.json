@@ -1,0 +1,271 @@
+{
+  "metadata": {
+    "collection": "quizzes",
+    "category": "Assessment",
+    "exportDate": "2025-10-13T16:00:38.199Z",
+    "count": 8,
+    "includesPasswords": false
+  },
+  "data": [
+    {
+      "_id": "68eaa007b732dee4c24b4e1e",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "title": "Flutter run",
+      "description": "",
+      "groupIds": [],
+      "openDate": "2025-10-10T21:20:00.000Z",
+      "closeDate": "2025-10-18T19:59:00.000Z",
+      "duration": 30,
+      "maxAttempts": 1,
+      "questionStructure": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 0
+      },
+      "randomizeQuestions": false,
+      "selectedQuestions": [
+        "68ea9ece7d085a84d428a3c7",
+        "68ea9ece7d085a84d428a3cc",
+        "68ea9ece7d085a84d428a3d1",
+        "68ea9ece7d085a84d428a3d6",
+        "68ea9ece7d085a84d428a3a9",
+        "68ea9ece7d085a84d428a3ae",
+        "68ea9ece7d085a84d428a3b3",
+        "68ea9ece7d085a84d428a3b8",
+        "68ea9ece7d085a84d428a3bd",
+        "68ea9ece7d085a84d428a3c2"
+      ],
+      "totalPoints": 100,
+      "isActive": true,
+      "status": "active",
+      "createdAt": "2025-10-11T18:20:55.973Z",
+      "updatedAt": "2025-10-12T05:36:50.856Z",
+      "__v": 0
+    },
+    {
+      "_id": "68eaa032b732dee4c24b4e7d",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "title": "Ai",
+      "description": "",
+      "groupIds": [],
+      "openDate": "2025-10-11T18:21:00.000Z",
+      "closeDate": "2025-10-19T16:59:00.000Z",
+      "duration": 30,
+      "maxAttempts": 1,
+      "questionStructure": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 0
+      },
+      "randomizeQuestions": true,
+      "selectedQuestions": [
+        "68ea9ece7d085a84d428a43f",
+        "68ea9ece7d085a84d428a412",
+        "68ea9ece7d085a84d428a417",
+        "68ea9ece7d085a84d428a41c",
+        "68ea9ece7d085a84d428a421",
+        "68ea9ece7d085a84d428a426",
+        "68ea9ece7d085a84d428a42b",
+        "68ea9ece7d085a84d428a430",
+        "68ea9ece7d085a84d428a435"
+      ],
+      "totalPoints": 100,
+      "isActive": true,
+      "status": "active",
+      "createdAt": "2025-10-11T18:21:38.371Z",
+      "updatedAt": "2025-10-12T08:25:42.155Z",
+      "__v": 0
+    },
+    {
+      "_id": "68eb468669603f2657036ca2",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "title": "Flutter",
+      "description": "",
+      "groupIds": [],
+      "openDate": "2025-10-11T23:10:00.000Z",
+      "closeDate": "2025-10-19T09:59:00.000Z",
+      "duration": 30,
+      "maxAttempts": 5,
+      "questionStructure": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 0
+      },
+      "randomizeQuestions": true,
+      "selectedQuestions": [
+        "68ea9ece7d085a84d428a3c7",
+        "68ea9ece7d085a84d428a3cc",
+        "68ea9ece7d085a84d428a3d1",
+        "68ea9ece7d085a84d428a3d6",
+        "68ea9ece7d085a84d428a3a9",
+        "68ea9ece7d085a84d428a3ae",
+        "68ea9ece7d085a84d428a3b8",
+        "68ea9ece7d085a84d428a3bd",
+        "68ea9ece7d085a84d428a3b3",
+        "68ea9ece7d085a84d428a3c2"
+      ],
+      "totalPoints": 100,
+      "isActive": true,
+      "status": "active",
+      "createdAt": "2025-10-12T06:11:18.500Z",
+      "updatedAt": "2025-10-12T06:11:50.122Z",
+      "__v": 0
+    },
+    {
+      "_id": "68eb490ecb3975e1869940bd",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "title": "Code Ai",
+      "description": "",
+      "groupIds": [],
+      "openDate": "2025-10-12T06:21:00.000Z",
+      "closeDate": "2025-10-19T16:59:00.000Z",
+      "duration": 30,
+      "maxAttempts": 4,
+      "questionStructure": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 0
+      },
+      "randomizeQuestions": true,
+      "selectedQuestions": [
+        "68ea9ece7d085a84d428a43a",
+        "68ea9ece7d085a84d428a43f",
+        "68ea9ece7d085a84d428a412",
+        "68ea9ece7d085a84d428a417"
+      ],
+      "totalPoints": 100,
+      "isActive": true,
+      "status": "active",
+      "createdAt": "2025-10-12T06:22:06.422Z",
+      "updatedAt": "2025-10-12T06:22:06.422Z",
+      "__v": 0
+    },
+    {
+      "_id": "68eb4ab8add2abe0f4b924b0",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "title": "Ai chatbot agent",
+      "description": "",
+      "groupIds": [],
+      "openDate": "2025-10-12T06:28:00.000Z",
+      "closeDate": "2025-10-19T16:59:00.000Z",
+      "duration": 30,
+      "maxAttempts": 5,
+      "allowRetakes": true,
+      "shuffleQuestions": true,
+      "showResultsImmediately": false,
+      "questionStructure": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 0
+      },
+      "randomizeQuestions": true,
+      "selectedQuestions": [
+        "68ea9ece7d085a84d428a412",
+        "68ea9ece7d085a84d428a43f",
+        "68ea9ece7d085a84d428a43a",
+        "68ea9ece7d085a84d428a417"
+      ],
+      "totalPoints": 100,
+      "isActive": true,
+      "status": "active",
+      "createdAt": "2025-10-12T06:29:12.966Z",
+      "updatedAt": "2025-10-12T06:29:12.966Z",
+      "__v": 0
+    },
+    {
+      "_id": "68eb6904b495681d24f261a4",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "title": "ds",
+      "description": "ds",
+      "groupIds": [],
+      "openDate": "2025-10-12T08:38:00.000Z",
+      "closeDate": "2025-10-19T16:59:00.000Z",
+      "duration": 30,
+      "maxAttempts": 1,
+      "allowRetakes": false,
+      "shuffleQuestions": true,
+      "showResultsImmediately": false,
+      "questionStructure": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 0
+      },
+      "randomizeQuestions": true,
+      "selectedQuestions": [
+        "68ea9ece7d085a84d428a3d1"
+      ],
+      "totalPoints": 100,
+      "isActive": true,
+      "status": "active",
+      "createdAt": "2025-10-12T08:38:28.337Z",
+      "updatedAt": "2025-10-12T08:38:28.337Z",
+      "__v": 0
+    },
+    {
+      "_id": "68eba65ad86d1451663047b8",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "title": "da",
+      "description": "da",
+      "groupIds": [],
+      "openDate": "2025-10-12T13:00:00.000Z",
+      "closeDate": "2025-10-19T16:59:00.000Z",
+      "duration": 30,
+      "maxAttempts": 1,
+      "allowRetakes": false,
+      "shuffleQuestions": true,
+      "showResultsImmediately": false,
+      "questionStructure": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 0
+      },
+      "randomizeQuestions": true,
+      "selectedQuestions": [
+        "68ea9ece7d085a84d428a3cc"
+      ],
+      "totalPoints": 100,
+      "isActive": true,
+      "status": "active",
+      "createdAt": "2025-10-12T13:00:10.746Z",
+      "updatedAt": "2025-10-12T13:00:10.746Z",
+      "__v": 0
+    },
+    {
+      "_id": "68ebdc1ec4222bdfe86bfabc",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "title": "sa",
+      "description": "sa",
+      "groupIds": [],
+      "openDate": "2025-10-12T16:49:00.000Z",
+      "closeDate": "2025-10-19T16:59:00.000Z",
+      "duration": 30,
+      "maxAttempts": 1,
+      "allowRetakes": false,
+      "shuffleQuestions": true,
+      "showResultsImmediately": false,
+      "questionStructure": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 0
+      },
+      "randomizeQuestions": true,
+      "selectedQuestions": [
+        "68ea9ece7d085a84d428a3c7"
+      ],
+      "totalPoints": 100,
+      "isActive": true,
+      "status": "active",
+      "createdAt": "2025-10-12T16:49:34.300Z",
+      "updatedAt": "2025-10-12T16:49:34.300Z",
+      "__v": 0
+    }
+  ]
+}

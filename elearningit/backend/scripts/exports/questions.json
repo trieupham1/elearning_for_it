@@ -1,0 +1,1602 @@
+{
+  "metadata": {
+    "collection": "questions",
+    "category": "Assessment",
+    "exportDate": "2025-10-13T16:00:38.140Z",
+    "count": 42,
+    "includesPasswords": false
+  },
+  "data": [
+    {
+      "_id": "68ea9ece7d085a84d428a385",
+      "courseId": "68ea917d8f7467f25bbfaed2",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is the DOM in web development?",
+      "choices": [
+        {
+          "text": "Document Object Model",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a386"
+        },
+        {
+          "text": "Data Object Management",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a387"
+        },
+        {
+          "text": "Dynamic Object Method",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a388"
+        },
+        {
+          "text": "Database Object Model",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a389"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "DOM stands for Document Object Model, representing the page structure.",
+      "category": "JavaScript",
+      "tags": [
+        "dom",
+        "structure"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.353Z",
+      "updatedAt": "2025-10-11T18:15:42.353Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a376",
+      "courseId": "68ea917d8f7467f25bbfaed2",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What does HTML stand for?",
+      "choices": [
+        {
+          "text": "HyperText Markup Language",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a377"
+        },
+        {
+          "text": "High Tech Modern Language",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a378"
+        },
+        {
+          "text": "Home Tool Markup Language",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a379"
+        },
+        {
+          "text": "Hyperlink and Text Markup Language",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a37a"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "HTML stands for HyperText Markup Language.",
+      "category": "Web Basics",
+      "tags": [
+        "html",
+        "basics"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.352Z",
+      "updatedAt": "2025-10-11T18:15:42.352Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a37b",
+      "courseId": "68ea917d8f7467f25bbfaed2",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "Which language is used for styling web pages?",
+      "choices": [
+        {
+          "text": "HTML",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a37c"
+        },
+        {
+          "text": "CSS",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a37d"
+        },
+        {
+          "text": "JavaScript",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a37e"
+        },
+        {
+          "text": "Python",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a37f"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "CSS (Cascading Style Sheets) is used for styling web pages.",
+      "category": "Web Styling",
+      "tags": [
+        "css",
+        "styling"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.353Z",
+      "updatedAt": "2025-10-11T18:15:42.353Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a39e",
+      "courseId": "68ea917d8f7467f25bbfaed2",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is a RESTful API?",
+      "choices": [
+        {
+          "text": "An API for resting",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a39f"
+        },
+        {
+          "text": "An architectural style for web services",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3a0"
+        },
+        {
+          "text": "A type of database",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3a1"
+        },
+        {
+          "text": "A programming language",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3a2"
+        }
+      ],
+      "difficulty": "hard",
+      "explanation": "REST is an architectural style for designing web services.",
+      "category": "Web APIs",
+      "tags": [
+        "rest",
+        "api"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.354Z",
+      "updatedAt": "2025-10-11T18:15:42.354Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3a3",
+      "courseId": "68ea917d8f7467f25bbfaed2",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is the box model in CSS?",
+      "choices": [
+        {
+          "text": "A model for creating boxes",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3a4"
+        },
+        {
+          "text": "How elements are structured with margin, border, padding, and content",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3a5"
+        },
+        {
+          "text": "A 3D modeling technique",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3a6"
+        },
+        {
+          "text": "A database model",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3a7"
+        }
+      ],
+      "difficulty": "hard",
+      "explanation": "The box model describes how elements are structured in CSS.",
+      "category": "CSS",
+      "tags": [
+        "box-model",
+        "layout"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.354Z",
+      "updatedAt": "2025-10-11T18:15:42.354Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a380",
+      "courseId": "68ea917d8f7467f25bbfaed2",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is JavaScript primarily used for?",
+      "choices": [
+        {
+          "text": "Database management",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a381"
+        },
+        {
+          "text": "Adding interactivity to web pages",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a382"
+        },
+        {
+          "text": "Server hardware management",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a383"
+        },
+        {
+          "text": "Creating images",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a384"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "JavaScript is primarily used to add interactivity to web pages.",
+      "category": "JavaScript",
+      "tags": [
+        "javascript",
+        "interactivity"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.353Z",
+      "updatedAt": "2025-10-11T18:15:42.353Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a38a",
+      "courseId": "68ea917d8f7467f25bbfaed2",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "Which HTTP method is used to retrieve data?",
+      "choices": [
+        {
+          "text": "POST",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a38b"
+        },
+        {
+          "text": "PUT",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a38c"
+        },
+        {
+          "text": "GET",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a38d"
+        },
+        {
+          "text": "DELETE",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a38e"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "GET method is used to retrieve data from a server.",
+      "category": "HTTP",
+      "tags": [
+        "http",
+        "get"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.353Z",
+      "updatedAt": "2025-10-11T18:15:42.353Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a38f",
+      "courseId": "68ea917d8f7467f25bbfaed2",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is responsive web design?",
+      "choices": [
+        {
+          "text": "Fast loading websites",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a390"
+        },
+        {
+          "text": "Websites that adapt to different screen sizes",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a391"
+        },
+        {
+          "text": "Websites with quick response times",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a392"
+        },
+        {
+          "text": "Interactive websites",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a393"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "Responsive design ensures websites work well on different screen sizes.",
+      "category": "Web Design",
+      "tags": [
+        "responsive",
+        "design"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.354Z",
+      "updatedAt": "2025-10-11T18:15:42.354Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a399",
+      "courseId": "68ea917d8f7467f25bbfaed2",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is the purpose of semantic HTML?",
+      "choices": [
+        {
+          "text": "To make HTML faster",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a39a"
+        },
+        {
+          "text": "To provide meaning to content structure",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a39b"
+        },
+        {
+          "text": "To make HTML shorter",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a39c"
+        },
+        {
+          "text": "To add styling",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a39d"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "Semantic HTML provides meaning and structure to content.",
+      "category": "HTML",
+      "tags": [
+        "semantic",
+        "structure"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.354Z",
+      "updatedAt": "2025-10-11T18:15:42.354Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a394",
+      "courseId": "68ea917d8f7467f25bbfaed2",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is AJAX?",
+      "choices": [
+        {
+          "text": "A cleaning product",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a395"
+        },
+        {
+          "text": "Asynchronous JavaScript and XML",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a396"
+        },
+        {
+          "text": "A web server",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a397"
+        },
+        {
+          "text": "A database system",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a398"
+        }
+      ],
+      "difficulty": "hard",
+      "explanation": "AJAX allows asynchronous communication with servers without page reload.",
+      "category": "JavaScript",
+      "tags": [
+        "ajax",
+        "asynchronous"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.354Z",
+      "updatedAt": "2025-10-11T18:15:42.354Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3b8",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "Which method is called when a StatefulWidget is first created?",
+      "choices": [
+        {
+          "text": "build()",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3b9"
+        },
+        {
+          "text": "initState()",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3ba"
+        },
+        {
+          "text": "dispose()",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3bb"
+        },
+        {
+          "text": "setState()",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3bc"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "initState() is called once when the StatefulWidget is first created.",
+      "category": "Widget Lifecycle",
+      "tags": [
+        "lifecycle",
+        "initstate"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.428Z",
+      "updatedAt": "2025-10-11T18:15:42.428Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3d6",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "Which Flutter layout widget allows children to be positioned absolutely?",
+      "choices": [
+        {
+          "text": "Column",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3d7"
+        },
+        {
+          "text": "Row",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3d8"
+        },
+        {
+          "text": "Stack",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3d9"
+        },
+        {
+          "text": "Wrap",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3da"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "Stack allows children to be positioned absolutely using Positioned widgets.",
+      "category": "Layouts",
+      "tags": [
+        "stack",
+        "layout"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.429Z",
+      "updatedAt": "2025-10-11T18:15:42.429Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3ae",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "Which programming language is used by Flutter?",
+      "choices": [
+        {
+          "text": "Java",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3af"
+        },
+        {
+          "text": "Kotlin",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3b0"
+        },
+        {
+          "text": "Dart",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3b1"
+        },
+        {
+          "text": "Swift",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3b2"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "Dart is the programming language used by Flutter.",
+      "category": "Flutter Basics",
+      "tags": [
+        "dart",
+        "language"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.428Z",
+      "updatedAt": "2025-10-11T18:15:42.428Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3bd",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is hot reload in Flutter?",
+      "choices": [
+        {
+          "text": "A feature to restart the entire application",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3be"
+        },
+        {
+          "text": "A feature to inject updated source code into the running app",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3bf"
+        },
+        {
+          "text": "A debugging tool",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3c0"
+        },
+        {
+          "text": "A testing framework",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3c1"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "Hot reload injects updated source code into the running app without losing state.",
+      "category": "Development Tools",
+      "tags": [
+        "hot-reload",
+        "development"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.428Z",
+      "updatedAt": "2025-10-11T18:15:42.428Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3c2",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "Which Flutter widget is used to display scrollable content?",
+      "choices": [
+        {
+          "text": "Container",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3c3"
+        },
+        {
+          "text": "ListView",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3c4"
+        },
+        {
+          "text": "Text",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3c5"
+        },
+        {
+          "text": "AppBar",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3c6"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "ListView is used to display a scrollable list of widgets.",
+      "category": "Widgets",
+      "tags": [
+        "listview",
+        "scrollable"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.428Z",
+      "updatedAt": "2025-10-11T18:15:42.428Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3cc",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "Which state management solution is built by the Flutter team?",
+      "choices": [
+        {
+          "text": "Redux",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3cd"
+        },
+        {
+          "text": "MobX",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3ce"
+        },
+        {
+          "text": "Provider",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3cf"
+        },
+        {
+          "text": "GetX",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3d0"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "Provider is the state management solution built by the Flutter team.",
+      "category": "State Management",
+      "tags": [
+        "provider",
+        "state"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.429Z",
+      "updatedAt": "2025-10-11T18:15:42.429Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3d1",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What does the async keyword do in Dart?",
+      "choices": [
+        {
+          "text": "Makes a function return a Future",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3d2"
+        },
+        {
+          "text": "Makes a function run faster",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3d3"
+        },
+        {
+          "text": "Prevents errors in code",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3d4"
+        },
+        {
+          "text": "Creates a new thread",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3d5"
+        }
+      ],
+      "difficulty": "hard",
+      "explanation": "The async keyword makes a function return a Future for asynchronous operations.",
+      "category": "Asynchronous Programming",
+      "tags": [
+        "async",
+        "future"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.429Z",
+      "updatedAt": "2025-10-11T18:15:42.429Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3a9",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is Flutter?",
+      "choices": [
+        {
+          "text": "A mobile framework by Google",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3aa"
+        },
+        {
+          "text": "A programming language",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3ab"
+        },
+        {
+          "text": "A database system",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3ac"
+        },
+        {
+          "text": "An operating system",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3ad"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "Flutter is Google's UI toolkit for building natively compiled applications.",
+      "category": "Flutter Basics",
+      "tags": [
+        "flutter",
+        "basics"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.428Z",
+      "updatedAt": "2025-10-11T18:15:42.428Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3b3",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is a StatefulWidget in Flutter?",
+      "choices": [
+        {
+          "text": "A widget that never changes",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3b4"
+        },
+        {
+          "text": "A widget that can change its state during runtime",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3b5"
+        },
+        {
+          "text": "A widget for displaying images",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3b6"
+        },
+        {
+          "text": "A widget for handling HTTP requests",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3b7"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "StatefulWidget can change its state during runtime using setState().",
+      "category": "Widgets",
+      "tags": [
+        "stateful",
+        "widget"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.428Z",
+      "updatedAt": "2025-10-11T18:15:42.428Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3c7",
+      "courseId": "68ea917d8f7467f25bbfaecf",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is the purpose of the BuildContext in Flutter?",
+      "choices": [
+        {
+          "text": "To store application state",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3c8"
+        },
+        {
+          "text": "To locate widgets in the widget tree",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3c9"
+        },
+        {
+          "text": "To manage HTTP connections",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3ca"
+        },
+        {
+          "text": "To handle user input",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3cb"
+        }
+      ],
+      "difficulty": "hard",
+      "explanation": "BuildContext is used to locate widgets in the widget tree.",
+      "category": "Advanced Concepts",
+      "tags": [
+        "context",
+        "widget-tree"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.429Z",
+      "updatedAt": "2025-10-11T18:15:42.429Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3e3",
+      "courseId": "68ea917d8f7467f25bbfaed0",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "Which SQL command is used to retrieve data from a database?",
+      "choices": [
+        {
+          "text": "GET",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3e4"
+        },
+        {
+          "text": "SELECT",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3e5"
+        },
+        {
+          "text": "RETRIEVE",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3e6"
+        },
+        {
+          "text": "FETCH",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3e7"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "SELECT is used to retrieve data from database tables.",
+      "category": "SQL Commands",
+      "tags": [
+        "select",
+        "query"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.499Z",
+      "updatedAt": "2025-10-11T18:15:42.499Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a401",
+      "courseId": "68ea917d8f7467f25bbfaed0",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "Which SQL JOIN returns all records when there is a match in either table?",
+      "choices": [
+        {
+          "text": "INNER JOIN",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a402"
+        },
+        {
+          "text": "LEFT JOIN",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a403"
+        },
+        {
+          "text": "RIGHT JOIN",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a404"
+        },
+        {
+          "text": "FULL OUTER JOIN",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a405"
+        }
+      ],
+      "difficulty": "hard",
+      "explanation": "FULL OUTER JOIN returns all records when there is a match in either table.",
+      "category": "SQL Joins",
+      "tags": [
+        "join",
+        "full-outer"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.499Z",
+      "updatedAt": "2025-10-11T18:15:42.499Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a406",
+      "courseId": "68ea917d8f7467f25bbfaed0",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is ACID in database systems?",
+      "choices": [
+        {
+          "text": "A type of database",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a407"
+        },
+        {
+          "text": "Atomicity, Consistency, Isolation, Durability",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a408"
+        },
+        {
+          "text": "A SQL command",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a409"
+        },
+        {
+          "text": "A database security feature",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a40a"
+        }
+      ],
+      "difficulty": "hard",
+      "explanation": "ACID stands for Atomicity, Consistency, Isolation, and Durability.",
+      "category": "Database Theory",
+      "tags": [
+        "acid",
+        "transactions"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.499Z",
+      "updatedAt": "2025-10-11T18:15:42.499Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3ed",
+      "courseId": "68ea917d8f7467f25bbfaed0",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "Which SQL clause is used to filter records?",
+      "choices": [
+        {
+          "text": "FILTER",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3ee"
+        },
+        {
+          "text": "WHERE",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3ef"
+        },
+        {
+          "text": "HAVING",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3f0"
+        },
+        {
+          "text": "SELECT",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3f1"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "WHERE clause is used to filter records based on conditions.",
+      "category": "SQL Commands",
+      "tags": [
+        "where",
+        "filter"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.499Z",
+      "updatedAt": "2025-10-11T18:15:42.499Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a40b",
+      "courseId": "68ea917d8f7467f25bbfaed0",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "Which SQL command is used to create a new table?",
+      "choices": [
+        {
+          "text": "MAKE TABLE",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a40c"
+        },
+        {
+          "text": "CREATE TABLE",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a40d"
+        },
+        {
+          "text": "NEW TABLE",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a40e"
+        },
+        {
+          "text": "BUILD TABLE",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a40f"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "CREATE TABLE is used to create a new table in the database.",
+      "category": "SQL Commands",
+      "tags": [
+        "create",
+        "table"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.499Z",
+      "updatedAt": "2025-10-11T18:15:42.499Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3de",
+      "courseId": "68ea917d8f7467f25bbfaed0",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What does SQL stand for?",
+      "choices": [
+        {
+          "text": "Structured Query Language",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3df"
+        },
+        {
+          "text": "Simple Query Language",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3e0"
+        },
+        {
+          "text": "System Query Language",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3e1"
+        },
+        {
+          "text": "Standard Query Language",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3e2"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "SQL stands for Structured Query Language.",
+      "category": "SQL Basics",
+      "tags": [
+        "sql",
+        "basics"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.498Z",
+      "updatedAt": "2025-10-11T18:15:42.498Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3fc",
+      "courseId": "68ea917d8f7467f25bbfaed0",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is a foreign key?",
+      "choices": [
+        {
+          "text": "A key from another country",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3fd"
+        },
+        {
+          "text": "A field that links to a primary key in another table",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3fe"
+        },
+        {
+          "text": "An encrypted key",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3ff"
+        },
+        {
+          "text": "A backup key",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a400"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "A foreign key links to a primary key in another table to establish relationships.",
+      "category": "Database Design",
+      "tags": [
+        "foreign-key",
+        "relationships"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.499Z",
+      "updatedAt": "2025-10-11T18:15:42.499Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3e8",
+      "courseId": "68ea917d8f7467f25bbfaed0",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is a primary key in a database?",
+      "choices": [
+        {
+          "text": "A key that opens the database",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3e9"
+        },
+        {
+          "text": "A unique identifier for each record",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3ea"
+        },
+        {
+          "text": "The first column in a table",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3eb"
+        },
+        {
+          "text": "A password for database access",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3ec"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "A primary key uniquely identifies each record in a database table.",
+      "category": "Database Design",
+      "tags": [
+        "primary-key",
+        "unique"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.499Z",
+      "updatedAt": "2025-10-11T18:15:42.499Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3f2",
+      "courseId": "68ea917d8f7467f25bbfaed0",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is normalization in database design?",
+      "choices": [
+        {
+          "text": "Making all data the same",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3f3"
+        },
+        {
+          "text": "Organizing data to reduce redundancy",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3f4"
+        },
+        {
+          "text": "Converting data to normal format",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3f5"
+        },
+        {
+          "text": "Backing up the database",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3f6"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "Normalization organizes data to reduce redundancy and improve integrity.",
+      "category": "Database Design",
+      "tags": [
+        "normalization",
+        "design"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.499Z",
+      "updatedAt": "2025-10-11T18:15:42.499Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a3f7",
+      "courseId": "68ea917d8f7467f25bbfaed0",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "Which type of database relationship is most common?",
+      "choices": [
+        {
+          "text": "One-to-One",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3f8"
+        },
+        {
+          "text": "One-to-Many",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a3f9"
+        },
+        {
+          "text": "Many-to-Many",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3fa"
+        },
+        {
+          "text": "Zero-to-One",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a3fb"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "One-to-Many is the most common database relationship.",
+      "category": "Database Design",
+      "tags": [
+        "relationships",
+        "one-to-many"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.499Z",
+      "updatedAt": "2025-10-11T18:15:42.499Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a43a",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is reinforcement learning?",
+      "choices": [
+        {
+          "text": "Learning with rewards and punishments",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a43b"
+        },
+        {
+          "text": "Learning the same thing repeatedly",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a43c"
+        },
+        {
+          "text": "Learning with a teacher",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a43d"
+        },
+        {
+          "text": "Learning without any data",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a43e"
+        }
+      ],
+      "difficulty": "hard",
+      "explanation": "Reinforcement learning involves agents learning through rewards and punishments.",
+      "category": "Reinforcement Learning",
+      "tags": [
+        "reinforcement",
+        "rewards"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.568Z",
+      "updatedAt": "2025-10-11T18:15:42.568Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a426",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is deep learning?",
+      "choices": [
+        {
+          "text": "Learning underwater",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a427"
+        },
+        {
+          "text": "Machine learning with neural networks having many layers",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a428"
+        },
+        {
+          "text": "Very intensive studying",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a429"
+        },
+        {
+          "text": "Learning about deep sea creatures",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a42a"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "Deep learning uses neural networks with multiple hidden layers.",
+      "category": "Deep Learning",
+      "tags": [
+        "deep-learning",
+        "neural-network"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.567Z",
+      "updatedAt": "2025-10-11T18:15:42.567Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a412",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is artificial intelligence?",
+      "choices": [
+        {
+          "text": "Computer programs that can think like humans",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a413"
+        },
+        {
+          "text": "Robots that look like humans",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a414"
+        },
+        {
+          "text": "Advanced calculators",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a415"
+        },
+        {
+          "text": "Internet of Things devices",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a416"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "AI refers to computer systems that can perform tasks typically requiring human intelligence.",
+      "category": "AI Basics",
+      "tags": [
+        "ai",
+        "basics"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.567Z",
+      "updatedAt": "2025-10-11T18:15:42.567Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a417",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is machine learning?",
+      "choices": [
+        {
+          "text": "Teaching machines to walk",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a418"
+        },
+        {
+          "text": "Algorithms that learn from data",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a419"
+        },
+        {
+          "text": "Programming machines manually",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a41a"
+        },
+        {
+          "text": "Building mechanical devices",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a41b"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "Machine learning involves algorithms that learn patterns from data.",
+      "category": "Machine Learning",
+      "tags": [
+        "ml",
+        "learning"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.567Z",
+      "updatedAt": "2025-10-11T18:15:42.567Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a41c",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "Which of the following is a supervised learning algorithm?",
+      "choices": [
+        {
+          "text": "K-means clustering",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a41d"
+        },
+        {
+          "text": "Linear regression",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a41e"
+        },
+        {
+          "text": "Reinforcement learning",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a41f"
+        },
+        {
+          "text": "Genetic algorithms",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a420"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "Linear regression is a supervised learning algorithm that learns from labeled data.",
+      "category": "Supervised Learning",
+      "tags": [
+        "supervised",
+        "regression"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.567Z",
+      "updatedAt": "2025-10-11T18:15:42.567Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a421",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is a neural network?",
+      "choices": [
+        {
+          "text": "A network of computers",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a422"
+        },
+        {
+          "text": "A computing system inspired by biological neural networks",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a423"
+        },
+        {
+          "text": "A social network for nerds",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a424"
+        },
+        {
+          "text": "A type of internet connection",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a425"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "Neural networks are computing systems inspired by biological neural networks.",
+      "category": "Neural Networks",
+      "tags": [
+        "neural-network",
+        "deep-learning"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.567Z",
+      "updatedAt": "2025-10-11T18:15:42.567Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a42b",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is the purpose of an activation function in neural networks?",
+      "choices": [
+        {
+          "text": "To start the network",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a42c"
+        },
+        {
+          "text": "To introduce non-linearity",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a42d"
+        },
+        {
+          "text": "To stop the network",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a42e"
+        },
+        {
+          "text": "To save the network",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a42f"
+        }
+      ],
+      "difficulty": "hard",
+      "explanation": "Activation functions introduce non-linearity to neural networks.",
+      "category": "Neural Networks",
+      "tags": [
+        "activation",
+        "non-linearity"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.567Z",
+      "updatedAt": "2025-10-11T18:15:42.567Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a430",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is overfitting in machine learning?",
+      "choices": [
+        {
+          "text": "When a model is too big for memory",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a431"
+        },
+        {
+          "text": "When a model performs well on training data but poorly on new data",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a432"
+        },
+        {
+          "text": "When a model trains too fast",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a433"
+        },
+        {
+          "text": "When a model uses too much CPU",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a434"
+        }
+      ],
+      "difficulty": "hard",
+      "explanation": "Overfitting occurs when a model learns training data too well but fails to generalize.",
+      "category": "Model Evaluation",
+      "tags": [
+        "overfitting",
+        "generalization"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.567Z",
+      "updatedAt": "2025-10-11T18:15:42.567Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a43f",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is natural language processing (NLP)?",
+      "choices": [
+        {
+          "text": "Processing natural resources",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a440"
+        },
+        {
+          "text": "Teaching computers to understand human language",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a441"
+        },
+        {
+          "text": "Processing images of nature",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a442"
+        },
+        {
+          "text": "Learning natural sciences",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a443"
+        }
+      ],
+      "difficulty": "easy",
+      "explanation": "NLP involves teaching computers to understand and process human language.",
+      "category": "NLP",
+      "tags": [
+        "nlp",
+        "language"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.568Z",
+      "updatedAt": "2025-10-11T18:15:42.568Z"
+    },
+    {
+      "_id": "68ea9ece7d085a84d428a435",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "What is the difference between AI and Machine Learning?",
+      "choices": [
+        {
+          "text": "They are the same thing",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a436"
+        },
+        {
+          "text": "AI is broader, ML is a subset of AI",
+          "isCorrect": true,
+          "_id": "68ea9ece7d085a84d428a437"
+        },
+        {
+          "text": "ML is broader, AI is a subset of ML",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a438"
+        },
+        {
+          "text": "They are completely different fields",
+          "isCorrect": false,
+          "_id": "68ea9ece7d085a84d428a439"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": "AI is the broader field, while ML is a specific approach within AI.",
+      "category": "AI Basics",
+      "tags": [
+        "ai",
+        "ml",
+        "concepts"
+      ],
+      "__v": 0,
+      "createdAt": "2025-10-11T18:15:42.567Z",
+      "updatedAt": "2025-10-11T18:15:42.567Z"
+    },
+    {
+      "_id": "68eb6f4e673b6bc9a8f3e8ad",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "asas",
+      "choices": [
+        {
+          "text": "asas",
+          "isCorrect": true,
+          "_id": "68eb6f4e673b6bc9a8f3e8ae"
+        },
+        {
+          "text": "asxz",
+          "isCorrect": false,
+          "_id": "68eb6f4e673b6bc9a8f3e8af"
+        },
+        {
+          "text": "zxz",
+          "isCorrect": false,
+          "_id": "68eb6f4e673b6bc9a8f3e8b0"
+        },
+        {
+          "text": "as",
+          "isCorrect": false,
+          "_id": "68eb6f4e673b6bc9a8f3e8b1"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": null,
+      "category": null,
+      "tags": [],
+      "createdAt": "2025-10-12T09:05:18.955Z",
+      "updatedAt": "2025-10-12T09:05:18.955Z",
+      "__v": 0
+    },
+    {
+      "_id": "68eb6f75673b6bc9a8f3e953",
+      "courseId": "68ea917d8f7467f25bbfaed1",
+      "createdBy": "68ea917c8f7467f25bbfaea1",
+      "questionText": "asas",
+      "choices": [
+        {
+          "text": "zxx",
+          "isCorrect": true,
+          "_id": "68eb6f75673b6bc9a8f3e954"
+        },
+        {
+          "text": "aqw3",
+          "isCorrect": false,
+          "_id": "68eb6f75673b6bc9a8f3e955"
+        },
+        {
+          "text": "asxz",
+          "isCorrect": false,
+          "_id": "68eb6f75673b6bc9a8f3e956"
+        },
+        {
+          "text": "asqw",
+          "isCorrect": false,
+          "_id": "68eb6f75673b6bc9a8f3e957"
+        }
+      ],
+      "difficulty": "medium",
+      "explanation": null,
+      "category": null,
+      "tags": [],
+      "createdAt": "2025-10-12T09:05:57.980Z",
+      "updatedAt": "2025-10-12T09:05:57.980Z",
+      "__v": 0
+    }
+  ]
+}
