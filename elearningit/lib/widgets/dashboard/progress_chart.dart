@@ -26,7 +26,10 @@ class ProgressChart extends StatelessWidget {
       );
     }
 
-    final maxScore = quizScores.map((s) => s.percentage).reduce((a, b) => a > b ? a : b);
+  final maxScore = quizScores.map((s) => s.percentage).reduce((a, b) => a > b ? a : b);
+  // Prevent division by zero when all scores are 0. Use a fallback denominator of 1
+  // so computed heights become 0 instead of NaN.
+  final denom = (maxScore <= 0) ? 1.0 : maxScore;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -47,7 +50,8 @@ class ProgressChart extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: quizScores.map((score) {
                 final percentage = score.percentage;
-                final height = (percentage / maxScore) * 140; // Reduced bar height
+                // Use denom (never zero) to avoid NaN heights when maxScore == 0
+                final height = (percentage / denom) * 140; // Reduced bar height
                 final color = _getScoreColor(percentage);
 
                 return Expanded(

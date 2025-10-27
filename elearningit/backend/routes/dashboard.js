@@ -449,19 +449,26 @@ router.get('/instructor/summary', authMiddleware, async (req, res) => {
     const instructorId = req.user.userId;
     console.log(`📊 Getting dashboard summary for instructor: ${instructorId}`);
 
-    // Get all courses the instructor teaches
+    // Get all courses the instructor teaches. Populate student documents but
+    // only include users with role 'student' to ensure counts and data match DB.
     const courses = await Course.find({ instructor: instructorId })
       .select('_id name code students')
+      .populate({ path: 'students', match: { role: 'student' }, select: '_id firstName lastName username' })
       .lean();
     
     const courseIds = courses.map(c => c._id);
     console.log(`📚 Instructor teaches ${courses.length} courses`);
 
-    // Get unique student count across all courses
+    // Get unique student count across all courses. When students are populated
+    // they will be objects; otherwise they may be IDs. Normalize both cases.
     const allStudentIds = new Set();
     courses.forEach(course => {
       if (course.students && Array.isArray(course.students)) {
-        course.students.forEach(studentId => allStudentIds.add(studentId.toString()));
+        course.students.forEach(student => {
+          // populated student => object with _id, otherwise it's an id string
+          const id = student && typeof student === 'object' ? student._id?.toString() : student?.toString();
+          if (id) allStudentIds.add(id);
+        });
       }
     });
     const totalStudents = allStudentIds.size;
@@ -560,6 +567,24 @@ router.get('/instructor/summary', authMiddleware, async (req, res) => {
       quizStats,
       needGrading
     };
+
+    // Also include a lightweight courses payload with populated student info so
+    // the frontend can render course cards without calling /courses separately.
+    const coursesPayload = courses.map(c => ({
+      _id: c._id?.toString(),
+      id: c._id?.toString(),
+      code: c.code || '',
+      name: c.name || '',
+      description: c.description || '',
+      studentCount: Array.isArray(c.students) ? c.students.length : 0,
+      students: Array.isArray(c.students)
+        ? c.students.map(s => (s && typeof s === 'object')
+          ? { _id: s._id?.toString(), firstName: s.firstName, lastName: s.lastName, username: s.username }
+          : { _id: s?.toString() })
+        : [],
+    }));
+
+    dashboardSummary.courses = coursesPayload;
 
     console.log(`✅ Instructor dashboard summary prepared`);
     res.json(dashboardSummary);

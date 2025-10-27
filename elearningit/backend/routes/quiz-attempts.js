@@ -350,9 +350,10 @@ router.post('/:attemptId/submit', authMiddleware, async (req, res) => {
               const scorePercentage = attempt.score ? attempt.score.toFixed(1) : '0';
               
               // Notify instructor
+              const courseName = course.name || course.title || 'Course';
               await notifyQuizAttempt(
                 course.instructor._id,
-                course.title,
+                courseName,
                 quiz.quizId.title,
                 studentName,
                 `${scorePercentage}%`,
@@ -369,7 +370,7 @@ router.post('/:attemptId/submit', authMiddleware, async (req, res) => {
                   submittedAt: attempt.submissionTime,
                   score: scorePercentage
                 },
-                course.title
+                courseName
               );
               console.log(`📧 Confirmation email sent to student ${studentName}`);
             }

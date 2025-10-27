@@ -83,8 +83,24 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
 
   Future<void> _loadSemesterData(Semester semester) async {
     try {
-      // Load courses for selected semester
-      final courses = await _courseService.getCourses(semester: semester.id);
+      // Load courses for selected semester. Prefer using courses included in the
+      // instructor dashboard response (dashboardData['courses']) if present to
+      // avoid an extra API call.
+      List<Course> courses = [];
+      if (_dashboardData != null && _dashboardData!['courses'] is List) {
+        try {
+          final rawCourses = _dashboardData!['courses'] as List<dynamic>;
+          courses = rawCourses.map((c) => Course.fromJson(c as Map<String, dynamic>)).toList();
+          print('✅ Using courses from dashboard payload (${courses.length})');
+        } catch (e) {
+          print('⚠️ Failed to parse courses from dashboard payload: $e');
+          // Fallback to API call below
+        }
+      }
+
+      if (courses.isEmpty) {
+        courses = await _courseService.getCourses(semester: semester.id);
+      }
 
       print(
         '=== DEBUG: Loaded ${courses.length} courses for semester ${semester.displayName}',
@@ -111,13 +127,16 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
       setState(() {
         _courses = courses;
         _selectedSemester = semester;
+        _dashboardData = dashboardData; // store raw dashboard response for additional sections
 
         // Update stats from dashboard data if available
         if (dashboardData != null) {
           _totalCourses = dashboardData['totalCourses'] ?? courses.length;
           _totalStudents = dashboardData['totalStudents'] ?? 0;
           _totalAssignments = dashboardData['assignmentStats']?['total'] ?? 0;
-          _totalQuizzes = dashboardData['quizStats']?['total'] ?? 0;
+          // Some backends use 'total' for quizStats; fallback to other keys if present
+          _totalQuizzes = dashboardData['quizStats']?['total'] ?? dashboardData['quizStats']?['totalQuizzes'] ?? 0;
+          // If the backend returns a 'needGrading' list, we will render it in a dedicated section below
         } else {
           // Fallback to course-based count
           _totalCourses = courses.length;
@@ -188,6 +207,8 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             _buildWelcomeCard(),
             const SizedBox(height: 24),
             _buildQuickStats(),
+              const SizedBox(height: 24),
+              _buildNeedGradingSection(),
             const SizedBox(height: 24),
             _buildCoursesSection(),
           ],
@@ -555,6 +576,68 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
               ),
       ],
     );
+  }
+
+  Widget _buildNeedGradingSection() {
+    if (_dashboardData == null) return const SizedBox.shrink();
+
+    final needGrading = _dashboardData!['needGrading'];
+    if (needGrading == null || needGrading is! List || needGrading.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Submissions Needing Grading',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: needGrading.length,
+              separatorBuilder: (_, __) => const Divider(),
+              itemBuilder: (context, index) {
+                final item = needGrading[index];
+                final studentName = item['studentName'] ?? 'Student';
+                final assignmentTitle = item['assignmentTitle'] ?? 'Assignment';
+                final courseTitle = item['courseTitle'] ?? '';
+                final submittedAt = item['submittedAt'] != null
+                    ? DateTime.tryParse(item['submittedAt'].toString())
+                    : null;
+
+                return ListTile(
+                  title: Text('$assignmentTitle'),
+                  subtitle: Text('$studentName • ${courseTitle ?? ''}'),
+                  trailing: Text(submittedAt != null
+                      ? _formatRelative(submittedAt)
+                      : ''),
+                  onTap: () {
+                    // Optionally navigate to grading UI - not yet implemented
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Open grading for $assignmentTitle')),
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatRelative(DateTime when) {
+    final diff = DateTime.now().difference(when);
+    if (diff.inSeconds < 60) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
   }
 
   Widget _buildCourseCard(Course course) {

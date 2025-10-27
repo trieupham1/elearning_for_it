@@ -149,7 +149,7 @@ async function sendQuizDeadlineReminders() {
                   <h1>⏰ Quiz Deadline Reminder</h1>
                 </div>
                 <div class="content">
-                  <p>This is a reminder about an upcoming quiz in <strong>${course.title}</strong>:</p>
+                  <p>This is a reminder about an upcoming quiz in <strong>${course.title || course.name}</strong>:</p>
                   <h2>${quiz.title}</h2>
                   <div class="deadline">
                     <strong>⚠️ Closes in ${daysUntilDeadline} days</strong><br>
