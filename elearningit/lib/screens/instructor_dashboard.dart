@@ -90,7 +90,9 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
       if (_dashboardData != null && _dashboardData!['courses'] is List) {
         try {
           final rawCourses = _dashboardData!['courses'] as List<dynamic>;
-          courses = rawCourses.map((c) => Course.fromJson(c as Map<String, dynamic>)).toList();
+          courses = rawCourses
+              .map((c) => Course.fromJson(c as Map<String, dynamic>))
+              .toList();
           print('✅ Using courses from dashboard payload (${courses.length})');
         } catch (e) {
           print('⚠️ Failed to parse courses from dashboard payload: $e');
@@ -127,7 +129,8 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
       setState(() {
         _courses = courses;
         _selectedSemester = semester;
-        _dashboardData = dashboardData; // store raw dashboard response for additional sections
+        _dashboardData =
+            dashboardData; // store raw dashboard response for additional sections
 
         // Update stats from dashboard data if available
         if (dashboardData != null) {
@@ -135,7 +138,10 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
           _totalStudents = dashboardData['totalStudents'] ?? 0;
           _totalAssignments = dashboardData['assignmentStats']?['total'] ?? 0;
           // Some backends use 'total' for quizStats; fallback to other keys if present
-          _totalQuizzes = dashboardData['quizStats']?['total'] ?? dashboardData['quizStats']?['totalQuizzes'] ?? 0;
+          _totalQuizzes =
+              dashboardData['quizStats']?['total'] ??
+              dashboardData['quizStats']?['totalQuizzes'] ??
+              0;
           // If the backend returns a 'needGrading' list, we will render it in a dedicated section below
         } else {
           // Fallback to course-based count
@@ -207,8 +213,8 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             _buildWelcomeCard(),
             const SizedBox(height: 24),
             _buildQuickStats(),
-              const SizedBox(height: 24),
-              _buildNeedGradingSection(),
+            const SizedBox(height: 24),
+            _buildNeedGradingSection(),
             const SizedBox(height: 24),
             _buildCoursesSection(),
           ],
@@ -389,59 +395,12 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             ),
           ],
         ),
-        const SizedBox(height: 24),
-        _buildProgressCharts(),
+        // Quick Insights removed as requested
       ],
     );
   }
 
-  Widget _buildProgressCharts() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Quick Insights',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildProgressIndicator(
-                    'Assignment Completion',
-                    0.75,
-                    '75%',
-                    Colors.purple,
-                  ),
-                ),
-                const SizedBox(width: 24),
-                Expanded(
-                  child: _buildProgressIndicator(
-                    'Quiz Participation',
-                    0.68,
-                    '68%',
-                    Colors.blue,
-                  ),
-                ),
-                const SizedBox(width: 24),
-                Expanded(
-                  child: _buildProgressIndicator(
-                    'Student Engagement',
-                    0.82,
-                    '82%',
-                    Colors.green,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // _buildProgressCharts removed — Quick Insights UI deleted per user request
 
   Widget _buildProgressIndicator(
     String label,
@@ -484,6 +443,8 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
       ],
     );
   }
+
+  // _buildProgressIndicator removed because Quick Insights was deleted
 
   Widget _buildStatCard(
     String title,
@@ -614,13 +575,15 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                 return ListTile(
                   title: Text('$assignmentTitle'),
                   subtitle: Text('$studentName • ${courseTitle ?? ''}'),
-                  trailing: Text(submittedAt != null
-                      ? _formatRelative(submittedAt)
-                      : ''),
+                  trailing: Text(
+                    submittedAt != null ? _formatRelative(submittedAt) : '',
+                  ),
                   onTap: () {
                     // Optionally navigate to grading UI - not yet implemented
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Open grading for $assignmentTitle')),
+                      SnackBar(
+                        content: Text('Open grading for $assignmentTitle'),
+                      ),
                     );
                   },
                 );
