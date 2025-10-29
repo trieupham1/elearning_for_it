@@ -32,6 +32,10 @@ const forumRoutes = require('./routes/forum');
 const dashboardRoutes = require('./routes/dashboard');
 const exportRoutes = require('./routes/export');
 const settingsRoutes = require('./routes/settings');
+const departmentRoutes = require('./routes/departments');
+const adminRoutes = require('./routes/admin');
+const adminDashboardRoutes = require('./routes/adminDashboard');
+const adminReportsRoutes = require('./routes/adminReports');
 const { router: fileRoutes, initializeGridFS } = require('./routes/files');
 
 app.use('/api/auth', authRoutes);
@@ -53,6 +57,10 @@ app.use('/api/forum', forumRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/departments', departmentRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/admin/dashboard', adminDashboardRoutes);
+app.use('/api/admin/reports', adminReportsRoutes);
 app.use('/api/files', fileRoutes);
 
 // Health check

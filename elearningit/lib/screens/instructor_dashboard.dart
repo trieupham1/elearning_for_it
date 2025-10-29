@@ -395,12 +395,9 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             ),
           ],
         ),
-        // Quick Insights removed as requested
       ],
     );
   }
-
-  // _buildProgressCharts removed — Quick Insights UI deleted per user request
 
   Widget _buildProgressIndicator(
     String label,
@@ -444,8 +441,6 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
     );
   }
 
-  // _buildProgressIndicator removed because Quick Insights was deleted
-
   Widget _buildStatCard(
     String title,
     String value,
@@ -478,19 +473,9 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'My Courses',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            TextButton.icon(
-              onPressed: () => _showCreateCourseDialog(context),
-              icon: const Icon(Icons.add),
-              label: const Text('Create Course'),
-            ),
-          ],
+        const Text(
+          'My Courses',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         _courses.isEmpty
@@ -505,15 +490,9 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                         color: Colors.grey.shade400,
                       ),
                       const SizedBox(height: 16),
-                      const Text('No courses yet'),
+                      const Text('No courses assigned yet'),
                       const SizedBox(height: 8),
-                      const Text('Create your first course to get started'),
-                      const SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        onPressed: () => _showCreateCourseDialog(context),
-                        icon: const Icon(Icons.add),
-                        label: const Text('Create Course'),
-                      ),
+                      const Text('Contact HR/Admin to get assigned to courses'),
                     ],
                   ),
                 ),
@@ -717,64 +696,6 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _showCreateCourseDialog(BuildContext context) {
-    final titleController = TextEditingController();
-    final descriptionController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Create New Course'),
-        content: SizedBox(
-          width: 400,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: InputDecoration(
-                  labelText: 'Course Title',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: descriptionController,
-                decoration: InputDecoration(
-                  labelText: 'Description',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                maxLines: 3,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // TODO: Implement create course
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Create course feature coming soon!'),
-                ),
-              );
-            },
-            child: const Text('Create'),
-          ),
-        ],
       ),
     );
   }

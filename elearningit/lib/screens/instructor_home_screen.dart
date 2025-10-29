@@ -209,13 +209,12 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
               _loadUnreadCount();
             },
           ),
-          const Divider(),
           ListTile(
-            leading: const Icon(Icons.manage_accounts),
-            title: const Text('Management'),
+            leading: const Icon(Icons.message),
+            title: const Text('Messages'),
             onTap: () {
               Navigator.pop(context);
-              _showManagementOptions(context);
+              Navigator.pushNamed(context, '/messages');
             },
           ),
           const Divider(),
@@ -251,72 +250,6 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
             },
           ),
         ],
-      ),
-    );
-  }
-
-  void _showManagementOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const Text(
-              'Management',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: const Icon(Icons.calendar_today, color: Colors.blue),
-              title: const Text('Semester Management'),
-              subtitle: const Text('Create, edit, or delete semesters'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/manage-semesters');
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.school, color: Colors.green),
-              title: const Text('Course Management'),
-              subtitle: const Text('Create, edit courses, delete courses'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/manage-courses');
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.people, color: Colors.orange),
-              title: const Text('Student Management'),
-              subtitle: const Text(
-                'Create, edit students & send course invitations',
-              ),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/manage-students');
-              },
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
       ),
     );
   }

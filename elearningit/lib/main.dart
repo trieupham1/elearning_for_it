@@ -14,7 +14,19 @@ import 'screens/instructor/create_quiz_screen.dart';
 import 'screens/instructor/create_question_screen.dart';
 import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
+import 'screens/messages_list_screen.dart';
+import 'screens/chat_screen.dart';
+// Admin screens
+import 'screens/admin/admin_home_screen.dart';
+import 'screens/admin/admin_dashboard_screen.dart';
+import 'screens/admin/user_management_screen.dart';
+import 'screens/admin/bulk_import_screen.dart';
+import 'screens/admin/reports_screen.dart';
+import 'screens/admin/department_management_screen.dart';
+// Models & services
 import 'models/quiz.dart';
+import 'models/user.dart';
+import 'services/auth_service.dart';
 import 'providers/theme_provider.dart';
 
 void main() {
@@ -63,6 +75,14 @@ class _ELearningAppState extends State<ELearningApp> {
             '/manage-semesters': (context) => const ManageSemestersScreen(),
             '/manage-courses': (context) => const ManageCoursesScreen(),
             '/manage-students': (context) => const ManageStudentsScreen(),
+            // Admin routes
+            '/admin/home': (context) => const AdminHomeScreen(),
+            '/admin/dashboard': (context) => const AdminDashboardScreen(),
+            '/admin/users': (context) => const UserManagementScreen(),
+            '/admin/users/bulk-import': (context) => const BulkImportScreen(),
+            '/admin/departments': (context) =>
+                const DepartmentManagementScreen(),
+            '/admin/reports': (context) => const ReportsScreen(),
           },
           onGenerateRoute: (settings) {
             // Handle dynamic routes
@@ -111,6 +131,53 @@ class _ELearningAppState extends State<ELearningApp> {
               return MaterialPageRoute(
                 builder: (context) =>
                     ResetPasswordScreen(token: args?['token']),
+              );
+            }
+            if (settings.name == '/messages') {
+              return MaterialPageRoute(
+                builder: (context) => const MessagesListScreen(),
+              );
+            }
+            if (settings.name == '/message') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              final otherUserId = args?['otherUserId'] ?? '';
+              final otherUserName = args?['otherUserName'] ?? 'User';
+              final otherUserAvatar = args?['otherUserAvatar'] as String?;
+
+              // Create User object for ChatScreen recipient
+              final recipient = User(
+                id: otherUserId,
+                username: otherUserName,
+                email: '',
+                role: 'student',
+                profilePicture: otherUserAvatar,
+              );
+
+              return MaterialPageRoute(
+                builder: (context) => FutureBuilder<User?>(
+                  future: AuthService().getCurrentUser(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Scaffold(
+                        body: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+
+                    final currentUser =
+                        snapshot.data ??
+                        User(
+                          id: 'unknown',
+                          username: 'Current User',
+                          email: '',
+                          role: 'student',
+                        );
+
+                    return ChatScreen(
+                      recipient: recipient,
+                      currentUser: currentUser,
+                    );
+                  },
+                ),
               );
             }
             return null;

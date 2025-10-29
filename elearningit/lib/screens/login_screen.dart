@@ -42,8 +42,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       // Navigate based on user role
-      if (loginResponse.user.role == 'instructor' ||
-          loginResponse.user.role == 'admin') {
+      if (loginResponse.user.role == 'admin') {
+        Navigator.pushReplacementNamed(context, '/admin/home');
+      } else if (loginResponse.user.role == 'instructor') {
         Navigator.pushReplacementNamed(context, '/instructor-home');
       } else {
         Navigator.pushReplacementNamed(context, '/student-home');

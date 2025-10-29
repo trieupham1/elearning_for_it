@@ -57,8 +57,8 @@ router.get('/conversations', authMiddleware, async (req, res) => {
         { receiverId: currentUserId }
       ]
     })
-    .populate('senderId', 'fullName avatar role')
-    .populate('receiverId', 'fullName avatar role')
+    .populate('senderId', 'fullName profilePicture role username firstName lastName')
+    .populate('receiverId', 'fullName profilePicture role username firstName lastName')
     .sort({ createdAt: -1 });
     
     // Create a map of conversations with the latest message
@@ -75,13 +75,25 @@ router.get('/conversations', authMiddleware, async (req, res) => {
           : msg.senderId;
         
         conversationsMap.set(otherUserId, {
-          user: otherUser,
+          userId: otherUser._id.toString(),
+          userName: otherUser.fullName || otherUser.username || `${otherUser.firstName || ''} ${otherUser.lastName || ''}`.trim() || 'User',
+          userAvatar: otherUser.profilePicture || null,
           lastMessage: msg.content,
           lastMessageTime: msg.createdAt,
-          isRead: msg.receiverId._id.toString() === currentUserId ? msg.isRead : true
+          unreadCount: 0 // Will be calculated below
         });
       }
     });
+    
+    // Calculate unread count for each conversation
+    for (const [otherUserId, conversation] of conversationsMap.entries()) {
+      const unreadCount = await Message.countDocuments({
+        senderId: otherUserId,
+        receiverId: currentUserId,
+        isRead: false
+      });
+      conversation.unreadCount = unreadCount;
+    }
     
     const conversations = Array.from(conversationsMap.values());
     
