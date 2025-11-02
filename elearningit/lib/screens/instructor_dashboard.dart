@@ -4,6 +4,8 @@ import '../services/course_service.dart';
 import '../services/semester_service.dart';
 import '../services/dashboard_service.dart';
 import '../services/notification_service.dart';
+import '../services/assignment_service.dart';
+import '../services/quiz_service.dart';
 import '../models/user.dart';
 import '../models/course.dart';
 import '../models/semester.dart';
@@ -22,6 +24,8 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
   final _semesterService = SemesterService();
   final _dashboardService = DashboardService();
   final _notificationService = NotificationService();
+  final _assignmentService = AssignmentService();
+  final _quizService = QuizService();
 
   List<Course> _courses = [];
   List<Semester> _semesters = [];
@@ -83,32 +87,62 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
 
   Future<void> _loadSemesterData(Semester semester) async {
     try {
-      // Load courses for selected semester. Prefer using courses included in the
-      // instructor dashboard response (dashboardData['courses']) if present to
-      // avoid an extra API call.
-      List<Course> courses = [];
-      if (_dashboardData != null && _dashboardData!['courses'] is List) {
-        try {
-          final rawCourses = _dashboardData!['courses'] as List<dynamic>;
-          courses = rawCourses
-              .map((c) => Course.fromJson(c as Map<String, dynamic>))
-              .toList();
-          print('✅ Using courses from dashboard payload (${courses.length})');
-        } catch (e) {
-          print('⚠️ Failed to parse courses from dashboard payload: $e');
-          // Fallback to API call below
-        }
-      }
-
-      if (courses.isEmpty) {
-        courses = await _courseService.getCourses(semester: semester.id);
-      }
+      // Always load fresh courses for the selected semester to ensure correct filtering
+      print('📚 Loading courses for semester: ${semester.displayName}');
+      final courses = await _courseService.getCourses(semester: semester.id);
 
       print(
         '=== DEBUG: Loaded ${courses.length} courses for semester ${semester.displayName}',
       );
 
-      // Load dashboard data from API
+      // Calculate stats from filtered courses for the selected semester
+      int totalCourses = courses.length;
+
+      // Count unique students across all courses in this semester
+      Set<String> uniqueStudentIds = {};
+      for (var course in courses) {
+        if (course.students.isNotEmpty) {
+          uniqueStudentIds.addAll(course.students);
+        }
+      }
+      int totalStudents = uniqueStudentIds.length;
+
+      // Count assignments and quizzes for courses in this semester
+      int totalAssignments = 0;
+      int totalQuizzes = 0;
+
+      if (courses.isNotEmpty) {
+        try {
+          // Fetch assignments for all courses in parallel
+          final assignmentFutures = courses
+              .map(
+                (course) =>
+                    _assignmentService.getAssignmentsByCourse(course.id),
+              )
+              .toList();
+
+          final assignmentLists = await Future.wait(assignmentFutures);
+          totalAssignments = assignmentLists.fold(
+            0,
+            (sum, list) => sum + list.length,
+          );
+
+          // Fetch quizzes for all courses in parallel
+          final quizFutures = courses
+              .map((course) => _quizService.getQuizzesForCourse(course.id))
+              .toList();
+
+          final quizLists = await Future.wait(quizFutures);
+          totalQuizzes = quizLists.fold(0, (sum, list) => sum + list.length);
+
+          print('✅ Loaded assignments and quizzes for semester');
+        } catch (e) {
+          print('⚠️ Failed to load assignments/quizzes: $e');
+          // Keep counts as 0 if fetch fails
+        }
+      }
+
+      // Load dashboard data from API (for need grading section)
       Map<String, dynamic>? dashboardData;
       try {
         dashboardData = await _dashboardService.getInstructorDashboardSummary();
@@ -129,37 +163,19 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
       setState(() {
         _courses = courses;
         _selectedSemester = semester;
-        _dashboardData =
-            dashboardData; // store raw dashboard response for additional sections
+        _dashboardData = dashboardData;
 
-        // Update stats from dashboard data if available
-        if (dashboardData != null) {
-          _totalCourses = dashboardData['totalCourses'] ?? courses.length;
-          _totalStudents = dashboardData['totalStudents'] ?? 0;
-          _totalAssignments = dashboardData['assignmentStats']?['total'] ?? 0;
-          // Some backends use 'total' for quizStats; fallback to other keys if present
-          _totalQuizzes =
-              dashboardData['quizStats']?['total'] ??
-              dashboardData['quizStats']?['totalQuizzes'] ??
-              0;
-          // If the backend returns a 'needGrading' list, we will render it in a dedicated section below
-        } else {
-          // Fallback to course-based count
-          _totalCourses = courses.length;
-          Set<String> uniqueStudentIds = {};
-          for (var course in courses) {
-            if (course.students.isNotEmpty) {
-              uniqueStudentIds.addAll(course.students);
-            }
-          }
-          _totalStudents = uniqueStudentIds.length;
-          _totalAssignments = 0;
-          _totalQuizzes = 0;
-        }
-
-        // Use notification service count instead of dashboard API
+        // Use semester-specific stats calculated from filtered courses and their assignments/quizzes
+        _totalCourses = totalCourses;
+        _totalStudents = totalStudents;
+        _totalAssignments = totalAssignments;
+        _totalQuizzes = totalQuizzes;
         _notifications = notificationCount;
       });
+
+      print(
+        '📊 Semester stats - Courses: $totalCourses, Students: $totalStudents, Assignments: $totalAssignments, Quizzes: $totalQuizzes',
+      );
     } catch (e) {
       print('Error loading semester data: $e');
       setState(() {

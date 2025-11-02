@@ -326,3 +326,35 @@ module.exports = {
   sendSubmissionConfirmation,
   sendQuizSubmissionConfirmation
 };
+
+// Notify student when marked absent
+async function notifyAbsenceToStudent(studentId, sessionTitle, sessionDate) {
+  const notification = {
+    userId: studentId,
+    type: 'attendance',
+    title: 'Attendance Notice',
+    message: `You were marked absent for "${sessionTitle}" on ${new Date(sessionDate).toLocaleDateString()}`,
+    data: {
+      sessionTitle,
+      sessionDate
+    }
+  };
+
+  return await Notification.create(notification);
+}
+
+module.exports = {
+  notifyNewMaterial,
+  notifyNewAnnouncement,
+  notifyNewAssignment,
+  notifyNewQuiz,
+  notifyAssignmentSubmission,
+  notifyQuizAttempt,
+  notifyNewComment,
+  notifyPrivateMessage,
+  notifyJoinRequest,
+  notifyJoinApproved,
+  sendSubmissionConfirmation,
+  sendQuizSubmissionConfirmation,
+  notifyAbsenceToStudent
+};

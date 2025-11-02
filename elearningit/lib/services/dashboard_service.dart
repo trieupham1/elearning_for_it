@@ -10,7 +10,7 @@ class DashboardService {
     try {
       print('📊 DashboardService: Fetching dashboard summary...');
 
-      final response = await _apiService.get('/dashboard/student/summary');
+      final response = await _apiService.get('/api/dashboard/student/summary');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -33,7 +33,7 @@ class DashboardService {
   /// Get filtered assignments (pending, submitted, late, graded)
   Future<List<Map<String, dynamic>>> getAssignments({String? status}) async {
     try {
-      String endpoint = '/dashboard/student/assignments';
+      String endpoint = '/api/dashboard/student/assignments';
       if (status != null) {
         endpoint += '?status=$status';
       }
@@ -55,7 +55,7 @@ class DashboardService {
   /// Get quiz results with completion status
   Future<List<Map<String, dynamic>>> getQuizzes() async {
     try {
-      final response = await _apiService.get('/dashboard/student/quizzes');
+      final response = await _apiService.get('/api/dashboard/student/quizzes');
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -80,7 +80,9 @@ class DashboardService {
     try {
       print('📊 DashboardService: Fetching instructor dashboard summary...');
 
-      final response = await _apiService.get('/dashboard/instructor/summary');
+      final response = await _apiService.get(
+        '/api/dashboard/instructor/summary',
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

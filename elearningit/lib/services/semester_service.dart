@@ -80,6 +80,93 @@ class SemesterService extends ApiService {
       throw Exception('Error fetching semester statistics: $e');
     }
   }
+
+  Future<Semester> createSemester({
+    required String code,
+    required String name,
+    required int year,
+    required DateTime startDate,
+    required DateTime endDate,
+    bool isActive = false,
+  }) async {
+    try {
+      final token = await TokenManager.getToken();
+      if (token == null) throw Exception('No authentication token');
+
+      final headers = await ApiConfig.headers();
+
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}${ApiConfig.semesters}'),
+            headers: headers,
+            body: json.encode({
+              'code': code,
+              'name': name,
+              'year': year,
+              'startDate': startDate.toIso8601String(),
+              'endDate': endDate.toIso8601String(),
+              'isActive': isActive,
+            }),
+          )
+          .timeout(ApiConfig.timeout);
+
+      if (response.statusCode == 201) {
+        return Semester.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Failed to create semester: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error creating semester: $e');
+    }
+  }
+
+  Future<Semester> setActiveSemester(String semesterId) async {
+    try {
+      final token = await TokenManager.getToken();
+      if (token == null) throw Exception('No authentication token');
+
+      final headers = await ApiConfig.headers();
+
+      final response = await http
+          .put(
+            Uri.parse(
+              '${ApiConfig.baseUrl}${ApiConfig.semesters}/$semesterId/activate',
+            ),
+            headers: headers,
+          )
+          .timeout(ApiConfig.timeout);
+
+      if (response.statusCode == 200) {
+        return Semester.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Failed to activate semester: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error activating semester: $e');
+    }
+  }
+
+  Future<void> deleteSemester(String semesterId) async {
+    try {
+      final token = await TokenManager.getToken();
+      if (token == null) throw Exception('No authentication token');
+
+      final headers = await ApiConfig.headers();
+
+      final response = await http
+          .delete(
+            Uri.parse('${ApiConfig.baseUrl}${ApiConfig.semesters}/$semesterId'),
+            headers: headers,
+          )
+          .timeout(ApiConfig.timeout);
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to delete semester: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error deleting semester: $e');
+    }
+  }
 }
 
 class SemesterStatistics {

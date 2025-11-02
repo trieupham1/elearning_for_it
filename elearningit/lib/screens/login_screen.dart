@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../models/user.dart';
+import '../providers/theme_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -40,6 +42,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Check if widget is still mounted before navigating
       if (!mounted) return;
+
+      // Load user settings (theme) after successful login
+      try {
+        await Provider.of<ThemeProvider>(context, listen: false).loadTheme();
+      } catch (e) {
+        print('Could not load theme settings: $e');
+        // Continue anyway - theme will use default
+      }
 
       // Navigate based on user role
       if (loginResponse.user.role == 'admin') {

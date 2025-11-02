@@ -63,11 +63,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         isActive: _isActiveFilter,
       );
 
+      final pagination = result['pagination'] as Map<String, dynamic>?;
+
       setState(() {
         _users = result['users'] as List<User>? ?? [];
-        _currentPage = (result['currentPage'] as int?) ?? 1;
-        _totalPages = (result['totalPages'] as int?) ?? 1;
-        _totalUsers = (result['total'] as int?) ?? 0;
+        _currentPage = (pagination?['currentPage'] as int?) ?? 1;
+        _totalPages = (pagination?['totalPages'] as int?) ?? 1;
+        _totalUsers = (pagination?['totalItems'] as int?) ?? 0;
         _isLoading = false;
       });
     } catch (e) {
@@ -80,154 +82,220 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     }
   }
 
-  Future<void> _suspendUser(String userId) async {
-    try {
-      await _adminService.suspendUser(userId);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Account suspended')));
-        _loadUsers();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
-    }
-  }
-
-  Future<void> _activateUser(String userId) async {
-    try {
-      await _adminService.activateUser(userId);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Account activated')));
-        _loadUsers();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
-    }
-  }
-
-  Future<void> _showResetPasswordDialog(User user) async {
+  Future<void> _showEditUserDialog(User user) async {
+    final fullNameController = TextEditingController(text: user.fullName);
+    final emailController = TextEditingController(text: user.email);
+    final usernameController = TextEditingController(text: user.username);
     final passwordController = TextEditingController();
+    String selectedRole = user.role;
+    bool isActive = user.isActive;
+    bool changePassword = false;
 
-    final confirmed = await showDialog<bool>(
+    await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Reset Password for ${user.fullName}'),
-        content: TextField(
-          controller: passwordController,
-          decoration: const InputDecoration(
-            labelText: 'New Password',
-            border: OutlineInputBorder(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('Edit User: ${user.fullName}'),
+          content: SizedBox(
+            width: 500,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Full Name
+                  TextField(
+                    controller: fullNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Full Name*',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Email
+                  TextField(
+                    controller: emailController,
+                    decoration: const InputDecoration(
+                      labelText: 'Email*',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.email),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Username
+                  TextField(
+                    controller: usernameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Username*',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.account_circle),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Role Selection
+                  DropdownButtonFormField<String>(
+                    value: selectedRole,
+                    decoration: const InputDecoration(
+                      labelText: 'Role*',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.admin_panel_settings),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'student',
+                        child: Text('Student'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'instructor',
+                        child: Text('Instructor'),
+                      ),
+                      DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() => selectedRole = value);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Account Status
+                  SwitchListTile(
+                    title: const Text('Account Active'),
+                    subtitle: Text(
+                      isActive
+                          ? 'User can access the system'
+                          : 'User is suspended',
+                    ),
+                    value: isActive,
+                    onChanged: (value) {
+                      setDialogState(() => isActive = value);
+                    },
+                    activeColor: Colors.green,
+                    inactiveThumbColor: Colors.red,
+                  ),
+                  const Divider(),
+
+                  // Password Change Section
+                  CheckboxListTile(
+                    title: const Text('Reset Password'),
+                    subtitle: const Text('Check to reset user password'),
+                    value: changePassword,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        changePassword = value ?? false;
+                        if (!changePassword) {
+                          passwordController.clear();
+                        }
+                      });
+                    },
+                  ),
+
+                  if (changePassword) ...[
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: passwordController,
+                      decoration: const InputDecoration(
+                        labelText: 'New Password*',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.lock),
+                        hintText: 'Enter new password',
+                      ),
+                      obscureText: true,
+                    ),
+                  ],
+
+                  const SizedBox(height: 16),
+                  const Text(
+                    '* Required fields',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
           ),
-          obscureText: true,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                // Validation
+                if (fullNameController.text.trim().isEmpty ||
+                    emailController.text.trim().isEmpty ||
+                    usernameController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please fill all required fields'),
+                    ),
+                  );
+                  return;
+                }
+
+                if (changePassword && passwordController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please enter a new password'),
+                    ),
+                  );
+                  return;
+                }
+
+                Navigator.pop(context);
+
+                try {
+                  // Update user profile (name, email, username, role, status)
+                  await _adminService.updateUser(
+                    userId: user.id,
+                    fullName: fullNameController.text.trim(),
+                    email: emailController.text.trim(),
+                    username: usernameController.text.trim(),
+                    role: selectedRole,
+                    isActive: isActive,
+                  );
+
+                  // Reset password if requested
+                  if (changePassword && passwordController.text.isNotEmpty) {
+                    await _adminService.resetUserPassword(
+                      user.id,
+                      passwordController.text,
+                    );
+                  }
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('User updated successfully'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    _loadUsers();
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error updating user: $e')),
+                    );
+                  }
+                }
+              },
+              child: const Text('Save Changes'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Reset'),
-          ),
-        ],
       ),
     );
 
-    if (confirmed == true && passwordController.text.isNotEmpty) {
-      try {
-        await _adminService.resetUserPassword(user.id, passwordController.text);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Password reset successfully')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: $e')));
-        }
-      }
-    }
-
+    fullNameController.dispose();
+    emailController.dispose();
+    usernameController.dispose();
     passwordController.dispose();
-  }
-
-  Future<void> _showChangeRoleDialog(User user) async {
-    String? selectedRole = user.role;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Change Role: ${user.fullName}'),
-        content: StatefulBuilder(
-          builder: (context, setState) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioListTile<String>(
-                title: const Text('Student'),
-                value: 'student',
-                groupValue: selectedRole,
-                onChanged: (value) => setState(() => selectedRole = value),
-              ),
-              RadioListTile<String>(
-                title: const Text('Instructor'),
-                value: 'instructor',
-                groupValue: selectedRole,
-                onChanged: (value) => setState(() => selectedRole = value),
-              ),
-              RadioListTile<String>(
-                title: const Text('Administrator'),
-                value: 'admin',
-                groupValue: selectedRole,
-                onChanged: (value) => setState(() => selectedRole = value),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true &&
-        selectedRole != null &&
-        selectedRole != user.role) {
-      try {
-        await _adminService.updateUserRole(user.id, selectedRole!);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Role updated successfully')),
-          );
-          _loadUsers();
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: $e')));
-        }
-      }
-    }
   }
 
   @override
@@ -397,85 +465,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 ],
               ),
               isThreeLine: true,
-              trailing: PopupMenuButton<String>(
-                onSelected: (value) {
-                  switch (value) {
-                    case 'suspend':
-                      _showConfirmDialog(
-                        'Suspend Account',
-                        'Are you sure you want to suspend ${user.fullName}\'s account?',
-                        () => _suspendUser(user.id),
-                      );
-                      break;
-                    case 'activate':
-                      _activateUser(user.id);
-                      break;
-                    case 'reset_password':
-                      _showResetPasswordDialog(user);
-                      break;
-                    case 'change_role':
-                      _showChangeRoleDialog(user);
-                      break;
-                    case 'activity_logs':
-                      Navigator.of(context).pushNamed(
-                        '/admin/activity-logs',
-                        arguments: {'userId': user.id},
-                      );
-                      break;
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'suspend',
-                    child: Row(
-                      children: [
-                        Icon(Icons.block, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Suspend'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'activate',
-                    child: Row(
-                      children: [
-                        Icon(Icons.check_circle, color: Colors.green),
-                        SizedBox(width: 8),
-                        Text('Activate'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'reset_password',
-                    child: Row(
-                      children: [
-                        Icon(Icons.lock_reset),
-                        SizedBox(width: 8),
-                        Text('Reset Password'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'change_role',
-                    child: Row(
-                      children: [
-                        Icon(Icons.admin_panel_settings),
-                        SizedBox(width: 8),
-                        Text('Change Role'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'activity_logs',
-                    child: Row(
-                      children: [
-                        Icon(Icons.history),
-                        SizedBox(width: 8),
-                        Text('Activity History'),
-                      ],
-                    ),
-                  ),
-                ],
+              trailing: IconButton(
+                icon: const Icon(Icons.edit, color: Colors.blue),
+                onPressed: () => _showEditUserDialog(user),
+                tooltip: 'Edit User',
               ),
             ),
           );
@@ -553,34 +546,5 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _showConfirmDialog(
-    String title,
-    String message,
-    VoidCallback onConfirm,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Confirm'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      onConfirm();
-    }
   }
 }

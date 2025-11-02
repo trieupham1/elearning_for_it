@@ -61,6 +61,22 @@ class AdminDrawer extends StatelessWidget {
             route: '/admin/training-progress',
           ),
           const Divider(),
+          _buildSectionHeader('Academic Management'),
+          _buildMenuItem(
+            context,
+            icon: Icons.calendar_today,
+            title: 'Semesters',
+            subtitle: 'Academic Terms',
+            route: '/admin/semesters',
+          ),
+          _buildMenuItem(
+            context,
+            icon: Icons.school,
+            title: 'Courses',
+            subtitle: 'Course Management',
+            route: '/admin/courses',
+          ),
+          const Divider(),
           _buildSectionHeader('Instructors'),
           _buildMenuItem(
             context,

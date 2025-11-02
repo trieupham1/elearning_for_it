@@ -4,7 +4,7 @@ import '../models/forum.dart';
 
 class ForumService {
   final ApiService _apiService = ApiService();
-  static const String _baseUrl = '/forum';
+  static const String _baseUrl = '/api/forum';
 
   /// Get all topics for a course with optional filters
   Future<Map<String, dynamic>> getTopics({

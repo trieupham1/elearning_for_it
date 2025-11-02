@@ -7,7 +7,7 @@ class PeopleService {
 
   Future<Map<String, List<User>>> getCoursePeople(String courseId) async {
     try {
-      final response = await _apiService.get('/courses/$courseId/people');
+      final response = await _apiService.get('/api/courses/$courseId/people');
 
       print('People Response Status: ${response.statusCode}');
       print('People Response Body: ${response.body}');

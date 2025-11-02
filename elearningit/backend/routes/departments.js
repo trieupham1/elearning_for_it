@@ -144,11 +144,10 @@ router.delete('/:id', auth, adminOnly, async (req, res) => {
       return res.status(404).json({ message: 'Department not found' });
     }
 
-    // Soft delete
-    department.isActive = false;
-    await department.save();
+    // Hard delete - permanently remove from database
+    await Department.findByIdAndDelete(req.params.id);
 
-    res.json({ message: 'Department deactivated successfully' });
+    res.json({ message: 'Department deleted successfully' });
   } catch (error) {
     console.error('Error deleting department:', error);
     res.status(500).json({ message: 'Server error', error: error.message });

@@ -73,6 +73,81 @@ router.get('/users', auth, adminOnly, async (req, res) => {
   }
 });
 
+// @route   POST /api/admin/users
+// @desc    Create a new user manually
+// @access  Admin only
+router.post('/users', auth, adminOnly, async (req, res) => {
+  try {
+    const { username, email, password, firstName, lastName, role, department, studentId, phoneNumber } = req.body;
+
+    // Validation
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'Username, email, and password are required' });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    if (existingUser) {
+      if (existingUser.username === username) {
+        return res.status(400).json({ message: 'Username already exists' });
+      }
+      if (existingUser.email === email) {
+        return res.status(400).json({ message: 'Email already exists' });
+      }
+    }
+
+    // Check if studentId is unique (if provided)
+    if (studentId) {
+      const existingStudent = await User.findOne({ studentId });
+      if (existingStudent) {
+        return res.status(400).json({ message: 'Student ID already exists' });
+      }
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create new user
+    const user = new User({
+      username,
+      email,
+      password: hashedPassword,
+      firstName: firstName || username,
+      lastName: lastName || '',
+      role: role || 'student',
+      department: department || 'Information Technology',
+      studentId,
+      phoneNumber,
+      isActive: true
+    });
+
+    await user.save();
+
+    // Log activity
+    await ActivityLog.logActivity(
+      user._id,
+      'user_created',
+      'User account created by admin',
+      { createdBy: req.userId },
+      req
+    );
+
+    res.status(201).json({ 
+      message: 'User created successfully', 
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Error creating user:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // @route   POST /api/admin/users/bulk-import
 // @desc    Bulk import users from CSV/Excel file
 // @access  Admin only
@@ -310,6 +385,65 @@ router.put('/users/:id/permissions', auth, adminOnly, async (req, res) => {
     res.json({ message: 'User role updated', user });
   } catch (error) {
     console.error('Error updating permissions:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   PUT /api/admin/users/:id
+// @desc    Update user profile information
+// @access  Admin only
+router.put('/users/:id', auth, adminOnly, async (req, res) => {
+  try {
+    const { firstName, lastName, email, username, role, isActive } = req.body;
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if email is being changed and if it's already in use
+    if (email && email !== user.email) {
+      const emailExists = await User.findOne({ email, _id: { $ne: req.params.id } });
+      if (emailExists) {
+        return res.status(400).json({ message: 'Email already in use' });
+      }
+      user.email = email;
+    }
+
+    // Check if username is being changed and if it's already in use
+    if (username && username !== user.username) {
+      const usernameExists = await User.findOne({ username, _id: { $ne: req.params.id } });
+      if (usernameExists) {
+        return res.status(400).json({ message: 'Username already in use' });
+      }
+      user.username = username;
+    }
+
+    // Update other fields
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (role && ['student', 'instructor', 'admin'].includes(role)) {
+      user.role = role;
+    }
+    if (isActive !== undefined) user.isActive = isActive;
+
+    await user.save();
+
+    // Log activity
+    await ActivityLog.logActivity(
+      user._id,
+      'profile_updated',
+      'Profile updated by admin',
+      { 
+        changedBy: req.userId,
+        changes: { firstName, lastName, email, username, role, isActive }
+      },
+      req
+    );
+
+    res.json({ message: 'User updated successfully', user });
+  } catch (error) {
+    console.error('Error updating user:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

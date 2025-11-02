@@ -1,9 +1,10 @@
-// screens/course_tabs/classwork_tab.dart
 import 'package:flutter/material.dart';
 import '../../models/course.dart';
 import '../../models/user.dart';
 import '../../services/classwork_service.dart';
 import '../../services/assignment_service.dart';
+import '../../services/attendance_service.dart';
+import '../../services/code_assignment_service.dart';
 import '../instructor/create_assignment_screen.dart';
 import '../student/assignment_detail_screen.dart';
 import '../instructor/assignment_tracking_screen.dart';
@@ -12,9 +13,21 @@ import '../instructor/quiz_management_screen.dart';
 import '../instructor/create_material_screen.dart';
 import '../instructor/material_detail_screen.dart';
 import '../instructor/material_management_screen.dart';
+import '../instructor/attendance_records_screen.dart';
+import '../student/attendance_detail_screen.dart';
+import '../instructor/video_analytics_screen.dart';
+import '../instructor/code_assignment_submissions_screen.dart';
 import '../../services/material_service.dart';
 
-enum ClassworkType { all, assignments, quizzes, materials }
+enum ClassworkType {
+  all,
+  assignments,
+  quizzes,
+  materials,
+  videos,
+  attendance,
+  codeAssignments,
+}
 
 class ClassworkTab extends StatefulWidget {
   final Course course;
@@ -57,6 +70,15 @@ class _ClassworkTabState extends State<ClassworkTab> {
           break;
         case ClassworkType.materials:
           filterType = 'materials';
+          break;
+        case ClassworkType.videos:
+          filterType = 'videos';
+          break;
+        case ClassworkType.attendance:
+          filterType = 'attendance';
+          break;
+        case ClassworkType.codeAssignments:
+          filterType = 'code_assignments';
           break;
         default:
           filterType = null;
@@ -145,6 +167,12 @@ class _ClassworkTabState extends State<ClassworkTab> {
                       _buildFilterChip('Quizzes', ClassworkType.quizzes),
                       const SizedBox(width: 8),
                       _buildFilterChip('Materials', ClassworkType.materials),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('Videos', ClassworkType.videos),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('Attendance', ClassworkType.attendance),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('Code', ClassworkType.codeAssignments),
                     ],
                   ),
                 ),
@@ -238,11 +266,9 @@ class _ClassworkTabState extends State<ClassworkTab> {
                 final result = await Navigator.pushNamed(
                   context,
                   '/create-quiz',
-                  arguments: {
-                    'courseId': widget.course.id,
-                  },
+                  arguments: {'courseId': widget.course.id},
                 );
-                
+
                 if (result != null) {
                   // Quiz was created, refresh the classwork list
                   _loadClasswork();
@@ -286,11 +312,86 @@ class _ClassworkTabState extends State<ClassworkTab> {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CreateMaterialScreen(course: widget.course),
+                    builder: (context) =>
+                        CreateMaterialScreen(course: widget.course),
                   ),
                 );
                 if (result == true) {
                   _loadClasswork();
+                }
+              },
+            ),
+
+            const Divider(),
+
+            // NEW: Upload Video
+            ListTile(
+              leading: const Icon(Icons.video_library, color: Colors.teal),
+              title: const Text('Upload Video'),
+              onTap: () async {
+                Navigator.pop(context);
+                final result = await Navigator.pushNamed(
+                  context,
+                  '/upload-video',
+                  arguments: {'courseId': widget.course.id},
+                );
+                if (result == true && mounted) {
+                  _loadClasswork();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Video uploaded successfully!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+            ),
+
+            // NEW: Create Attendance Session
+            ListTile(
+              leading: const Icon(Icons.qr_code_scanner, color: Colors.green),
+              title: const Text('Create Attendance Session'),
+              onTap: () async {
+                Navigator.pop(context);
+                final result = await Navigator.pushNamed(
+                  context,
+                  '/create-attendance-session',
+                  arguments: {
+                    'courseId': widget.course.id,
+                    'courseName': widget.course.name,
+                  },
+                );
+                if (result == true) {
+                  _loadClasswork();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Attendance session created!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+            ),
+
+            // NEW: Create Code Assignment
+            ListTile(
+              leading: const Icon(Icons.code, color: Colors.indigo),
+              title: const Text('Create Code Assignment'),
+              onTap: () async {
+                Navigator.pop(context);
+                final result = await Navigator.pushNamed(
+                  context,
+                  '/create-code-assignment',
+                  arguments: {'courseId': widget.course.id},
+                );
+                if (result == true) {
+                  _loadClasswork();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Code assignment created!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
                 }
               },
             ),
@@ -336,6 +437,7 @@ class _ClassworkCard extends StatelessWidget {
   // Create service instance for fetching assignment data
   final AssignmentService _assignmentService = AssignmentService();
   final MaterialService _materialService = MaterialService();
+  final CodeAssignmentService _codeAssignmentService = CodeAssignmentService();
 
   IconData get _icon {
     switch (item.type) {
@@ -345,6 +447,12 @@ class _ClassworkCard extends StatelessWidget {
         return Icons.quiz;
       case 'material':
         return Icons.folder;
+      case 'video':
+        return Icons.play_circle;
+      case 'attendance':
+        return Icons.qr_code_scanner;
+      case 'code_assignment':
+        return Icons.code;
       default:
         return Icons.article;
     }
@@ -358,6 +466,12 @@ class _ClassworkCard extends StatelessWidget {
         return Colors.red;
       case 'material':
         return Colors.blue;
+      case 'video':
+        return Colors.teal;
+      case 'attendance':
+        return Colors.green;
+      case 'code_assignment':
+        return Colors.indigo;
       default:
         return Colors.grey;
     }
@@ -371,6 +485,12 @@ class _ClassworkCard extends StatelessWidget {
         return 'Quiz';
       case 'material':
         return 'Material';
+      case 'video':
+        return 'Video';
+      case 'attendance':
+        return 'Attendance';
+      case 'code_assignment':
+        return 'Code Assignment';
       default:
         return 'Item';
     }
@@ -463,7 +583,9 @@ class _ClassworkCard extends StatelessWidget {
               ),
 
               // Trailing: Completion status for students or action buttons for instructors
-              if (!_isInstructor && item.type == 'quiz' && item.isCompleted == true)
+              if (!_isInstructor &&
+                  item.type == 'quiz' &&
+                  item.isCompleted == true)
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -476,12 +598,49 @@ class _ClassworkCard extends StatelessWidget {
                     size: 20,
                   ),
                 )
+              else if (!_isInstructor &&
+                  item.type == 'attendance' &&
+                  item.isCompleted == true)
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.check_circle,
+                    color: Colors.green.shade700,
+                    size: 20,
+                  ),
+                )
+              else if (!_isInstructor &&
+                  item.type == 'attendance' &&
+                  item.dueDate != null &&
+                  DateTime.now().isAfter(item.dueDate!))
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.lock_clock,
+                    color: Colors.grey.shade600,
+                    size: 20,
+                  ),
+                )
               else if (_isInstructor && item.type == 'assignment')
                 IconButton(
                   icon: const Icon(Icons.analytics_outlined),
                   onPressed: () => _navigateToTracking(context),
-                  tooltip: 'View Tracking',
+                  tooltip: 'View Submissions',
                 )
+              else if (_isInstructor && item.type == 'video')
+                IconButton(
+                  icon: const Icon(Icons.bar_chart),
+                  onPressed: () => _navigateToVideoAnalytics(context),
+                  tooltip: 'View Watch Analytics',
+                ),
             ],
           ),
         ),
@@ -495,6 +654,7 @@ class _ClassworkCard extends StatelessWidget {
         // Instructor: Fetch assignment and navigate to edit mode
         try {
           final assignment = await _assignmentService.getAssignment(item.id);
+          if (!context.mounted) return;
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
@@ -508,9 +668,11 @@ class _ClassworkCard extends StatelessWidget {
             onRefresh();
           }
         } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error loading assignment: $e')),
-          );
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error loading assignment: $e')),
+            );
+          }
         }
       } else {
         // Student: Navigate to assignment detail
@@ -552,6 +714,112 @@ class _ClassworkCard extends StatelessWidget {
       // Navigate to material detail by fetching the material first
       _navigateToMaterial(context, item.id);
     }
+    // NEW: Video handling
+    else if (item.type == 'video') {
+      final result = await Navigator.pushNamed(
+        context,
+        '/video-player',
+        arguments: {'videoId': item.id},
+      );
+      if (result == true) {
+        onRefresh();
+      }
+    }
+    // NEW: Attendance handling
+    else if (item.type == 'attendance') {
+      if (_isInstructor) {
+        // Instructor: Fetch the full attendance session and navigate to records
+        try {
+          final session = await AttendanceService.getSession(item.id);
+          if (!context.mounted) return;
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AttendanceRecordsScreen(session: session),
+            ),
+          );
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error loading attendance session: $e')),
+            );
+          }
+        }
+      } else {
+        // Student: Navigate to attendance detail screen
+        try {
+          final session = await AttendanceService.getSession(item.id);
+          if (!context.mounted) return;
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AttendanceDetailScreen(session: session),
+            ),
+          );
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error loading attendance session: $e')),
+            );
+          }
+        }
+      }
+    }
+    // NEW: Code Assignment handling
+    else if (item.type == 'code_assignment') {
+      if (_isInstructor) {
+        // Instructor: View submissions and grading
+        try {
+          final assignmentData = await _codeAssignmentService.getAssignment(
+            item.id,
+          );
+          if (!context.mounted) return;
+
+          // Navigate to code assignment submissions screen
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CodeAssignmentSubmissionsScreen(
+                assignment: assignmentData['assignment'],
+              ),
+            ),
+          );
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error loading code assignment: $e')),
+            );
+          }
+        }
+      } else {
+        // Student: Open code editor
+        try {
+          // Fetch the full assignment with test cases
+          final assignmentData = await _codeAssignmentService.getAssignment(
+            item.id,
+          );
+          if (!context.mounted) return;
+
+          final result = await Navigator.pushNamed(
+            context,
+            '/code-editor',
+            arguments: {
+              'assignment': assignmentData['assignment'],
+              'testCases': assignmentData['testCases'],
+            },
+          );
+          if (result == true) {
+            onRefresh();
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error loading code assignment: $e')),
+            );
+          }
+        }
+      }
+    }
   }
 
   void _navigateToTracking(BuildContext context) async {
@@ -564,16 +832,14 @@ class _ClassworkCard extends StatelessWidget {
     onRefresh();
   }
 
-  void _navigateToMaterialManagement(BuildContext context) async {
-    final result = await Navigator.push(
+  void _navigateToVideoAnalytics(BuildContext context) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MaterialManagementScreen(course: course),
+        builder: (context) =>
+            VideoAnalyticsScreen(videoId: item.id, videoTitle: item.title),
       ),
     );
-    if (result == true) {
-      onRefresh();
-    }
   }
 
   void _navigateToMaterial(BuildContext context, String materialId) async {
@@ -582,14 +848,12 @@ class _ClassworkCard extends StatelessWidget {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
       // Fetch the material
       final material = await _materialService.getMaterial(materialId);
-      
+
       // Hide loading
       Navigator.pop(context);
 
@@ -597,24 +861,22 @@ class _ClassworkCard extends StatelessWidget {
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => MaterialDetailScreen(
-            material: material,
-            course: course,
-          ),
+          builder: (context) =>
+              MaterialDetailScreen(material: material, course: course),
         ),
       );
-      
+
       if (result == true) {
         onRefresh();
       }
     } catch (e) {
       // Hide loading
       Navigator.pop(context);
-      
+
       // Show error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading material: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading material: $e')));
     }
   }
 

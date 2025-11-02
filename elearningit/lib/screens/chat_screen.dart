@@ -3,11 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../models/user.dart';
 import '../models/message.dart';
 import '../services/message_service.dart';
 import '../services/file_service.dart';
+import '../services/call_service.dart';
+import '../services/webrtc_service.dart';
 import '../config/api_config.dart';
+import 'chat/media_gallery_screen.dart';
+import 'chat/image_viewer_screen.dart';
+import 'chat/video_player_screen.dart';
+import 'call/voice_call_screen.dart';
+import 'call/video_call_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   final User recipient;
@@ -226,12 +235,40 @@ class _ChatScreenState extends State<ChatScreen> {
               style: TextStyle(color: Colors.grey.shade600),
             ),
             const SizedBox(height: 24),
+            // Call buttons row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                _buildInfoButton(Icons.phone, 'Call', () async {
+                  Navigator.pop(context);
+                  await _startCall('voice');
+                }),
+                _buildInfoButton(Icons.videocam, 'Video', () async {
+                  Navigator.pop(context);
+                  await _startCall('video');
+                }),
                 _buildInfoButton(Icons.search, 'Search', () {
                   Navigator.pop(context);
                   setState(() => _showSearch = true);
+                }),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Media and Files buttons row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildInfoButton(Icons.photo_library, 'Media', () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MediaGalleryScreen(
+                        messages: _messages,
+                        otherUserName: widget.recipient.fullName,
+                      ),
+                    ),
+                  );
                 }),
                 _buildInfoButton(Icons.folder_outlined, 'Files', () {
                   Navigator.pop(context);
@@ -274,11 +311,142 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Future<void> _startCall(String type) async {
+    try {
+      // 1. Check permissions
+      if (type == 'video') {
+        final cameraStatus = await Permission.camera.request();
+        if (!cameraStatus.isGranted) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Camera permission is required for video calls'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+      }
+
+      final micStatus = await Permission.microphone.request();
+      if (!micStatus.isGranted) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Microphone permission is required for calls'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // Show loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text('Starting ${type == 'video' ? 'video' : 'voice'} call...'),
+              ],
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+
+      // 2. Initiate call via API
+      final callService = CallService();
+      final call = await callService.initiateCall(
+        calleeId: widget.recipient.id,
+        type: type,
+      );
+
+      print('📞 Call initiated: ${call.id}, type: $type');
+
+      // 3. Setup WebRTC
+      final webrtcService = WebRTCService();
+      await webrtcService.initializeSocket(widget.currentUser.id);
+
+      // 4. Initialize local media
+      final useVideo = type == 'video';
+      await webrtcService.initializeLocalMedia(video: useVideo, audio: true);
+
+      // 5. Make the call
+      await webrtcService.makeCall(call.id, widget.recipient.id, type);
+
+      print('📞 WebRTC call started');
+
+      // 6. Navigate to appropriate call screen
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => type == 'video'
+                ? VideoCallScreen(
+                    call: call,
+                    otherUser: widget.recipient,
+                    webrtcService: webrtcService,
+                    currentUserId: widget.currentUser.id,
+                  )
+                : VoiceCallScreen(
+                    call: call,
+                    otherUser: widget.recipient,
+                    webrtcService: webrtcService,
+                    currentUserId: widget.currentUser.id,
+                  ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Error starting call: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to start call: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
+  bool _isMediaFile(String content) {
+    final lowerContent = content.toLowerCase();
+    return lowerContent.contains('.jpg') ||
+        lowerContent.contains('.jpeg') ||
+        lowerContent.contains('.png') ||
+        lowerContent.contains('.gif') ||
+        lowerContent.contains('.webp') ||
+        lowerContent.contains('.mp4') ||
+        lowerContent.contains('.mov') ||
+        lowerContent.contains('.avi') ||
+        lowerContent.contains('.mkv') ||
+        lowerContent.contains('image') ||
+        lowerContent.contains('video');
+  }
+
   void _showFilesDialog() {
-    // Get all messages with files, sort by date (newest first), and take 10
+    // Get all messages with files (excluding images/videos), sort by date (newest first), and take 10
     final filesWithAttachments =
         _messages
-            .where((msg) => msg.fileId != null && msg.fileId!.isNotEmpty)
+            .where(
+              (msg) =>
+                  msg.fileId != null &&
+                  msg.fileId!.isNotEmpty &&
+                  !_isMediaFile(msg.content),
+            )
             .toList()
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -292,12 +460,32 @@ class _ChatScreenState extends State<ChatScreen> {
           width: double.maxFinite,
           height: 400,
           child: recentFiles.isEmpty
-              ? const Center(child: Text('No shared files'))
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.insert_drive_file,
+                        size: 48,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(height: 8),
+                      Text('No shared files'),
+                      SizedBox(height: 4),
+                      Text(
+                        'Images and videos are in Media',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                )
               : ListView.builder(
                   itemCount: recentFiles.length,
                   itemBuilder: (context, index) {
                     final message = recentFiles[index];
-                    final fileName = message.content.replaceAll('📎 ', '');
+                    final fileName = message.content
+                        .replaceAll('📎 ', '')
+                        .replaceAll('📄 ', '');
 
                     return ListTile(
                       leading: const Icon(Icons.insert_drive_file),
@@ -629,6 +817,27 @@ class _MessageBubble extends StatelessWidget {
     required this.recipient,
   });
 
+  bool _isImage() {
+    if (message.fileId == null) return false;
+    final content = message.content.toLowerCase();
+    return content.contains('.jpg') ||
+        content.contains('.jpeg') ||
+        content.contains('.png') ||
+        content.contains('.gif') ||
+        content.contains('.webp') ||
+        content.contains('image');
+  }
+
+  bool _isVideo() {
+    if (message.fileId == null) return false;
+    final content = message.content.toLowerCase();
+    return content.contains('.mp4') ||
+        content.contains('.mov') ||
+        content.contains('.avi') ||
+        content.contains('.mkv') ||
+        content.contains('video');
+  }
+
   Future<void> _downloadFile(BuildContext context) async {
     if (message.fileId == null) {
       print('FileId is null, cannot download');
@@ -636,7 +845,7 @@ class _MessageBubble extends StatelessWidget {
     }
 
     try {
-      final url = '${ApiConfig.getBaseUrl()}/files/${message.fileId}';
+      final url = '${ApiConfig.getBaseUrl()}/api/files/${message.fileId}';
       print('Attempting to download file from: $url');
       print('FileId: ${message.fileId}');
 
@@ -663,9 +872,44 @@ class _MessageBubble extends StatelessWidget {
     }
   }
 
+  void _openImage(BuildContext context) {
+    final imageUrl = '${ApiConfig.getBaseUrl()}/api/files/${message.fileId}';
+    final fileName = message.content
+        .replaceAll('📎 ', '')
+        .replaceAll('🖼️ ', '');
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ImageViewerScreen(
+          imageUrl: imageUrl,
+          fileName: fileName,
+          timestamp: message.createdAt,
+        ),
+      ),
+    );
+  }
+
+  void _openVideo(BuildContext context) {
+    final videoUrl = '${ApiConfig.getBaseUrl()}/api/files/${message.fileId}';
+    final fileName = message.content
+        .replaceAll('📎 ', '')
+        .replaceAll('🎥 ', '');
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            VideoPlayerScreen(videoUrl: videoUrl, fileName: fileName),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool hasFile = message.fileId != null;
+    final bool isImage = _isImage();
+    final bool isVideo = _isVideo();
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -708,53 +952,14 @@ class _MessageBubble extends StatelessWidget {
                   ? CrossAxisAlignment.end
                   : CrossAxisAlignment.start,
               children: [
-                GestureDetector(
-                  onTap: hasFile ? () => _downloadFile(context) : null,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: hasFile ? 12 : 14,
-                      vertical: hasFile ? 8 : 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isMe ? Colors.blue : Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: hasFile
-                        ? Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.insert_drive_file,
-                                color: isMe ? Colors.white : Colors.blue,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: Text(
-                                  message.content.replaceAll('📎 ', ''),
-                                  style: TextStyle(
-                                    color: isMe ? Colors.white : Colors.black87,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(
-                                Icons.download,
-                                color: isMe ? Colors.white : Colors.blue,
-                                size: 16,
-                              ),
-                            ],
-                          )
-                        : Text(
-                            message.content,
-                            style: TextStyle(
-                              color: isMe ? Colors.white : Colors.black87,
-                              fontSize: 15,
-                            ),
-                          ),
-                  ),
-                ),
+                if (isImage)
+                  _buildImagePreview(context)
+                else if (isVideo)
+                  _buildVideoPreview(context)
+                else if (hasFile)
+                  _buildFileAttachment(context)
+                else
+                  _buildTextMessage(),
                 if (showAvatar)
                   Padding(
                     padding: const EdgeInsets.only(top: 2, left: 12, right: 12),
@@ -796,6 +1001,174 @@ class _MessageBubble extends StatelessWidget {
           else if (isMe)
             const SizedBox(width: 28),
         ],
+      ),
+    );
+  }
+
+  Widget _buildImagePreview(BuildContext context) {
+    final imageUrl = '${ApiConfig.getBaseUrl()}/api/files/${message.fileId}';
+
+    return GestureDetector(
+      onTap: () => _openImage(context),
+      child: Hero(
+        tag: 'image_${message.fileId}',
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 250, maxHeight: 300),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                width: 200,
+                height: 200,
+                color: isMe ? Colors.blue.shade100 : Colors.grey.shade200,
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+              errorWidget: (context, url, error) => Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isMe ? Colors.blue : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.broken_image,
+                      color: isMe ? Colors.white : Colors.grey,
+                      size: 40,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Failed to load image',
+                      style: TextStyle(
+                        color: isMe ? Colors.white : Colors.black87,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVideoPreview(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _openVideo(context),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 250),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isMe ? Colors.blue : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 200,
+              height: 120,
+              decoration: BoxDecoration(
+                color: Colors.black12,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black45,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.play_arrow, color: Colors.white, size: 40),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.videocam,
+                  color: isMe ? Colors.white : Colors.blue,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    message.content.replaceAll('📎 ', '').replaceAll('🎥 ', ''),
+                    style: TextStyle(
+                      color: isMe ? Colors.white : Colors.black87,
+                      fontSize: 13,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFileAttachment(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _downloadFile(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isMe ? Colors.blue : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.insert_drive_file,
+              color: isMe ? Colors.white : Colors.blue,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                message.content.replaceAll('📎 ', '').replaceAll('📄 ', ''),
+                style: TextStyle(
+                  color: isMe ? Colors.white : Colors.black87,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.download,
+              color: isMe ? Colors.white : Colors.blue,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextMessage() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isMe ? Colors.blue : Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Text(
+        message.content,
+        style: TextStyle(
+          color: isMe ? Colors.white : Colors.black87,
+          fontSize: 15,
+        ),
       ),
     );
   }

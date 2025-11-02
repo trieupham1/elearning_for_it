@@ -12,7 +12,7 @@ class AnnouncementService {
   Future<List<Announcement>> getAnnouncements(String courseId) async {
     try {
       final response = await _apiService.get(
-        '/announcements?courseId=$courseId',
+        '/api/announcements?courseId=$courseId',
       );
 
       print('Announcements Response Status: ${response.statusCode}');
@@ -35,7 +35,9 @@ class AnnouncementService {
   /// Get a single announcement by ID
   Future<Announcement> getAnnouncement(String announcementId) async {
     try {
-      final response = await _apiService.get('/announcements/$announcementId');
+      final response = await _apiService.get(
+        '/api/announcements/$announcementId',
+      );
 
       if (response.statusCode == 200) {
         return Announcement.fromJson(json.decode(response.body));
@@ -58,7 +60,7 @@ class AnnouncementService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/announcements',
+        '/api/announcements',
         body: {
           'courseId': courseId,
           'title': title,
@@ -98,7 +100,7 @@ class AnnouncementService {
       if (attachments != null) body['attachments'] = attachments;
 
       final response = await _apiService.put(
-        '/announcements/$announcementId',
+        '/api/announcements/$announcementId',
         body: body,
       );
 
@@ -120,7 +122,7 @@ class AnnouncementService {
   Future<void> deleteAnnouncement(String announcementId) async {
     try {
       final response = await _apiService.delete(
-        '/announcements/$announcementId',
+        '/api/announcements/$announcementId',
       );
 
       if (response.statusCode != 200 && response.statusCode != 204) {
@@ -142,7 +144,7 @@ class AnnouncementService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/announcements/$announcementId/comments',
+        '/api/announcements/$announcementId/comments',
         body: {'text': text},
       );
 
@@ -162,7 +164,7 @@ class AnnouncementService {
   Future<void> trackView(String announcementId) async {
     try {
       final response = await _apiService.post(
-        '/announcements/$announcementId/view',
+        '/api/announcements/$announcementId/view',
         body: {},
       );
 
@@ -183,7 +185,7 @@ class AnnouncementService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/announcements/$announcementId/download',
+        '/api/announcements/$announcementId/download',
         body: {'fileName': fileName},
       );
 
@@ -201,7 +203,7 @@ class AnnouncementService {
   Future<AnnouncementTracking> getTracking(String announcementId) async {
     try {
       final response = await _apiService.get(
-        '/announcements/$announcementId/tracking',
+        '/api/announcements/$announcementId/tracking',
       );
 
       if (response.statusCode == 200) {
@@ -220,7 +222,7 @@ class AnnouncementService {
   Future<String> exportTrackingCSV(String announcementId) async {
     try {
       final response = await _apiService.get(
-        '/announcements/$announcementId/export',
+        '/api/announcements/$announcementId/export',
       );
 
       if (response.statusCode == 200) {

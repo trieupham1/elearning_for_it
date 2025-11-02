@@ -53,12 +53,15 @@ class DepartmentService {
       );
 
       if (response.statusCode == 200) {
-        return DepartmentDetailed.fromJson(json.decode(response.body));
+        print('🔍 Department Response: ${response.body}');
+        final jsonData = json.decode(response.body);
+        print('🔍 Decoded JSON: $jsonData');
+        return DepartmentDetailed.fromJson(jsonData);
       } else {
         throw Exception('Failed to load department: ${response.body}');
       }
     } catch (e) {
-      print('Error getting department: $e');
+      print('❌ Error getting department: $e');
       rethrow;
     }
   }
@@ -174,7 +177,8 @@ class DepartmentService {
   }
 
   // Add single course to department
-  Future<Department> addCourse(String id, String courseId) async {
+  // Add course to department
+  Future<void> addCourse(String id, String courseId) async {
     try {
       final headers = await _getHeaders();
       final body = json.encode({'courseId': courseId});
@@ -185,11 +189,11 @@ class DepartmentService {
         body: body,
       );
 
-      if (response.statusCode == 200) {
-        return Department.fromJson(json.decode(response.body));
-      } else {
+      if (response.statusCode != 200) {
         throw Exception('Failed to add course: ${response.body}');
       }
+      // Don't parse response - just return success
+      // The department will be reloaded anyway
     } catch (e) {
       print('Error adding course: $e');
       rethrow;
@@ -237,7 +241,8 @@ class DepartmentService {
   }
 
   // Add employee to department
-  Future<Department> addEmployee(String id, String userId) async {
+  // Add employee to department
+  Future<void> addEmployee(String id, String userId) async {
     try {
       final headers = await _getHeaders();
       final body = json.encode({'userId': userId});
@@ -248,11 +253,11 @@ class DepartmentService {
         body: body,
       );
 
-      if (response.statusCode == 200) {
-        return Department.fromJson(json.decode(response.body));
-      } else {
+      if (response.statusCode != 200) {
         throw Exception('Failed to add employee: ${response.body}');
       }
+      // Don't parse response - just return success
+      // The department will be reloaded anyway
     } catch (e) {
       print('Error adding employee: $e');
       rethrow;

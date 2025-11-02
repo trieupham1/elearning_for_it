@@ -9,7 +9,7 @@ class SettingsService {
   /// Get user settings
   Future<UserSettings> getSettings() async {
     try {
-      final response = await _apiService.get('/settings');
+      final response = await _apiService.get('/api/settings');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -28,7 +28,7 @@ class SettingsService {
   Future<UserSettings> updateSettings(UserSettings settings) async {
     try {
       final response = await _apiService.put(
-        '/settings',
+        '/api/settings',
         body: settings.toJson(),
       );
 
@@ -47,7 +47,7 @@ class SettingsService {
   /// Reset settings to default
   Future<UserSettings> resetSettings() async {
     try {
-      final response = await _apiService.post('/settings/reset', body: {});
+      final response = await _apiService.post('/api/settings/reset', body: {});
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

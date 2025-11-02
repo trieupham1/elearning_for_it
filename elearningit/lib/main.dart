@@ -4,9 +4,6 @@ import 'screens/login_screen.dart';
 import 'screens/student_home_screen.dart';
 import 'screens/instructor_home_screen.dart';
 import 'screens/api_test_screen.dart';
-import 'screens/manage_semesters_screen.dart';
-import 'screens/manage_courses_screen.dart';
-import 'screens/manage_students_screen.dart';
 import 'screens/student/quiz_taking_screen.dart';
 import 'screens/student/quiz_result_screen.dart';
 import 'screens/instructor/quiz_settings_screen.dart';
@@ -23,11 +20,26 @@ import 'screens/admin/user_management_screen.dart';
 import 'screens/admin/bulk_import_screen.dart';
 import 'screens/admin/reports_screen.dart';
 import 'screens/admin/department_management_screen.dart';
+import 'screens/admin/manage_semesters_screen.dart';
+import 'screens/admin/manage_courses_screen.dart';
+import 'screens/manage_students_screen.dart';
 // Models & services
 import 'models/quiz.dart';
 import 'models/user.dart';
 import 'services/auth_service.dart';
 import 'providers/theme_provider.dart';
+// Yellow Priority Features - Video, Attendance, Code Assignment
+import 'screens/student/video_player_screen.dart';
+import 'screens/instructor/upload_video_screen.dart';
+import 'screens/instructor/attendance_screen.dart';
+import 'screens/instructor/create_attendance_session_screen.dart';
+import 'screens/instructor/attendance_records_screen.dart';
+import 'screens/student/check_in_screen.dart';
+import 'screens/student/code_editor_screen.dart';
+import 'screens/student/code_submission_results_screen.dart';
+import 'screens/instructor/create_code_assignment_screen.dart';
+import 'models/attendance.dart';
+import 'models/code_assignment.dart';
 
 void main() {
   runApp(
@@ -49,10 +61,8 @@ class _ELearningAppState extends State<ELearningApp> {
   @override
   void initState() {
     super.initState();
-    // Load theme on app startup
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<ThemeProvider>(context, listen: false).loadTheme();
-    });
+    // Don't load theme on startup - user needs to login first
+    // Theme will be loaded after successful login
   }
 
   @override
@@ -72,8 +82,6 @@ class _ELearningAppState extends State<ELearningApp> {
             '/profile': (context) => const ProfileScreen(),
             '/api-test': (context) => const ApiTestScreen(),
             '/forgot-password': (context) => const ForgotPasswordScreen(),
-            '/manage-semesters': (context) => const ManageSemestersScreen(),
-            '/manage-courses': (context) => const ManageCoursesScreen(),
             '/manage-students': (context) => const ManageStudentsScreen(),
             // Admin routes
             '/admin/home': (context) => const AdminHomeScreen(),
@@ -82,6 +90,8 @@ class _ELearningAppState extends State<ELearningApp> {
             '/admin/users/bulk-import': (context) => const BulkImportScreen(),
             '/admin/departments': (context) =>
                 const DepartmentManagementScreen(),
+            '/admin/semesters': (context) => const ManageSemestersScreen(),
+            '/admin/courses': (context) => const ManageCoursesScreen(),
             '/admin/reports': (context) => const ReportsScreen(),
           },
           onGenerateRoute: (settings) {
@@ -180,6 +190,84 @@ class _ELearningAppState extends State<ELearningApp> {
                 ),
               );
             }
+
+            // ========== VIDEO ROUTES ==========
+            if (settings.name == '/video-player') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) =>
+                    VideoPlayerScreen(videoId: args?['videoId'] ?? ''),
+              );
+            }
+            if (settings.name == '/upload-video') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) =>
+                    UploadVideoScreen(courseId: args?['courseId'] ?? ''),
+              );
+            }
+
+            // ========== ATTENDANCE ROUTES ==========
+            if (settings.name == '/attendance') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) => AttendanceScreen(
+                  courseId: args?['courseId'] ?? '',
+                  courseName: args?['courseName'] ?? 'Course',
+                ),
+              );
+            }
+            if (settings.name == '/create-attendance-session') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) => CreateAttendanceSessionScreen(
+                  courseId: args?['courseId'] ?? '',
+                  courseName: args?['courseName'] ?? 'Course',
+                ),
+              );
+            }
+            if (settings.name == '/attendance-records') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) => AttendanceRecordsScreen(
+                  session: args?['session'] as AttendanceSession,
+                ),
+              );
+            }
+            if (settings.name == '/check-in') {
+              return MaterialPageRoute(
+                builder: (context) => const CheckInScreen(),
+              );
+            }
+
+            // ========== CODE ASSIGNMENT ROUTES ==========
+            if (settings.name == '/code-editor') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) => CodeEditorScreen(
+                  assignment: args?['assignment'] as CodeAssignment,
+                  testCases: args?['testCases'] as List<TestCase>,
+                ),
+              );
+            }
+            if (settings.name == '/code-submission-results') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) => CodeSubmissionResultsScreen(
+                  submission: args?['submission'] as CodeSubmission,
+                  assignment: args?['assignment'] as CodeAssignment,
+                ),
+              );
+            }
+            if (settings.name == '/create-code-assignment') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) => CreateCodeAssignmentScreen(
+                  courseId: args?['courseId'] ?? '',
+                ),
+              );
+            }
+
             return null;
           },
         );

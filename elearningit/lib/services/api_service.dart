@@ -206,7 +206,7 @@ class ApiService {
 
       final response = await http
           .get(
-            Uri.parse('${ApiConfig.getBaseUrl()}/health'),
+            Uri.parse('${ApiConfig.getBaseUrl()}/api/health'),
             headers: {'Accept': 'application/json'},
           )
           .timeout(const Duration(seconds: 5));

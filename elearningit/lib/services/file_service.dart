@@ -55,7 +55,7 @@ class FileService {
       // Create multipart request
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse('${await _getBaseUrl()}/files/upload'),
+        Uri.parse('${await _getBaseUrl()}/api/files/upload'),
       );
 
       // Add authorization header

@@ -37,6 +37,10 @@ const adminRoutes = require('./routes/admin');
 const adminDashboardRoutes = require('./routes/adminDashboard');
 const adminReportsRoutes = require('./routes/adminReports');
 const { router: fileRoutes, initializeGridFS } = require('./routes/files');
+const videoRoutes = require('./routes/videos');
+const attendanceRoutes = require('./routes/attendance');
+const codeAssignmentRoutes = require('./routes/code-assignments');
+const callRoutes = require('./routes/calls');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -62,6 +66,10 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/admin/reports', adminReportsRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api/videos', videoRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/code', codeAssignmentRoutes);
+app.use('/api/calls', callRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -80,13 +88,35 @@ mongoose.connect(process.env.MONGODB_URI)
     initializeGridFS(gfsBucket);
     console.log('GridFS initialized');
     
+    // Validate Judge0 configuration for code assignments
+    const { validateConfig } = require('./utils/judge0Helper');
+    if (validateConfig()) {
+      console.log('✓ Judge0 API configured');
+    } else {
+      console.log('✗ Judge0 API not configured - code assignments will not work');
+    }
+    
     // Start scheduled tasks
     startScheduledTasks();
     
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
+    
+    // Setup Socket.IO for WebRTC signaling
+    const socketIO = require('socket.io');
+    const io = socketIO(server, {
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+      }
+    });
+    
+    // Initialize WebRTC signaling
+    const setupWebRTCSignaling = require('./utils/webrtcSignaling');
+    setupWebRTCSignaling(io);
+    console.log('✓ WebRTC signaling server initialized');
   })
   .catch((error) => {
     console.error('MongoDB connection error:', error);

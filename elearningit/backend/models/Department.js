@@ -102,9 +102,39 @@ departmentSchema.statics.getActiveDepartments = function() {
 // Static method to get department with full details
 departmentSchema.statics.getDetailedDepartment = function(departmentId) {
   return this.findById(departmentId)
-    .populate('headOfDepartment', 'fullName email profilePicture')
+    .populate('headOfDepartment', 'firstName lastName email profilePicture')
     .populate('courses', 'title code description startDate endDate')
-    .populate('employees', 'fullName email role department');
+    .populate('employees', 'firstName lastName email role department profilePicture')
+    .lean()
+    .then(dept => {
+      if (!dept) return null;
+      
+      // Manually compute fullName for populated users
+      if (dept.headOfDepartment) {
+        dept.headOfDepartment.fullName = 
+          (dept.headOfDepartment.firstName && dept.headOfDepartment.lastName)
+            ? `${dept.headOfDepartment.firstName} ${dept.headOfDepartment.lastName}`
+            : dept.headOfDepartment.email?.split('@')[0] || 'Unknown';
+      }
+      
+      if (dept.employees && Array.isArray(dept.employees)) {
+        dept.employees = dept.employees.map(emp => {
+          if (!emp) return null;
+          return {
+            _id: emp._id,
+            fullName: (emp.firstName && emp.lastName)
+              ? `${emp.firstName} ${emp.lastName}`
+              : (emp.email ? emp.email.split('@')[0] : 'Unknown'),
+            email: emp.email || '',
+            role: emp.role || 'student',
+            department: emp.department,
+            profilePicture: emp.profilePicture
+          };
+        }).filter(emp => emp !== null);
+      }
+      
+      return dept;
+    });
 };
 
 module.exports = mongoose.model('Department', departmentSchema);

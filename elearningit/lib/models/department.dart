@@ -109,16 +109,16 @@ class DepartmentDetailed {
 class DepartmentCourse {
   @JsonKey(name: '_id')
   final String id;
-  final String title;
-  final String code;
+  final String? title;
+  final String? code;
   final String? description;
   final DateTime? startDate;
   final DateTime? endDate;
 
   DepartmentCourse({
     required this.id,
-    required this.title,
-    required this.code,
+    this.title,
+    this.code,
     this.description,
     this.startDate,
     this.endDate,
@@ -133,17 +133,19 @@ class DepartmentCourse {
 class DepartmentEmployee {
   @JsonKey(name: '_id')
   final String id;
-  final String fullName;
+  final String? fullName;
   final String email;
   final String role;
   final String? department;
+  final String? profilePicture;
 
   DepartmentEmployee({
     required this.id,
-    required this.fullName,
+    this.fullName,
     required this.email,
     required this.role,
     this.department,
+    this.profilePicture,
   });
 
   factory DepartmentEmployee.fromJson(Map<String, dynamic> json) =>

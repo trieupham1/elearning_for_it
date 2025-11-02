@@ -12,7 +12,7 @@ class GroupService {
       if (token == null) throw Exception('No authentication token');
 
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/groups?courseId=$courseId'),
+        Uri.parse('${ApiConfig.baseUrl}/api/groups?courseId=$courseId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

@@ -5,23 +5,23 @@ import '../utils/token_manager.dart';
 class ApiConfig {
   // Development server URL - change this to your actual backend URL
   // Note: Android emulator cannot access host's localhost; use 10.0.2.2 instead.
-  static const String _localBase = 'http://localhost:5000/api';
-  static const String _androidEmulatorBase = 'http://10.0.2.2:5000/api';
+  static const String _localBase = 'http://localhost:5000';
+  static const String _androidEmulatorBase = 'http://10.0.2.2:5000';
 
   // API endpoints (based on your actual backend routes)
-  static const String auth = '/auth';
-  static const String users = '/users';
-  static const String semesters = '/semesters';
-  static const String courses = '/courses';
-  static const String groups = '/groups';
-  static const String students = '/students';
-  static const String announcements = '/announcements';
-  static const String files = '/files';
-  static const String notifications = '/notifications';
+  static const String auth = '/api/auth';
+  static const String users = '/api/users';
+  static const String semesters = '/api/semesters';
+  static const String courses = '/api/courses';
+  static const String groups = '/api/groups';
+  static const String students = '/api/students';
+  static const String announcements = '/api/announcements';
+  static const String files = '/api/files';
+  static const String notifications = '/api/notifications';
 
   // File upload endpoints
-  static const String uploadFile = '/files/upload';
-  static const String downloadFile = '/files';
+  static const String uploadFile = '/api/files/upload';
+  static const String downloadFile = '/api/files';
 
   // Timeout duration
   static const Duration timeout = Duration(seconds: 30);

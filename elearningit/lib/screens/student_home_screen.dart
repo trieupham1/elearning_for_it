@@ -220,6 +220,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               _loadUnreadCount();
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.message),
+            title: const Text('Messages'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/messages');
+            },
+          ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.person),

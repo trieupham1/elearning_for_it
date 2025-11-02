@@ -156,4 +156,96 @@ class CourseService extends ApiService {
       throw Exception('Error deleting course: $e');
     }
   }
+
+  Future<void> assignTeacher({
+    required String courseId,
+    required String instructorId,
+  }) async {
+    try {
+      final token = await TokenManager.getToken();
+      if (token == null) throw Exception('No authentication token');
+
+      final headers = await ApiConfig.headers();
+
+      final response = await http
+          .post(
+            Uri.parse(
+              '${ApiConfig.baseUrl}${ApiConfig.courses}/$courseId/assign-teacher',
+            ),
+            headers: headers,
+            body: json.encode({'instructorId': instructorId}),
+          )
+          .timeout(ApiConfig.timeout);
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to assign teacher: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error assigning teacher: $e');
+    }
+  }
+
+  Future<void> assignStudents({
+    required String courseId,
+    required List<String> studentIds,
+    String? groupId,
+  }) async {
+    try {
+      final token = await TokenManager.getToken();
+      if (token == null) throw Exception('No authentication token');
+
+      final headers = await ApiConfig.headers();
+
+      final response = await http
+          .post(
+            Uri.parse(
+              '${ApiConfig.baseUrl}${ApiConfig.courses}/$courseId/assign-students',
+            ),
+            headers: headers,
+            body: json.encode({
+              'studentIds': studentIds,
+              if (groupId != null) 'groupId': groupId,
+            }),
+          )
+          .timeout(ApiConfig.timeout);
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to assign students: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error assigning students: $e');
+    }
+  }
+
+  Future<void> respondToTeacherInvite({
+    required String courseId,
+    required String notificationId,
+    required bool accept,
+  }) async {
+    try {
+      final token = await TokenManager.getToken();
+      if (token == null) throw Exception('No authentication token');
+
+      final headers = await ApiConfig.headers();
+
+      final response = await http
+          .post(
+            Uri.parse(
+              '${ApiConfig.baseUrl}${ApiConfig.courses}/$courseId/respond-teacher-invite',
+            ),
+            headers: headers,
+            body: json.encode({
+              'notificationId': notificationId,
+              'accept': accept,
+            }),
+          )
+          .timeout(ApiConfig.timeout);
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to respond to invitation: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error responding to invitation: $e');
+    }
+  }
 }

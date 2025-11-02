@@ -8,7 +8,9 @@ class MessageService {
 
   Future<List<ChatMessage>> getConversation(String userId) async {
     try {
-      final response = await _apiService.get('/messages/conversation/$userId');
+      final response = await _apiService.get(
+        '/api/messages/conversation/$userId',
+      );
       final List<dynamic> data = json.decode(response.body);
       return data.map((json) => ChatMessage.fromJson(json)).toList();
     } catch (e) {
@@ -19,7 +21,7 @@ class MessageService {
 
   Future<List<Conversation>> getConversations() async {
     try {
-      final response = await _apiService.get('/messages/conversations');
+      final response = await _apiService.get('/api/messages/conversations');
       final List<dynamic> data = json.decode(response.body);
       return data.map((json) => Conversation.fromJson(json)).toList();
     } catch (e) {
@@ -30,7 +32,7 @@ class MessageService {
 
   Future<List<User>> searchUsers(String query) async {
     try {
-      final response = await _apiService.get('/users/search?q=$query');
+      final response = await _apiService.get('/api/users/search?q=$query');
       final List<dynamic> data = json.decode(response.body);
       return data.map((json) => User.fromJson(json)).toList();
     } catch (e) {
@@ -46,7 +48,7 @@ class MessageService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/messages',
+        '/api/messages',
         body: {
           'receiverId': receiverId,
           'content': content,
@@ -64,7 +66,7 @@ class MessageService {
 
   Future<int> getUnreadCount() async {
     try {
-      final response = await _apiService.get('/messages/unread/count');
+      final response = await _apiService.get('/api/messages/unread/count');
       final data = json.decode(response.body);
       return data['count'] ?? 0;
     } catch (e) {
@@ -76,7 +78,7 @@ class MessageService {
   Future<bool> markAsRead(String messageId) async {
     try {
       final response = await _apiService.put(
-        '/messages/$messageId/read',
+        '/api/messages/$messageId/read',
         body: {},
       );
       return response.statusCode == 200;

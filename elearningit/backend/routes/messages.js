@@ -115,10 +115,10 @@ router.post('/', authMiddleware, async (req, res) => {
       return res.status(404).json({ message: 'Receiver not found' });
     }
     
-    // Check permissions: students can only message instructors
-    if (req.user.role === 'student' && receiver.role === 'student') {
-      return res.status(403).json({ 
-        message: 'Students can only message instructors' 
+    // Prevent users from messaging themselves
+    if (senderId === receiverId) {
+      return res.status(400).json({ 
+        message: 'You cannot send messages to yourself' 
       });
     }
     

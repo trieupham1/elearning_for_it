@@ -69,8 +69,9 @@ class ThemeProvider with ChangeNotifier {
       _isInitialized = true;
       notifyListeners();
     } catch (e) {
-      print('Error loading theme: $e');
-      _themeMode = 'light'; // Default to light on error
+      print('Error loading theme (user may not be logged in): $e');
+      // Use default light theme if user isn't logged in or settings can't be loaded
+      _themeMode = 'light';
       _isInitialized = true;
       notifyListeners();
     }

@@ -14,6 +14,7 @@ class User {
   final String? studentId;
   final String? department;
   final String? phoneNumber;
+  final bool isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -28,6 +29,7 @@ class User {
     this.studentId,
     this.department,
     this.phoneNumber,
+    this.isActive = true,
     this.createdAt,
     this.updatedAt,
   });
@@ -56,6 +58,7 @@ class User {
       studentId: json['studentId']?.toString(),
       department: json['department']?.toString(),
       phoneNumber: json['phoneNumber']?.toString(),
+      isActive: json['isActive'] ?? true,
       createdAt: parseDateTime(json['createdAt']),
       updatedAt: parseDateTime(json['updatedAt']),
     );
@@ -73,6 +76,7 @@ class User {
       'studentId': studentId,
       'department': department,
       'phoneNumber': phoneNumber,
+      'isActive': isActive,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };

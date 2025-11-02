@@ -41,7 +41,10 @@ class ClassworkItem {
       description: json['description'],
       deadline: json['deadline'] != null
           ? DateTime.parse(json['deadline'])
-          : null,
+          : (json['dueDate'] !=
+                    null // for code assignments
+                ? DateTime.parse(json['dueDate'])
+                : null),
       closeDate: json['closeDate'] != null
           ? DateTime.parse(json['closeDate'])
           : null,
@@ -68,7 +71,7 @@ class ClassworkService {
     String? filter, // 'assignments', 'quizzes', 'materials'
   }) async {
     try {
-      String endpoint = '/classwork/course/$courseId';
+      String endpoint = '/api/classwork/course/$courseId';
       List<String> queryParams = [];
 
       if (search != null && search.isNotEmpty) {
@@ -105,7 +108,7 @@ class ClassworkService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/classwork/assignments',
+        '/api/classwork/assignments',
         body: {
           'courseId': courseId,
           'title': title,
@@ -142,7 +145,7 @@ class ClassworkService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/classwork/quizzes',
+        '/api/classwork/quizzes',
         body: {
           'courseId': courseId,
           'title': title,
@@ -175,7 +178,7 @@ class ClassworkService {
   }) async {
     try {
       final response = await _apiService.post(
-        '/classwork/materials',
+        '/api/classwork/materials',
         body: {
           'courseId': courseId,
           'title': title,

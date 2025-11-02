@@ -17,6 +17,7 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
   final AdminService _adminService = AdminService();
   User? _currentUser;
   File? _selectedFile;
+  PlatformFile? _platformFile; // For web compatibility
   bool _isUploading = false;
   Map<String, dynamic>? _importResult;
 
@@ -41,13 +42,32 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['xlsx', 'xls', 'csv'],
+        withData: true, // Important for web - loads file bytes
       );
 
-      if (result != null && result.files.single.path != null) {
+      if (result != null && result.files.isNotEmpty) {
+        final pickedFile = result.files.first;
+
         setState(() {
-          _selectedFile = File(result.files.single.path!);
+          _platformFile = pickedFile; // Store the PlatformFile
           _importResult = null; // Reset previous results
+
+          // For mobile/desktop, also create a File object
+          if (pickedFile.path != null) {
+            _selectedFile = File(pickedFile.path!);
+          } else {
+            _selectedFile = null; // Web doesn't support File with path
+          }
         });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('File "${pickedFile.name}" selected successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -59,7 +79,7 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
   }
 
   Future<void> _uploadFile() async {
-    if (_selectedFile == null) {
+    if (_platformFile == null) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Please select a file')));
@@ -72,7 +92,22 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
     });
 
     try {
-      final result = await _adminService.bulkImportUsers(_selectedFile!);
+      Map<String, dynamic> result;
+
+      // Check if we have a file path (mobile/desktop) or bytes (web)
+      if (_selectedFile != null) {
+        // Mobile/Desktop - use file path
+        result = await _adminService.bulkImportUsers(_selectedFile!);
+      } else if (_platformFile!.bytes != null) {
+        // Web - use bytes
+        result = await _adminService.bulkImportUsersFromBytes(
+          _platformFile!.bytes!,
+          _platformFile!.name,
+        );
+      } else {
+        throw Exception('No file data available');
+      }
+
       setState(() {
         _importResult = result;
         _isUploading = false;
@@ -98,10 +133,273 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
     }
   }
 
+  Future<void> _showAddUserDialog() async {
+    final usernameController = TextEditingController();
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+    final firstNameController = TextEditingController();
+    final lastNameController = TextEditingController();
+    final departmentController = TextEditingController(
+      text: 'Information Technology',
+    );
+    final studentIdController = TextEditingController();
+    final phoneController = TextEditingController();
+    String selectedRole = 'student';
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Add New User'),
+          content: SizedBox(
+            width: 500,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Username
+                  TextField(
+                    controller: usernameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Username*',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.account_circle),
+                      hintText: 'e.g., johnsmith',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Email
+                  TextField(
+                    controller: emailController,
+                    decoration: const InputDecoration(
+                      labelText: 'Email*',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.email),
+                      hintText: 'e.g., john@example.com',
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Password
+                  TextField(
+                    controller: passwordController,
+                    decoration: const InputDecoration(
+                      labelText: 'Password*',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.lock),
+                      hintText: 'Minimum 6 characters',
+                    ),
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // First Name
+                  TextField(
+                    controller: firstNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'First Name',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Last Name
+                  TextField(
+                    controller: lastNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Last Name',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Role Selection
+                  DropdownButtonFormField<String>(
+                    value: selectedRole,
+                    decoration: const InputDecoration(
+                      labelText: 'Role*',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.admin_panel_settings),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'student',
+                        child: Text('Student'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'instructor',
+                        child: Text('Instructor'),
+                      ),
+                      DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setDialogState(() => selectedRole = value);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Department
+                  TextField(
+                    controller: departmentController,
+                    decoration: const InputDecoration(
+                      labelText: 'Department',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.business),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Student ID (optional)
+                  TextField(
+                    controller: studentIdController,
+                    decoration: const InputDecoration(
+                      labelText: 'Student ID (optional)',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.badge),
+                      hintText: 'For students only',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Phone Number
+                  TextField(
+                    controller: phoneController,
+                    decoration: const InputDecoration(
+                      labelText: 'Phone Number (optional)',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.phone),
+                    ),
+                    keyboardType: TextInputType.phone,
+                  ),
+
+                  const SizedBox(height: 16),
+                  const Text(
+                    '* Required fields',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                // Validation
+                if (usernameController.text.trim().isEmpty ||
+                    emailController.text.trim().isEmpty ||
+                    passwordController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please fill all required fields'),
+                    ),
+                  );
+                  return;
+                }
+
+                if (passwordController.text.length < 6) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Password must be at least 6 characters'),
+                    ),
+                  );
+                  return;
+                }
+
+                Navigator.pop(context);
+
+                // Show loading
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) =>
+                      const Center(child: CircularProgressIndicator()),
+                );
+
+                try {
+                  await _adminService.createUser(
+                    username: usernameController.text.trim(),
+                    email: emailController.text.trim(),
+                    password: passwordController.text.trim(),
+                    firstName: firstNameController.text.trim().isNotEmpty
+                        ? firstNameController.text.trim()
+                        : null,
+                    lastName: lastNameController.text.trim().isNotEmpty
+                        ? lastNameController.text.trim()
+                        : null,
+                    role: selectedRole,
+                    department: departmentController.text.trim().isNotEmpty
+                        ? departmentController.text.trim()
+                        : null,
+                    studentId: studentIdController.text.trim().isNotEmpty
+                        ? studentIdController.text.trim()
+                        : null,
+                    phoneNumber: phoneController.text.trim().isNotEmpty
+                        ? phoneController.text.trim()
+                        : null,
+                  );
+
+                  if (mounted) {
+                    Navigator.pop(context); // Close loading
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('User created successfully!'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    Navigator.pop(context); // Close loading
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error creating user: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Create User'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    usernameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    firstNameController.dispose();
+    lastNameController.dispose();
+    departmentController.dispose();
+    studentIdController.dispose();
+    phoneController.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Bulk User Import')),
+      appBar: AppBar(
+        title: const Text('User Import'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_add),
+            tooltip: 'Add User Manually',
+            onPressed: _showAddUserDialog,
+          ),
+        ],
+      ),
       drawer: _currentUser != null
           ? AdminDrawer(currentUser: _currentUser!)
           : null,
@@ -110,14 +408,16 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _buildQuickActions(),
+            const SizedBox(height: 24),
             _buildInstructions(),
             const SizedBox(height: 24),
             _buildSampleTemplate(),
             const SizedBox(height: 24),
             _buildFileSelector(),
             const SizedBox(height: 24),
-            if (_selectedFile != null) _buildSelectedFile(),
-            if (_selectedFile != null) const SizedBox(height: 24),
+            if (_platformFile != null) _buildSelectedFile(),
+            if (_platformFile != null) const SizedBox(height: 24),
             _buildUploadButton(),
             if (_isUploading) ...[
               const SizedBox(height: 24),
@@ -127,6 +427,60 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
               const SizedBox(height: 24),
               _buildImportResults(),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Card(
+      color: Colors.blue[50],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.flash_on, color: Colors.blue[700]),
+                const SizedBox(width: 8),
+                const Text(
+                  'Quick Actions',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _showAddUserDialog,
+                    icon: const Icon(Icons.person_add),
+                    label: const Text('Add Single User'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(16),
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _pickFile,
+                    icon: const Icon(Icons.upload_file),
+                    label: const Text('Bulk Import (CSV/Excel)'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(16),
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -237,6 +591,8 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
   }
 
   Widget _buildSelectedFile() {
+    if (_platformFile == null) return const SizedBox.shrink();
+
     return Card(
       color: Colors.blue[50],
       child: Padding(
@@ -255,12 +611,14 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _selectedFile!.path.split('\\').last,
+                    _platformFile!.name,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${(_selectedFile!.lengthSync() / 1024).toStringAsFixed(2)} KB',
+                    _platformFile!.size > 0
+                        ? '${(_platformFile!.size / 1024).toStringAsFixed(2)} KB'
+                        : 'Size unknown',
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
@@ -270,7 +628,10 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
               onPressed: _isUploading
                   ? null
                   : () {
-                      setState(() => _selectedFile = null);
+                      setState(() {
+                        _selectedFile = null;
+                        _platformFile = null;
+                      });
                     },
               icon: const Icon(Icons.close, color: Colors.red),
             ),
@@ -282,7 +643,7 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
 
   Widget _buildUploadButton() {
     return ElevatedButton.icon(
-      onPressed: _isUploading || _selectedFile == null ? null : _uploadFile,
+      onPressed: _isUploading || _platformFile == null ? null : _uploadFile,
       icon: const Icon(Icons.cloud_upload),
       label: Text(_isUploading ? 'Importing...' : 'Start Import'),
       style: ElevatedButton.styleFrom(

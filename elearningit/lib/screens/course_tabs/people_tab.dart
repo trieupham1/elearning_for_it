@@ -58,18 +58,15 @@ class _PeopleTabState extends State<PeopleTab> {
   }
 
   void _openChat(User user) {
-    // Check permissions
-    final isStudent = widget.currentUser?.role == 'student';
-
-    if (isStudent && user.role == 'student') {
-      // Students cannot message other students
+    // Check if trying to message yourself
+    if (widget.currentUser?.id == user.id) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Students can only message instructors')),
+        const SnackBar(content: Text('You cannot message yourself')),
       );
       return;
     }
 
-    // Open chat screen
+    // Open chat screen - now students can message everyone
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -258,7 +255,7 @@ class _PeopleTabState extends State<PeopleTab> {
               (student) => _PersonCard(
                 user: student,
                 onTap: () => _openChat(student),
-                showMessageIcon: widget.currentUser?.role == 'instructor',
+                showMessageIcon: true, // Show message icon for everyone
               ),
             ),
         ],
@@ -529,12 +526,10 @@ class _GroupCardState extends State<_GroupCard> {
                   leading: const Icon(Icons.person, size: 20),
                   title: Text(member.fullName),
                   subtitle: Text(member.email),
-                  trailing: isInstructor
-                      ? IconButton(
-                          icon: const Icon(Icons.message, size: 20),
-                          onPressed: () => widget.onChatStudent(user),
-                        )
-                      : null,
+                  trailing: IconButton(
+                    icon: const Icon(Icons.message, size: 20),
+                    onPressed: () => widget.onChatStudent(user),
+                  ),
                 );
               },
             ),

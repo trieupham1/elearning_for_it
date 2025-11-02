@@ -16,7 +16,7 @@ class ApiException implements Exception {
 }
 
 class AssignmentService {
-  final String baseUrl = '${ApiConfig.baseUrl}/assignments';
+  final String baseUrl = '${ApiConfig.baseUrl}/api/assignments';
   final AuthService _authService = AuthService();
 
   Future<Map<String, String>> _getHeaders() async {

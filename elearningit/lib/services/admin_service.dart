@@ -68,6 +68,51 @@ class AdminService {
     }
   }
 
+  // Create a new user manually
+  Future<User> createUser({
+    required String username,
+    required String email,
+    required String password,
+    String? firstName,
+    String? lastName,
+    String? role,
+    String? department,
+    String? studentId,
+    String? phoneNumber,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final bodyData = {
+        'username': username,
+        'email': email,
+        'password': password,
+        if (firstName != null) 'firstName': firstName,
+        if (lastName != null) 'lastName': lastName,
+        if (role != null) 'role': role,
+        if (department != null) 'department': department,
+        if (studentId != null) 'studentId': studentId,
+        if (phoneNumber != null) 'phoneNumber': phoneNumber,
+      };
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/users'),
+        headers: headers,
+        body: json.encode(bodyData),
+      );
+
+      if (response.statusCode == 201) {
+        final data = json.decode(response.body);
+        return User.fromJson(data['user']);
+      } else {
+        final error = json.decode(response.body);
+        throw Exception(error['message'] ?? 'Failed to create user');
+      }
+    } catch (e) {
+      print('Error creating user: $e');
+      rethrow;
+    }
+  }
+
   // Bulk import users from file
   Future<Map<String, dynamic>> bulkImportUsers(File file) async {
     try {
@@ -79,6 +124,37 @@ class AdminService {
 
       request.headers['Authorization'] = 'Bearer $token';
       request.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Failed to import users: ${response.body}');
+      }
+    } catch (e) {
+      print('Error importing users: $e');
+      rethrow;
+    }
+  }
+
+  // Bulk import users from bytes (for web)
+  Future<Map<String, dynamic>> bulkImportUsersFromBytes(
+    List<int> bytes,
+    String filename,
+  ) async {
+    try {
+      final token = await _authService.getToken();
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/users/bulk-import'),
+      );
+
+      request.headers['Authorization'] = 'Bearer $token';
+      request.files.add(
+        http.MultipartFile.fromBytes('file', bytes, filename: filename),
+      );
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -177,6 +253,53 @@ class AdminService {
       }
     } catch (e) {
       print('Error updating role: $e');
+      rethrow;
+    }
+  }
+
+  // Update user information (full name, email, username)
+  Future<User> updateUser({
+    required String userId,
+    String? fullName,
+    String? email,
+    String? username,
+    String? role,
+    bool? isActive,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final bodyData = <String, dynamic>{};
+
+      if (fullName != null) {
+        final parts = fullName.split(' ');
+        if (parts.length >= 2) {
+          bodyData['firstName'] = parts.first;
+          bodyData['lastName'] = parts.sublist(1).join(' ');
+        } else {
+          bodyData['firstName'] = fullName;
+        }
+      }
+      if (email != null) bodyData['email'] = email;
+      if (username != null) bodyData['username'] = username;
+      if (role != null) bodyData['role'] = role;
+      if (isActive != null) bodyData['isActive'] = isActive;
+
+      final body = json.encode(bodyData);
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/users/$userId'),
+        headers: headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return User.fromJson(data['user']);
+      } else {
+        throw Exception('Failed to update user: ${response.body}');
+      }
+    } catch (e) {
+      print('Error updating user: $e');
       rethrow;
     }
   }
