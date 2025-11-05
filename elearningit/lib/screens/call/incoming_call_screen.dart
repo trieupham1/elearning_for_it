@@ -4,7 +4,6 @@ import '../../models/call.dart';
 import '../../models/user.dart';
 import '../../services/webrtc_service.dart';
 import '../../services/call_service.dart';
-import '../../config/api_config.dart';
 import 'voice_call_screen.dart';
 import 'video_call_screen.dart';
 
@@ -13,7 +12,6 @@ class IncomingCallScreen extends StatefulWidget {
   final User caller;
   final WebRTCService webrtcService;
   final String currentUserId;
-  final dynamic offer; // WebRTC offer
 
   const IncomingCallScreen({
     Key? key,
@@ -21,7 +19,6 @@ class IncomingCallScreen extends StatefulWidget {
     required this.caller,
     required this.webrtcService,
     required this.currentUserId,
-    required this.offer,
   }) : super(key: key);
 
   @override
@@ -31,34 +28,6 @@ class IncomingCallScreen extends StatefulWidget {
 class _IncomingCallScreenState extends State<IncomingCallScreen> {
   final CallService _callService = CallService();
   bool _isProcessing = false;
-
-  String? get _profileImageUrl {
-    if (widget.caller.profilePicture == null || 
-        widget.caller.profilePicture!.isEmpty) {
-      return null;
-    }
-    
-    final pic = widget.caller.profilePicture!;
-    // If it's already a full URL, return it
-    if (pic.startsWith('http://') || pic.startsWith('https://')) {
-      return pic;
-    }
-    // Otherwise, construct full URL
-    return '${ApiConfig.baseUrl}${pic.startsWith('/') ? '' : '/'}$pic';
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Debug log caller information
-    print('🔍 IncomingCallScreen - Caller Info:');
-    print('   ID: ${widget.caller.id}');
-    print('   Name: ${widget.caller.fullName}');
-    print('   Username: ${widget.caller.username}');
-    print('   Profile Picture Raw: ${widget.caller.profilePicture}');
-    print('   Profile Picture URL: $_profileImageUrl');
-    print('   Offer available: ${widget.offer != null}');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,15 +82,10 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
                 child: CircleAvatar(
                   radius: 70,
                   backgroundColor: Colors.blue,
-                  backgroundImage: _profileImageUrl != null
-                      ? NetworkImage(_profileImageUrl!)
+                  backgroundImage: widget.caller.profilePicture != null
+                      ? NetworkImage(widget.caller.profilePicture!)
                       : null,
-                  onBackgroundImageError: _profileImageUrl != null
-                      ? (exception, stackTrace) {
-                          print('❌ Error loading profile image: $exception');
-                        }
-                      : null,
-                  child: _profileImageUrl == null
+                  child: widget.caller.profilePicture == null
                       ? Text(
                           widget.caller.fullName[0].toUpperCase(),
                           style: const TextStyle(
@@ -239,14 +203,9 @@ class _IncomingCallScreenState extends State<IncomingCallScreen> {
       // Update call status to accepted
       await _callService.updateCallStatus(widget.call.id, 'accepted');
 
-      // Answer the call via WebRTC - THIS IS CRITICAL!
-      print('📞 Calling answerCall with offer: ${widget.offer != null}');
-      await widget.webrtcService.answerCall(
-        widget.call.id,
-        widget.caller.id,
-        widget.offer,
-      );
-      print('✅ answerCall completed');
+      // Answer the call via WebRTC
+      // The offer will be provided by the signaling server
+      // This will be handled by WebRTCService when it receives the offer
 
       // Navigate to appropriate call screen
       if (mounted) {

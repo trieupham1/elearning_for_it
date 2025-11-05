@@ -22,32 +22,14 @@ module.exports = (io) => {
         
         const calleeSocketId = userSockets.get(calleeId);
         if (calleeSocketId) {
-          // Fetch full call details with populated user info
-          const call = await Call.findById(callId)
-            .populate('caller', 'firstName lastName username email profilePicture')
-            .populate('callee', 'firstName lastName username email profilePicture');
-          
-          if (call) {
-            io.to(calleeSocketId).emit('incoming_call', {
-              callId,
-              callerId: socket.userId,
-              callerName: `${call.caller.firstName} ${call.caller.lastName}`,
-              callerUsername: call.caller.username,
-              callerAvatar: call.caller.profilePicture,
-              type,
-              offer
-            });
-            console.log(`📞 Call initiated: ${call.caller.firstName} ${call.caller.lastName} -> ${call.callee.firstName} ${call.callee.lastName}`);
-          } else {
-            io.to(calleeSocketId).emit('incoming_call', {
-              callId,
-              callerId: socket.userId,
-              callerName,
-              type,
-              offer
-            });
-            console.log(`📞 Call initiated: ${socket.userId} -> ${calleeId}`);
-          }
+          io.to(calleeSocketId).emit('incoming_call', {
+            callId,
+            callerId: socket.userId,
+            callerName,
+            type,
+            offer
+          });
+          console.log(`📞 Call initiated: ${socket.userId} -> ${calleeId}`);
         } else {
           // Callee is offline
           socket.emit('call_failed', { reason: 'User is offline' });
