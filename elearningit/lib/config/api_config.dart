@@ -7,6 +7,13 @@ class ApiConfig {
   // Note: Android emulator cannot access host's localhost; use 10.0.2.2 instead.
   static const String _localBase = 'http://localhost:5000';
   static const String _androidEmulatorBase = 'http://10.0.2.2:5000';
+  
+  // ⚠️ CHANGE THIS to your PC's local IP address (find it with 'ipconfig')
+  // This is used for REAL Android devices on the same WiFi network
+  static const String _pcLocalIp = 'http://172.31.98.89:5000'; // ⬅️ Updated to actual WiFi IP!
+  
+  // 🔧 CONFIGURATION: Set to true if using Android EMULATOR, false if using REAL DEVICE
+  static const bool _useEmulator = false; // ⬅️ Changed to FALSE for real device!
 
   // API endpoints (based on your actual backend routes)
   static const String auth = '/api/auth';
@@ -34,9 +41,10 @@ class ApiConfig {
 
     try {
       if (Platform.isAndroid) {
-        return _androidEmulatorBase;
+        // Choose emulator or real device based on configuration
+        return _useEmulator ? _androidEmulatorBase : _pcLocalIp;
       }
-      return _localBase;
+      return _pcLocalIp; // For iOS, macOS, etc.
     } catch (e) {
       return _localBase;
     }

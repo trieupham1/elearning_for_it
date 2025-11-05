@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../services/auth_service.dart';
 import '../services/notification_service.dart';
+import '../services/webrtc_service.dart';
+import '../services/call_notification_service.dart';
 import '../models/user.dart';
+import '../models/call.dart';
 import '../screens/student_dashboard.dart';
 import '../screens/profile_screen.dart';
 import '../screens/notifications_screen.dart';
 import '../screens/settings_screen.dart';
+import '../screens/call/incoming_call_screen.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -17,14 +22,126 @@ class StudentHomeScreen extends StatefulWidget {
 class _StudentHomeScreenState extends State<StudentHomeScreen> {
   final _authService = AuthService();
   final _notificationService = NotificationService();
+  final _webrtcService = WebRTCService();
+  final _callNotificationService = CallNotificationService();
   User? _currentUser;
   int _unreadCount = 0;
+  StreamSubscription? _incomingCallSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadData();
     _loadUnreadCount();
+    _initializeWebRTC(); // ⬅️ Initialize WebRTC for incoming calls
+  }
+
+  @override
+  void dispose() {
+    _incomingCallSubscription?.cancel();
+    super.dispose();
+  }
+
+  // ⬅️ NEW METHOD: Initialize WebRTC socket connection
+  Future<void> _initializeWebRTC() async {
+    try {
+      // Get current user
+      final user = await _authService.getCurrentUser();
+      if (user == null) {
+        print('❌ Cannot initialize WebRTC: No user');
+        return;
+      }
+
+      final userId = user.id;
+      print('🔌 Initializing WebRTC for user: $userId');
+      
+      // Initialize WebRTC socket
+      await _webrtcService.initializeSocket(userId);
+      
+      // Initialize notification service
+      await _callNotificationService.initialize();
+      
+      print('✅ WebRTC socket initialized successfully');
+
+      // Listen for incoming calls
+      _incomingCallSubscription = _webrtcService.incomingCalls.listen(
+        (incomingCall) async {
+          print('🔔 INCOMING CALL from: ${incomingCall.callerName}');
+          print('📋 IncomingCall data:');
+          print('   - callerId: ${incomingCall.callerId}');
+          print('   - callerName: ${incomingCall.callerName}');
+          print('   - callerUsername: ${incomingCall.callerUsername}');
+          print('   - callerAvatar: ${incomingCall.callerAvatar}');
+          print('   - callType: ${incomingCall.callType}');
+          print('   - offer: ${incomingCall.offer != null}');
+          
+          try {
+            // Create User object from incoming call data
+            final caller = User(
+              id: incomingCall.callerId,
+              firstName: incomingCall.callerName.split(' ').first,
+              lastName: incomingCall.callerName.split(' ').length > 1
+                  ? incomingCall.callerName.split(' ').sublist(1).join(' ')
+                  : '',
+              username: incomingCall.callerUsername ?? incomingCall.callerId,
+              email: '${incomingCall.callerId}@example.com',
+              role: 'student',
+              profilePicture: incomingCall.callerAvatar,
+            );
+
+            final calleeUser = User(
+              id: userId,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              username: user.username,
+              email: user.email,
+              role: user.role,
+            );
+
+            print('✅ Caller info: ${caller.firstName} ${caller.lastName} (@${caller.username})');
+            print('✅ Profile picture: ${caller.profilePicture}');
+
+            // Show notification
+            await _callNotificationService.showIncomingCallNotification(
+              callId: incomingCall.callId,
+              caller: caller,
+              callType: incomingCall.callType,
+            );
+
+            // Create Call object
+            final call = Call(
+              id: incomingCall.callId,
+              caller: caller,
+              callee: calleeUser,
+              type: incomingCall.callType,
+              status: 'initiated',
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            );
+
+            // Navigate to incoming call screen (only if app is in foreground)
+            if (mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => IncomingCallScreen(
+                    call: call,
+                    caller: caller,
+                    webrtcService: _webrtcService,
+                    currentUserId: userId,
+                    offer: incomingCall.offer, // Pass the WebRTC offer
+                  ),
+                ),
+              );
+            }
+          } catch (e) {
+            print('❌ Error handling incoming call: $e');
+          }
+        },
+      );
+    } catch (e) {
+      print('❌ Error initializing WebRTC: $e');
+    }
   }
 
   Future<void> _loadData() async {

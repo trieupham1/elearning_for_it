@@ -7,6 +7,7 @@ import Foundation
 
 import file_picker
 import file_selector_macos
+import flutter_local_notifications
 import flutter_webrtc
 import geolocator_apple
 import mobile_scanner
@@ -22,6 +23,7 @@ import wakelock_plus
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FilePickerPlugin.register(with: registry.registrar(forPlugin: "FilePickerPlugin"))
   FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))
+  FlutterLocalNotificationsPlugin.register(with: registry.registrar(forPlugin: "FlutterLocalNotificationsPlugin"))
   FlutterWebRTCPlugin.register(with: registry.registrar(forPlugin: "FlutterWebRTCPlugin"))
   GeolocatorPlugin.register(with: registry.registrar(forPlugin: "GeolocatorPlugin"))
   MobileScannerPlugin.register(with: registry.registrar(forPlugin: "MobileScannerPlugin"))

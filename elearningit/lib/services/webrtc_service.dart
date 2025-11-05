@@ -1,22 +1,45 @@
 // services/webrtc_service.dart
-import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../config/api_config.dart';
 import 'dart:async';
 
+class IncomingCallData {
+  final String callId;
+  final String callerId;
+  final String callerName;
+  final String? callerUsername;
+  final String? callerAvatar;
+  final String callType;
+  final dynamic offer; // Add offer for WebRTC
+
+  IncomingCallData({
+    required this.callId,
+    required this.callerId,
+    required this.callerName,
+    this.callerUsername,
+    this.callerAvatar,
+    required this.callType,
+    this.offer,
+  });
+}
+
 class WebRTCService {
   IO.Socket? _socket;
-  RTCPeerConnection? _peerConnection;
-  MediaStream? _localStream;
-  MediaStream? _remoteStream;
+  webrtc.RTCPeerConnection? _peerConnection;
+  webrtc.MediaStream? _localStream;
+  webrtc.MediaStream? _remoteStream;
 
-  final StreamController<MediaStream> _remoteStreamController =
-      StreamController<MediaStream>.broadcast();
+  final StreamController<webrtc.MediaStream> _remoteStreamController =
+      StreamController<webrtc.MediaStream>.broadcast();
   final StreamController<String> _connectionStateController =
       StreamController<String>.broadcast();
+  final StreamController<IncomingCallData> _incomingCallController =
+      StreamController<IncomingCallData>.broadcast();
 
-  Stream<MediaStream> get remoteStream => _remoteStreamController.stream;
+  Stream<webrtc.MediaStream> get remoteStream => _remoteStreamController.stream;
   Stream<String> get connectionState => _connectionStateController.stream;
+  Stream<IncomingCallData> get incomingCalls => _incomingCallController.stream;
 
   String? _currentUserId;
   String? _otherUserId;
@@ -74,18 +97,32 @@ class WebRTCService {
       _currentCallId = data['callId'];
       _otherUserId = data['callerId'];
 
-      // This should trigger UI to show incoming call screen
-      // You'll need to handle this in your call state management
+      // Emit incoming call event for UI to handle
+      final incomingCall = IncomingCallData(
+        callId: data['callId'],
+        callerId: data['callerId'],
+        callerName: data['callerName'] ?? 'Unknown',
+        callerUsername: data['callerUsername'],
+        callerAvatar: data['callerAvatar'],
+        callType: data['type'] ?? 'video',
+        offer: data['offer'], // Pass the WebRTC offer
+      );
+      
+      _incomingCallController.add(incomingCall);
+      print('✅ Incoming call emitted to stream');
+      print('👤 Caller: ${incomingCall.callerName} (@${incomingCall.callerUsername})');
     });
 
     // Call answered
     _socket!.on('call_answered', (data) async {
-      print('✅ Call answered: $data');
-      final answer = RTCSessionDescription(
+      print('✅ Call answered event received');
+      print('📞 Setting remote description (answer)...');
+      final answer = webrtc.RTCSessionDescription(
         data['answer']['sdp'],
         data['answer']['type'],
       );
       await _peerConnection?.setRemoteDescription(answer);
+      print('✅ Remote description (answer) set successfully');
     });
 
     // Call rejected
@@ -106,7 +143,7 @@ class WebRTCService {
     _socket!.on('ice_candidate', (data) async {
       print('🧊 Received ICE candidate');
       if (data['candidate'] != null) {
-        final candidate = RTCIceCandidate(
+        final candidate = webrtc.RTCIceCandidate(
           data['candidate']['candidate'],
           data['candidate']['sdpMid'],
           data['candidate']['sdpMLineIndex'],
@@ -135,10 +172,11 @@ class WebRTCService {
 
   // Create peer connection
   Future<void> createPeerConnection() async {
-    _peerConnection = await createPeerConnection(_configuration, _constraints);
+    // Use the flutter_webrtc package function with proper import
+    _peerConnection = await webrtc.createPeerConnection(_configuration);
 
     _peerConnection!.onIceCandidate = (candidate) {
-      if (candidate != null && _otherUserId != null) {
+      if (_otherUserId != null) {
         _socket!.emit('ice_candidate', {
           'otherUserId': _otherUserId,
           'candidate': {
@@ -153,9 +191,17 @@ class WebRTCService {
     _peerConnection!.onTrack = (event) {
       print('📹 Received remote track');
       if (event.streams.isNotEmpty) {
+        print('📹 Setting remote stream from track event');
         _remoteStream = event.streams[0];
         _remoteStreamController.add(_remoteStream!);
       }
+    };
+
+    // Also handle onAddStream for compatibility
+    _peerConnection!.onAddStream = (stream) {
+      print('📹 Received remote stream via onAddStream');
+      _remoteStream = stream;
+      _remoteStreamController.add(_remoteStream!);
     };
 
     _peerConnection!.onConnectionState = (state) {
@@ -165,7 +211,7 @@ class WebRTCService {
   }
 
   // Initialize local media (audio/video)
-  Future<MediaStream> initializeLocalMedia({
+  Future<webrtc.MediaStream> initializeLocalMedia({
     bool video = true,
     bool audio = true,
   }) async {
@@ -180,7 +226,7 @@ class WebRTCService {
           : false,
     };
 
-    _localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+    _localStream = await webrtc.navigator.mediaDevices.getUserMedia(mediaConstraints);
 
     // Add local stream tracks to peer connection
     if (_peerConnection != null) {
@@ -216,26 +262,38 @@ class WebRTCService {
 
   // Answer a call
   Future<void> answerCall(String callId, String callerId, dynamic offer) async {
+    print('📞 answerCall START - callId: $callId, callerId: $callerId');
+    print('📞 Offer received: ${offer != null}');
+    
     _currentCallId = callId;
     _otherUserId = callerId;
 
+    print('📞 Creating peer connection...');
     await createPeerConnection();
+    
+    print('📞 Initializing local media...');
     await initializeLocalMedia(video: true, audio: true);
 
     // Set remote description from offer
-    final rtcOffer = RTCSessionDescription(offer['sdp'], offer['type']);
+    print('📞 Setting remote description (offer)...');
+    final rtcOffer = webrtc.RTCSessionDescription(offer['sdp'], offer['type']);
     await _peerConnection!.setRemoteDescription(rtcOffer);
+    print('✅ Remote description set');
 
     // Create answer
+    print('📞 Creating answer...');
     final answer = await _peerConnection!.createAnswer();
     await _peerConnection!.setLocalDescription(answer);
+    print('✅ Answer created and set as local description');
 
     // Send answer via socket
+    print('📞 Sending answer via socket...');
     _socket!.emit('call_accepted', {
       'callId': callId,
       'callerId': callerId,
       'answer': {'sdp': answer.sdp, 'type': answer.type},
     });
+    print('✅ answerCall COMPLETE - answer sent');
   }
 
   // Reject a call
@@ -276,24 +334,25 @@ class WebRTCService {
   Future<void> switchCamera() async {
     if (_localStream != null) {
       final videoTrack = _localStream!.getVideoTracks()[0];
-      await Helper.switchCamera(videoTrack);
+      await webrtc.Helper.switchCamera(videoTrack);
     }
   }
 
   // Enable speaker
   void enableSpeaker(bool enabled) {
-    Helper.setSpeakerphoneOn(enabled);
+    webrtc.Helper.setSpeakerphoneOn(enabled);
   }
 
   // Start screen sharing
   Future<void> startScreenShare() async {
-    final screenStream = await navigator.mediaDevices.getDisplayMedia({
+    final screenStream = await webrtc.navigator.mediaDevices.getDisplayMedia({
       'video': true,
     });
 
     // Replace video track
     if (_peerConnection != null && _localStream != null) {
-      final sender = _peerConnection!.getSenders().firstWhere(
+      final senders = await _peerConnection!.getSenders();
+      final sender = senders.firstWhere(
         (sender) => sender.track?.kind == 'video',
       );
 
@@ -309,7 +368,8 @@ class WebRTCService {
   // Stop screen sharing
   Future<void> stopScreenShare() async {
     if (_peerConnection != null && _localStream != null) {
-      final sender = _peerConnection!.getSenders().firstWhere(
+      final senders = await _peerConnection!.getSenders();
+      final sender = senders.firstWhere(
         (sender) => sender.track?.kind == 'video',
       );
 
@@ -323,7 +383,7 @@ class WebRTCService {
   }
 
   // Get local stream
-  MediaStream? get localStream => _localStream;
+  webrtc.MediaStream? get localStream => _localStream;
 
   // Dispose and cleanup
   void dispose() {
