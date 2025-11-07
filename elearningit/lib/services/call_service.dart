@@ -77,7 +77,7 @@ class CallService {
   }
 
   // End a call
-  Future<Call> endCall(String callId) async {
+  Future<Call> endCall(String callId, {int? duration}) async {
     try {
       final token = await _apiService.getToken();
       if (token == null) {
@@ -90,6 +90,7 @@ class CallService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
+        body: json.encode({'duration': duration ?? 0}),
       );
 
       if (response.statusCode == 200) {
@@ -185,6 +186,53 @@ class CallService {
       }
     } catch (e) {
       print('❌ Error toggling screen share: $e');
+      rethrow;
+    }
+  }
+
+  /// Generate Agora RTC token for a channel
+  ///
+  /// [channelName] - The Agora channel name
+  /// [uid] - User ID (0 for auto-assign)
+  /// [role] - 'publisher' or 'subscriber' (default: 'publisher')
+  ///
+  /// Returns a Map with: token, appId, channelName, uid, expiresAt
+  Future<Map<String, dynamic>> generateAgoraToken({
+    required String channelName,
+    int uid = 0,
+    String role = 'publisher',
+  }) async {
+    try {
+      final token = await _apiService.getToken();
+      if (token == null) {
+        throw Exception('No authentication token');
+      }
+
+      final response = await http.post(
+        Uri.parse('${ApiConfig.getBaseUrl()}/api/agora/generate-token'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'channelName': channelName,
+          'uid': uid,
+          'role': role,
+        }),
+      );
+
+      print('🎫 Generate Agora token response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print('✅ Agora token generated successfully');
+        return data;
+      } else {
+        final error = json.decode(response.body);
+        throw Exception(error['message'] ?? 'Failed to generate Agora token');
+      }
+    } catch (e) {
+      print('❌ Error generating Agora token: $e');
       rethrow;
     }
   }

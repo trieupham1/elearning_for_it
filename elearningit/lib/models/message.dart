@@ -8,6 +8,9 @@ class ChatMessage {
   final DateTime createdAt;
   final String senderName;
   final String? senderAvatar;
+  final String messageType; // 'text', 'audio_call', 'video_call'
+  final int? callDuration; // Duration in seconds
+  final String? callStatus; // 'completed', 'missed', 'rejected', 'no_answer'
 
   ChatMessage({
     required this.id,
@@ -18,7 +21,15 @@ class ChatMessage {
     required this.createdAt,
     required this.senderName,
     this.senderAvatar,
+    this.messageType = 'text',
+    this.callDuration,
+    this.callStatus,
   });
+
+  bool get isCallMessage =>
+      messageType == 'audio_call' || messageType == 'video_call';
+  bool get isAudioCall => messageType == 'audio_call';
+  bool get isVideoCall => messageType == 'video_call';
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     return ChatMessage(
@@ -45,6 +56,9 @@ class ChatMessage {
           json['senderAvatar'] ??
           json['senderId']?['avatar'] ??
           json['senderId']?['profilePicture'],
+      messageType: json['messageType'] ?? 'text',
+      callDuration: json['callDuration'],
+      callStatus: json['callStatus'],
     );
   }
 }

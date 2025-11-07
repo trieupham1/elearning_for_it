@@ -41,6 +41,7 @@ const videoRoutes = require('./routes/videos');
 const attendanceRoutes = require('./routes/attendance');
 const codeAssignmentRoutes = require('./routes/code-assignments');
 const callRoutes = require('./routes/calls');
+const agoraRoutes = require('./routes/agora');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -58,6 +59,7 @@ app.use('/api/questions', questionRoutes);
 app.use('/api/quiz-attempts', quizAttemptRoutes);
 app.use('/api/materials', materialRoutes);
 app.use('/api/forum', forumRoutes);
+app.use('/api/agora', agoraRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/settings', settingsRoutes);

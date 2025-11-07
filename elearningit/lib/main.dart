@@ -41,6 +41,9 @@ import 'screens/instructor/create_code_assignment_screen.dart';
 import 'models/attendance.dart';
 import 'models/code_assignment.dart';
 
+// Global navigator key for showing dialogs/screens from anywhere
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() {
   runApp(
     ChangeNotifierProvider(
@@ -70,6 +73,7 @@ class _ELearningAppState extends State<ELearningApp> {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return MaterialApp(
+          navigatorKey: navigatorKey, // Add global navigator key
           title: 'E-Learning System',
           theme: themeProvider.themeData,
           debugShowCheckedModeBanner: false,

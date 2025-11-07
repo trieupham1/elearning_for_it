@@ -10,13 +10,14 @@ import '../models/message.dart';
 import '../services/message_service.dart';
 import '../services/file_service.dart';
 import '../services/call_service.dart';
-import '../services/webrtc_service.dart';
+import '../services/socket_service.dart';
 import '../config/api_config.dart';
+import '../config/agora_config.dart';
 import 'chat/media_gallery_screen.dart';
 import 'chat/image_viewer_screen.dart';
 import 'chat/video_player_screen.dart';
-import 'call/voice_call_screen.dart';
-import 'call/video_call_screen.dart';
+import 'call/platform_voice_call_screen.dart';
+import 'call/platform_video_call_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   final User recipient;
@@ -35,6 +36,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final MessageService _messageService = MessageService();
   final FileService _fileService = FileService();
+  final SocketService _socketService = SocketService();
   final TextEditingController _messageController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -48,14 +50,58 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _loadMessages();
+    _setupRealtimeMessageListener();
   }
 
   @override
   void dispose() {
+    _socketService.offNewMessage(); // Remove listener when leaving chat
     _messageController.dispose();
     _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _setupRealtimeMessageListener() {
+    _socketService.onNewMessage((data) {
+      print('💬 Real-time message received in chat screen: $data');
+
+      try {
+        final message = ChatMessage.fromJson(data);
+
+        // Only add message if it's part of this conversation
+        final isRelevantMessage =
+            (message.senderId == widget.currentUser.id &&
+                message.receiverId == widget.recipient.id) ||
+            (message.senderId == widget.recipient.id &&
+                message.receiverId == widget.currentUser.id);
+
+        if (isRelevantMessage && mounted) {
+          setState(() {
+            // Check if message already exists (prevent duplicates)
+            final exists = _messages.any((m) => m.id == message.id);
+            if (!exists) {
+              _messages.add(message);
+              _filteredMessages = _showSearch
+                  ? _messages
+                        .where(
+                          (m) => m.content.toLowerCase().contains(
+                            _searchController.text.toLowerCase(),
+                          ),
+                        )
+                        .toList()
+                  : _messages;
+              print('✅ Added new message to chat: ${message.content}');
+            } else {
+              print('⚠️ Message already exists, skipping');
+            }
+          });
+          _scrollToBottom();
+        }
+      } catch (e) {
+        print('⚠️ Error parsing real-time message: $e');
+      }
+    });
   }
 
   Future<void> _loadMessages() async {
@@ -365,45 +411,47 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       }
 
-      // 2. Initiate call via API
+      // DEBUG: Check socket connection status
+      final socketService = SocketService();
+      print('🔍 ==== CALL INITIATION DEBUG ====');
+      print('🔍 Socket status: ${socketService.getConnectionStatus()}');
+      print('🔍 Current user ID: ${widget.currentUser.id}');
+      print('🔍 Recipient ID: ${widget.recipient.id}');
+      print('🔍 Call type: $type');
+
+      // 2. Initiate call via backend (notifies the other user)
       final callService = CallService();
       final call = await callService.initiateCall(
         calleeId: widget.recipient.id,
         type: type,
       );
 
-      print('📞 Call initiated: ${call.id}, type: $type');
+      print('📞 Call initiated via backend: ${call.id}');
+      print('🔍 ==== END CALL INITIATION DEBUG ====');
 
-      // 3. Setup WebRTC
-      final webrtcService = WebRTCService();
-      await webrtcService.initializeSocket(widget.currentUser.id);
+      // 3. Generate Agora channel name
+      final channelName = AgoraConfig.generateChannelName(
+        widget.currentUser.id,
+        widget.recipient.id,
+      );
 
-      // 4. Initialize local media
-      final useVideo = type == 'video';
-      await webrtcService.initializeLocalMedia(video: useVideo, audio: true);
+      print('📞 Starting platform call: $channelName, type: $type');
 
-      // 5. Make the call
-      await webrtcService.makeCall(call.id, widget.recipient.id, type);
-
-      print('📞 WebRTC call started');
-
-      // 6. Navigate to appropriate call screen
+      // 4. Navigate to appropriate platform-aware call screen
       if (mounted) {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => type == 'video'
-                ? VideoCallScreen(
-                    call: call,
+                ? PlatformVideoCallScreen(
+                    channelName: channelName,
                     otherUser: widget.recipient,
-                    webrtcService: webrtcService,
-                    currentUserId: widget.currentUser.id,
+                    callId: call.id, // Pass callId
                   )
-                : VoiceCallScreen(
-                    call: call,
+                : PlatformVoiceCallScreen(
+                    channelName: channelName,
                     otherUser: widget.recipient,
-                    webrtcService: webrtcService,
-                    currentUserId: widget.currentUser.id,
+                    callId: call.id, // Pass callId
                   ),
           ),
         );
@@ -798,6 +846,42 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
+      // DEBUG: Show socket connection status
+      floatingActionButton: FloatingActionButton.small(
+        onPressed: () {
+          final socketService = SocketService();
+          final status = socketService.getConnectionStatus();
+          final userId = socketService.getCurrentUserId();
+
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Socket Debug Info'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Status: $status'),
+                  const SizedBox(height: 8),
+                  Text('User ID: $userId'),
+                  const SizedBox(height: 8),
+                  Text('Current User: ${widget.currentUser.id}'),
+                  const SizedBox(height: 8),
+                  Text('Recipient: ${widget.recipient.id}'),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close'),
+                ),
+              ],
+            ),
+          );
+        },
+        backgroundColor: Colors.blue.withOpacity(0.7),
+        child: const Icon(Icons.wifi, size: 20),
+      ),
     );
   }
 }
@@ -952,7 +1036,9 @@ class _MessageBubble extends StatelessWidget {
                   ? CrossAxisAlignment.end
                   : CrossAxisAlignment.start,
               children: [
-                if (isImage)
+                if (message.isCallMessage)
+                  _buildCallMessage()
+                else if (isImage)
                   _buildImagePreview(context)
                 else if (isVideo)
                   _buildVideoPreview(context)
@@ -1152,6 +1238,75 @@ class _MessageBubble extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCallMessage() {
+    // Determine call icon and color based on type and status
+    IconData callIcon;
+    Color iconColor;
+    Color backgroundColor;
+
+    // Determine if this is a missed/rejected call
+    final bool isMissedOrRejected =
+        message.callStatus == 'missed' ||
+        message.callStatus == 'rejected' ||
+        message.callStatus == 'no_answer';
+
+    if (message.isVideoCall) {
+      // Use videocam_off for missed video calls, videocam for successful
+      callIcon = isMissedOrRejected ? Icons.videocam_off : Icons.videocam;
+      iconColor = isMissedOrRejected
+          ? const Color(0xFFE53935) // Red for missed
+          : const Color(0xFF00A884); // Green for successful
+    } else {
+      // Use phone_missed for missed audio calls, call for successful
+      callIcon = isMissedOrRejected ? Icons.phone_missed : Icons.call;
+      iconColor = isMissedOrRejected
+          ? const Color(0xFFE53935) // Red for missed
+          : const Color(0xFF00A884); // Green for successful
+    }
+
+    backgroundColor = isMe
+        ? Colors.blue.withOpacity(0.1)
+        : Colors.grey.shade100;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isMe ? Colors.blue.withOpacity(0.3) : Colors.grey.shade300,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(callIcon, color: iconColor, size: 22),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                message.isVideoCall ? 'Video call' : 'Audio call',
+                style: TextStyle(
+                  color: Colors.grey.shade800,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                message.content, // Contains duration or status text
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

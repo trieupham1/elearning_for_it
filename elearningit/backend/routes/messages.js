@@ -144,6 +144,31 @@ router.post('/', authMiddleware, async (req, res) => {
       msgObj.senderAvatar = msgObj.senderId.avatar;
     }
     
+    // Emit socket event to both sender and receiver for real-time chat
+    const { getIO, getUserSockets } = require('../utils/webrtcSignaling');
+    const io = getIO();
+    const userSockets = getUserSockets();
+
+    if (io) {
+      const senderSocketId = userSockets.get(senderId);
+      const receiverSocketId = userSockets.get(receiverId);
+
+      console.log('💬 Emitting new_message event');
+      console.log('Sender ID:', senderId, 'Socket:', senderSocketId);
+      console.log('Receiver ID:', receiverId, 'Socket:', receiverSocketId);
+
+      if (senderSocketId) {
+        io.to(senderSocketId).emit('new_message', msgObj);
+        console.log('✅ Emitted to sender');
+      }
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit('new_message', msgObj);
+        console.log('✅ Emitted to receiver');
+      }
+    } else {
+      console.log('⚠️ Socket.IO instance not available');
+    }
+    
     // Send notification to receiver
     await notifyPrivateMessage(
       receiverId,

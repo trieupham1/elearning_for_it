@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../services/socket_service.dart';
 import '../models/user.dart';
 import '../providers/theme_provider.dart';
 
@@ -42,6 +43,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Check if widget is still mounted before navigating
       if (!mounted) return;
+
+      // Initialize socket connection for real-time features
+      try {
+        final socketService = SocketService();
+        await socketService.connect(loginResponse.user.id, context);
+        print(
+          '✅ Socket service initialized for user: ${loginResponse.user.id}',
+        );
+      } catch (e) {
+        print('⚠️ Could not initialize socket service: $e');
+        // Continue anyway - app will work without real-time features
+      }
 
       // Load user settings (theme) after successful login
       try {

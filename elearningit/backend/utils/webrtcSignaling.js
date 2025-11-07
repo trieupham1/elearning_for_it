@@ -3,8 +3,15 @@ const Call = require('../models/Call');
 
 // Store active socket connections: userId -> socketId
 const userSockets = new Map();
+let ioInstance = null;
+
+// Export function to get io instance and userSockets
+const getIO = () => ioInstance;
+const getUserSockets = () => userSockets;
 
 module.exports = (io) => {
+  ioInstance = io; // Store io instance for use in other modules
+  
   io.on('connection', (socket) => {
     console.log('🔌 Socket connected:', socket.id);
 
@@ -13,6 +20,8 @@ module.exports = (io) => {
       userSockets.set(userId, socket.id);
       socket.userId = userId;
       console.log(`✅ User ${userId} registered with socket ${socket.id}`);
+      console.log(`📊 Total registered users: ${userSockets.size}`);
+      console.log(`📋 All registered user IDs:`, Array.from(userSockets.keys()));
     });
 
     // Call initiated - send to callee
@@ -75,15 +84,19 @@ module.exports = (io) => {
     // Call rejected
     socket.on('call_rejected', async (data) => {
       try {
-        const { callId, callerId } = data;
+        const { callId, otherUserId } = data;
         
-        const callerSocketId = userSockets.get(callerId);
+        console.log('📞 Call rejection received:', { callId, otherUserId, rejectBy: socket.userId });
+        
+        const callerSocketId = userSockets.get(otherUserId);
         if (callerSocketId) {
           io.to(callerSocketId).emit('call_rejected', {
             callId,
-            calleeId: socket.userId
+            rejectedBy: socket.userId
           });
-          console.log(`❌ Call rejected: ${callerId} <- ${socket.userId}`);
+          console.log(`❌ Call rejected notification sent to caller: ${otherUserId}`);
+        } else {
+          console.log(`⚠️ Caller ${otherUserId} socket not found`);
         }
 
         // Update call status
@@ -199,10 +212,18 @@ module.exports = (io) => {
     socket.on('disconnect', () => {
       if (socket.userId) {
         userSockets.delete(socket.userId);
-        console.log(`🔌 User ${socket.userId} disconnected`);
+        console.log(`🔌 User ${socket.userId} disconnected (socket: ${socket.id})`);
+        console.log(`📊 Remaining registered users: ${userSockets.size}`);
+        console.log(`📋 Remaining user IDs:`, Array.from(userSockets.keys()));
+      } else {
+        console.log(`🔌 Socket ${socket.id} disconnected (no userId registered)`);
       }
     });
   });
 
   return userSockets;
 };
+
+// Export helper functions
+module.exports.getIO = getIO;
+module.exports.getUserSockets = getUserSockets;
