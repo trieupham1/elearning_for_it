@@ -3,7 +3,9 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../../models/user.dart';
 import 'agora_incoming_call_screen.dart';
-import 'web_incoming_call_screen.dart';
+// Conditional import for web
+import 'web_incoming_call_screen_stub.dart'
+    if (dart.library.html) 'web_incoming_call_screen.dart';
 
 class PlatformIncomingCallScreen extends StatelessWidget {
   final User caller;

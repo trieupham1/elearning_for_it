@@ -5,7 +5,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 import 'dart:convert';
-import 'dart:html' as html show document, AnchorElement, Blob, Url;
+// Conditional import for web-only features - only imported on web platform
+import 'quiz_results_web_stub.dart'
+    if (dart.library.html) 'quiz_results_web.dart';
 import '../../services/quiz_service.dart';
 
 class QuizResultsScreen extends StatefulWidget {
@@ -900,20 +902,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       
       if (kIsWeb) {
         // Web platform - create downloadable file
-        final bytes = utf8.encode(csvContent);
-        final blob = html.Blob([bytes], 'text/csv');
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.document.createElement('a') as html.AnchorElement
-          ..href = url
-          ..style.display = 'none'
-          ..download = filename;
-        
-        html.document.body!.children.add(anchor);
-        anchor.click();
-        html.document.body!.children.remove(anchor);
-        html.Url.revokeObjectUrl(url);
-        
-        print('📁 CSV file downloaded: $filename');
+        await downloadCsvFile(csvContent, filename);
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

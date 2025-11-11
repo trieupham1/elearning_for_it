@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../models/user.dart';
 import 'agora_voice_call_screen.dart';
-import 'web_voice_call_screen.dart';
+// Conditional import for web
+import 'web_voice_call_screen_stub.dart'
+    if (dart.library.html) 'web_voice_call_screen.dart';
 
 /// Platform-aware voice call screen
 /// - Uses Agora on native platforms (Android, iOS, Windows, etc.)

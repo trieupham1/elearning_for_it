@@ -1,4 +1,7 @@
 // config/agora_config.dart
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'api_config.dart';
 
 /// Agora RTC Configuration
 /// Get your App ID from https://console.agora.io/
@@ -6,9 +9,8 @@ class AgoraConfig {
   // Agora App ID from console.agora.io
   static const String appId = 'afa109d795eb450db1793f9f0b5f0ec9';
 
-  // Optional: Token server URL for production
-  // For testing, you can use null tokens
-  static const String? tokenServerUrl = null;
+  // Token server URL (your backend)
+  static String get tokenServerUrl => '${ApiConfig.baseUrl}/api/agora';
 
   /// Generate a channel name for a call between two users
   static String generateChannelName(String userId1, String userId2) {
@@ -17,19 +19,34 @@ class AgoraConfig {
     return 'call_${users[0]}_${users[1]}';
   }
 
-  /// Get token from server (optional, for production)
+  /// Get token from server
   static Future<String?> getToken(String channelName, int uid) async {
-    if (tokenServerUrl == null) {
-      return null; // Use null token for testing
+    try {
+      print('🎫 Requesting Agora token from: $tokenServerUrl/generate-token');
+      
+      final headers = await ApiConfig.headers();
+      final response = await http.post(
+        Uri.parse('$tokenServerUrl/generate-token'),
+        headers: headers,
+        body: jsonEncode({
+          'channelName': channelName,
+          'uid': uid,
+          'role': 'publisher',
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('✅ Agora token received');
+        return data['token'] as String;
+      } else {
+        print('❌ Failed to get token: ${response.statusCode}');
+        print('Response: ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('❌ Error getting Agora token: $e');
+      return null;
     }
-
-    // TODO: Implement token fetching from your backend
-    // Example:
-    // final response = await http.get(
-    //   Uri.parse('$tokenServerUrl/token?channel=$channelName&uid=$uid'),
-    // );
-    // return response.body;
-
-    return null;
   }
 }

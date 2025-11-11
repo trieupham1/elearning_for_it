@@ -4,9 +4,15 @@ import '../utils/token_manager.dart';
 
 class ApiConfig {
   // Development server URL - change this to your actual backend URL
-  // Note: Android emulator cannot access host's localhost; use 10.0.2.2 instead.
+  // Note: 
+  // - Android emulator: use 10.0.2.2 (emulator's special alias for host)
+  // - Real Android device: use PC's WiFi IP address (e.g., 192.168.1.224)
   static const String _localBase = 'http://localhost:5000';
   static const String _androidEmulatorBase = 'http://10.0.2.2:5000';
+  static const String _pcLocalIp = 'http://192.168.1.224:5000'; // Your PC's WiFi IP
+  
+  // Set this to true if using Android emulator, false if using real device
+  static const bool _useEmulator = false;
 
   // API endpoints (based on your actual backend routes)
   static const String auth = '/api/auth';
@@ -34,7 +40,8 @@ class ApiConfig {
 
     try {
       if (Platform.isAndroid) {
-        return _androidEmulatorBase;
+        // Use emulator address or real device WiFi IP based on flag
+        return _useEmulator ? _androidEmulatorBase : _pcLocalIp;
       }
       return _localBase;
     } catch (e) {

@@ -101,13 +101,21 @@ class AgoraService {
 
     print('📞 Joining video channel: $channelName');
 
+    // Get token from backend
+    print('🎫 Fetching Agora token...');
+    final token = await AgoraConfig.getToken(channelName, 0);
+    if (token == null) {
+      throw Exception('Failed to get Agora token');
+    }
+    print('✅ Token received');
+
     // Enable video
     await _engine!.enableVideo();
     await _engine!.startPreview();
 
-    // Join channel
+    // Join channel with token
     await _engine!.joinChannel(
-      token: '', // Empty for testing, use token server in production
+      token: token,
       channelId: channelName,
       uid: 0, // Auto-assign UID
       options: const ChannelMediaOptions(
@@ -130,13 +138,21 @@ class AgoraService {
 
     print('📞 Joining voice channel: $channelName');
 
+    // Get token from backend
+    print('🎫 Fetching Agora token...');
+    final token = await AgoraConfig.getToken(channelName, 0);
+    if (token == null) {
+      throw Exception('Failed to get Agora token');
+    }
+    print('✅ Token received');
+
     // Disable video for voice call
     await _engine!.disableVideo();
     _isVideoEnabled = false;
 
-    // Join channel
+    // Join channel with token
     await _engine!.joinChannel(
-      token: '', // Empty for testing
+      token: token,
       channelId: channelName,
       uid: 0,
       options: const ChannelMediaOptions(
