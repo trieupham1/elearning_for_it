@@ -4,7 +4,7 @@ import '../config/api_config.dart';
 import '../services/auth_service.dart';
 
 class ReportService {
-  final String baseUrl = '${ApiConfig.baseUrl}/admin/reports';
+  final String baseUrl = '${ApiConfig.baseUrl}${ApiConfig.adminReports}';
   final AuthService _authService = AuthService();
 
   Future<Map<String, String>> _getHeaders() async {

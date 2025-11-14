@@ -17,13 +17,33 @@ class ApiConfig {
   // API endpoints (based on your actual backend routes)
   static const String auth = '/api/auth';
   static const String users = '/api/users';
-  static const String semesters = '/api/semesters';
   static const String courses = '/api/courses';
-  static const String groups = '/api/groups';
+  static const String semesters = '/api/semesters';
   static const String students = '/api/students';
-  static const String announcements = '/api/announcements';
-  static const String files = '/api/files';
   static const String notifications = '/api/notifications';
+  static const String announcements = '/api/announcements';
+  static const String assignments = '/api/assignments';
+  static const String classwork = '/api/classwork';
+  static const String messages = '/api/messages';
+  static const String groups = '/api/groups';
+  static const String quizzes = '/api/quizzes';
+  static const String questions = '/api/questions';
+  static const String quizAttempts = '/api/quiz-attempts';
+  static const String materials = '/api/materials';
+  static const String forum = '/api/forum';
+  static const String agora = '/api/agora';
+  static const String dashboard = '/api/dashboard';
+  static const String export = '/api/export';
+  static const String settings = '/api/settings';
+  static const String departments = '/api/departments';
+  static const String admin = '/api/admin';
+  static const String adminDashboard = '/api/admin/dashboard';
+  static const String adminReports = '/api/admin/reports';
+  static const String files = '/api/files';
+  static const String videos = '/api/videos';
+  static const String attendance = '/api/attendance';
+  static const String codeAssignments = '/api/code';
+  static const String calls = '/api/calls';
 
   // File upload endpoints
   static const String uploadFile = '/api/files/upload';

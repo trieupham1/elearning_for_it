@@ -16,6 +16,10 @@ import 'screens/chat_screen.dart';
 // Admin screens
 import 'screens/admin/admin_home_screen.dart';
 import 'screens/admin/admin_dashboard_screen.dart';
+import 'screens/admin/activity_logs_screen.dart';
+import 'screens/admin/training_progress_screen.dart';
+import 'screens/admin/instructor_workload_screen.dart';
+import 'screens/admin/instructor_workload_detail_screen.dart';
 import 'screens/admin/user_management_screen.dart';
 import 'screens/admin/bulk_import_screen.dart';
 import 'screens/admin/reports_screen.dart';
@@ -97,6 +101,10 @@ class _ELearningAppState extends State<ELearningApp> {
             '/admin/semesters': (context) => const ManageSemestersScreen(),
             '/admin/courses': (context) => const ManageCoursesScreen(),
             '/admin/reports': (context) => const ReportsScreen(),
+            '/admin/activity-logs': (context) => const ActivityLogsScreen(),
+            '/admin/training-progress': (context) => const TrainingProgressScreen(),
+            '/admin/instructor-workload': (context) => const InstructorWorkloadScreen(),
+            '/admin/instructor-workload-detail': (context) => const InstructorWorkloadDetailScreen(),
           },
           onGenerateRoute: (settings) {
             // Handle dynamic routes

@@ -32,7 +32,7 @@ router.get('/overview', auth, adminOnly, async (req, res) => {
     const recentActivity = await ActivityLog.find()
       .sort({ timestamp: -1 })
       .limit(10)
-      .populate('user', 'fullName email role');
+      .populate('user', 'firstName lastName username email role');
 
     // Get course enrollments
     const enrollmentStats = await Course.aggregate([

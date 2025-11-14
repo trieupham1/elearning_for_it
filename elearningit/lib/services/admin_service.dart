@@ -8,7 +8,7 @@ import '../models/admin_dashboard.dart';
 import '../services/auth_service.dart';
 
 class AdminService {
-  final String baseUrl = '${ApiConfig.baseUrl}/admin';
+  final String baseUrl = '${ApiConfig.baseUrl}${ApiConfig.admin}';
   final AuthService _authService = AuthService();
 
   Future<Map<String, String>> _getHeaders() async {

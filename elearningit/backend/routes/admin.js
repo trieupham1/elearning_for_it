@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Course = require('../models/Course');
+const Department = require('../models/Department');
 const ActivityLog = require('../models/ActivityLog');
 const bcrypt = require('bcrypt');
 const { auth, adminOnly } = require('../middleware/auth');
@@ -510,7 +511,7 @@ router.get('/activity-logs', auth, adminOnly, async (req, res) => {
       .sort({ timestamp: -1 })
       .limit(parseInt(limit))
       .skip(skip)
-      .populate('user', 'fullName email role');
+      .populate('user', 'firstName lastName username email role');
 
     const total = await ActivityLog.countDocuments(query);
 
@@ -639,9 +640,9 @@ router.put('/courses/:id/assign-instructor', auth, adminOnly, async (req, res) =
 router.get('/instructors/workload', auth, adminOnly, async (req, res) => {
   try {
     const instructors = await User.find({
-      role: { $in: ['instructor', 'admin'] },
+      role: 'instructor',
       isActive: true
-    }).select('fullName email profilePicture department');
+    }).select('firstName lastName username email profilePicture department');
 
     const workloadData = [];
 
@@ -649,9 +650,7 @@ router.get('/instructors/workload', auth, adminOnly, async (req, res) => {
       const courses = await Course.find({ instructor: instructor._id })
         .select('name code students');
 
-      let totalStudents = 0;
       const courseDetails = courses.map(course => {
-        totalStudents += course.students.length;
         return {
           courseId: course._id,
           courseName: course.name,
@@ -660,16 +659,33 @@ router.get('/instructors/workload', auth, adminOnly, async (req, res) => {
         };
       });
 
+      // Get department employee count
+      let departmentEmployeeCount = 0;
+      if (instructor.department) {
+        const department = await Department.findOne({ 
+          $or: [
+            { name: instructor.department },
+            { code: instructor.department }
+          ]
+        });
+        if (department) {
+          departmentEmployeeCount = department.employees ? department.employees.length : 0;
+        }
+      }
+
+      // Convert to JSON to get virtual fields
+      const instructorJSON = instructor.toJSON();
+
       workloadData.push({
         instructor: {
-          id: instructor._id,
-          fullName: instructor.fullName,
-          email: instructor.email,
-          profilePicture: instructor.profilePicture,
-          department: instructor.department
+          id: instructorJSON.id,
+          fullName: instructorJSON.fullName,
+          email: instructorJSON.email,
+          profilePicture: instructorJSON.profilePicture,
+          department: instructorJSON.department
         },
         totalCourses: courses.length,
-        totalStudents,
+        totalStudents: departmentEmployeeCount,
         courses: courseDetails
       });
     }
@@ -690,7 +706,7 @@ router.get('/instructors/workload', auth, adminOnly, async (req, res) => {
 router.get('/instructors', auth, adminOnly, async (req, res) => {
   try {
     const instructors = await User.find({
-      role: { $in: ['instructor', 'admin'] },
+      role: 'instructor',
       isActive: true
     }).select('-password -resetPasswordToken -resetPasswordExpires');
 

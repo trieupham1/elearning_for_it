@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import '../../models/user.dart';
 import '../../models/admin_dashboard.dart';
+import '../../models/activity_log.dart';
 import '../../services/auth_service.dart';
 import '../../services/admin_dashboard_service.dart';
+import '../../services/admin_service.dart';
 import '../../widgets/admin_drawer.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
-  const AdminDashboardScreen({Key? key}) : super(key: key);
+  const AdminDashboardScreen({super.key});
 
   @override
   State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
@@ -15,13 +17,13 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final AdminDashboardService _dashboardService = AdminDashboardService();
+  final AdminService _adminService = AdminService();
   User? _currentUser;
   AdminDashboardOverview? _overview;
-  UserGrowthData? _userGrowth;
-  List<CompletionRate> _completionRates = [];
-  List<TopPerformer> _topPerformers = [];
+  List<ActivityLog> _recentActivity = [];
+  List<DepartmentProgress> _departmentProgress = [];
+  List<InstructorWorkload> _instructorWorkload = [];
   bool _isLoading = true;
-  String _selectedPeriod = 'month';
 
   @override
   void initState() {
@@ -40,46 +42,47 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         _currentUser = user;
       });
 
-      // Load data with individual error handling
+      // Load overview
       try {
         final overview = await _dashboardService.getOverview();
         setState(() => _overview = overview);
       } catch (e) {
-        print('Error loading overview: $e');
+        debugPrint('Error loading overview: $e');
       }
 
+      // Load recent activity
       try {
-        final userGrowth = await _dashboardService.getUserGrowth(
-          period: _selectedPeriod,
+        final activityResponse = await _adminService.getAllActivityLogs(
+          limit: 10,
         );
-        setState(() => _userGrowth = userGrowth);
+        setState(() => _recentActivity = activityResponse.logs);
       } catch (e) {
-        print('Error loading user growth: $e');
+        debugPrint('Error loading activity logs: $e');
       }
 
+      // Load department progress
       try {
-        final completionRates = await _dashboardService.getCompletionRates();
-        setState(() => _completionRates = completionRates);
+        final deptProgress = await _dashboardService.getTrainingProgressByDepartment();
+        setState(() => _departmentProgress = deptProgress);
       } catch (e) {
-        print('Error loading completion rates: $e');
+        debugPrint('Error loading department progress: $e');
       }
 
+      // Load instructor workload
       try {
-        final topPerformers = await _dashboardService.getTopPerformers(
-          limit: 5,
-        );
-        setState(() => _topPerformers = topPerformers);
+        final workload = await _adminService.getInstructorWorkload();
+        setState(() => _instructorWorkload = workload);
       } catch (e) {
-        print('Error loading top performers: $e');
+        debugPrint('Error loading instructor workload: $e');
       }
 
       setState(() => _isLoading = false);
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading data: $e')),
+        );
       }
     }
   }
@@ -96,25 +99,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         ],
       ),
-      drawer: _currentUser != null
-          ? AdminDrawer(currentUser: _currentUser!)
-          : null,
+      drawer: _currentUser != null ? AdminDrawer(currentUser: _currentUser!) : null,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _loadDashboardData,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildOverviewCards(),
                     const SizedBox(height: 24),
-                    _buildUserGrowthSection(),
+                    _buildRecentActivitySection(),
                     const SizedBox(height: 24),
-                    _buildCompletionRatesSection(),
+                    _buildDepartmentTrainingProgress(),
                     const SizedBox(height: 24),
-                    _buildTopPerformersSection(),
+                    _buildInstructorWorkloadSection(),
                   ],
                 ),
               ),
@@ -125,161 +126,80 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildOverviewCards() {
     if (_overview == null) return const SizedBox.shrink();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
       children: [
-        const Text(
-          'Overview',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        _buildStatCard(
+          'Total Users',
+          _overview!.totalUsers.toString(),
+          Icons.people,
+          Colors.blue,
         ),
-        const SizedBox(height: 16),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 1.5,
-          children: [
-            _buildStatCard(
-              'Total Users',
-              _overview!.totalUsers.toString(),
-              Icons.people,
-              Colors.blue,
-            ),
-            _buildStatCard(
-              'Total Courses',
-              _overview!.totalCourses.toString(),
-              Icons.book,
-              Colors.green,
-            ),
-            _buildStatCard(
-              'Departments',
-              _overview!.totalDepartments.toString(),
-              Icons.business,
-              Colors.orange,
-            ),
-            _buildStatCard(
-              'Active Courses',
-              _overview!.activeCourses.toString(),
-              Icons.school,
-              Colors.purple,
-            ),
-          ],
+        _buildStatCard(
+          'Active Courses',
+          _overview!.activeCourses.toString(),
+          Icons.school,
+          Colors.green,
         ),
-        const SizedBox(height: 16),
-        _buildUserBreakdownCard(),
+        _buildStatCard(
+          'Total Courses',
+          _overview!.totalCourses.toString(),
+          Icons.library_books,
+          Colors.orange,
+        ),
+        _buildStatCard(
+          'Departments',
+          _overview!.totalDepartments.toString(),
+          Icons.business,
+          Colors.purple,
+        ),
       ],
     );
   }
 
-  Widget _buildStatCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 32, color: color),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: color,
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    return SizedBox(
+      width: (MediaQuery.of(context).size.width - 48) / 2,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Icon(icon, color: color, size: 32),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 12),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUserBreakdownCard() {
-    if (_overview == null) return const SizedBox.shrink();
-
-    final breakdown = _overview!.userBreakdown;
-
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'User Breakdown',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildUserCount('Students', breakdown.students, Colors.blue),
-                _buildUserCount(
-                  'Instructors',
-                  breakdown.instructors,
-                  Colors.green,
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
                 ),
-                _buildUserCount('Admins', breakdown.admins, Colors.red),
-              ],
-            ),
-            const Divider(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Active Users: ${breakdown.activeUsers}',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildUserCount(String label, int count, Color color) {
-    return Column(
-      children: [
-        Text(
-          count.toString(),
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: color,
+              ),
+            ],
           ),
         ),
-        Text(label, style: const TextStyle(fontSize: 12)),
-      ],
+      ),
     );
   }
 
-  Widget _buildUserGrowthSection() {
-    if (_userGrowth == null || _userGrowth!.data.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
+  Widget _buildRecentActivitySection() {
     return Card(
-      elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -287,242 +207,361 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'User Growth',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  'Recent Activity',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                DropdownButton<String>(
-                  value: _selectedPeriod,
-                  items: const [
-                    DropdownMenuItem(value: 'week', child: Text('Week')),
-                    DropdownMenuItem(value: 'month', child: Text('Month')),
-                    DropdownMenuItem(value: 'year', child: Text('Year')),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => _selectedPeriod = value);
-                      _loadDashboardData();
-                    }
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/admin/activity-logs');
                   },
+                  child: const Text('View All'),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            SizedBox(
-              height: 200,
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(show: true, drawVerticalLine: false),
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 40,
-                        getTitlesWidget: (value, meta) {
-                          return Text(
-                            value.toInt().toString(),
-                            style: const TextStyle(fontSize: 10),
-                          );
-                        },
+            if (_recentActivity.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text('No recent activity'),
+                ),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _recentActivity.length,
+                separatorBuilder: (context, index) => const Divider(),
+                itemBuilder: (context, index) {
+                  final activity = _recentActivity[index];
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: _getActionColor(activity.action),
+                      child: Icon(
+                        _getActionIcon(activity.action),
+                        color: Colors.white,
+                        size: 20,
                       ),
                     ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 30,
-                        getTitlesWidget: (value, meta) {
-                          final index = value.toInt();
-                          if (index < 0 || index >= _userGrowth!.data.length) {
-                            return const Text('');
-                          }
-                          // Generate label from the id Map
-                          final point = _userGrowth!.data[index];
-                          String label = '';
-                          if (point.id.containsKey('month')) {
-                            label = 'T${point.id['month']}';
-                          } else if (point.id.containsKey('week')) {
-                            label = 'W${point.id['week']}';
-                          } else if (point.id.containsKey('day')) {
-                            label = '${point.id['day']}';
-                          }
-                          return Text(
-                            label,
-                            style: const TextStyle(fontSize: 10),
-                          );
-                        },
+                    title: Text(activity.description),
+                    subtitle: Text(
+                      activity.user?.fullName ?? 'Unknown User',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    trailing: Text(
+                      timeago.format(activity.timestamp),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
                       ),
                     ),
-                    rightTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDepartmentTrainingProgress() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Department Training Progress',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
-                  borderData: FlBorderData(show: true),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: _userGrowth!.data
-                          .asMap()
-                          .entries
-                          .map(
-                            (e) => FlSpot(
-                              e.key.toDouble(),
-                              e.value.count.toDouble(),
-                            ),
-                          )
-                          .toList(),
-                      isCurved: true,
-                      color: Colors.blue,
-                      barWidth: 3,
-                      dotData: FlDotData(show: true),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        color: Colors.blue.withOpacity(0.1),
-                      ),
-                    ),
-                  ],
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/admin/training-progress');
+                  },
+                  child: const Text('View All'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (_departmentProgress.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text('No department data available'),
+                ),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _departmentProgress.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  final dept = _departmentProgress[index];
+                  return _buildDepartmentCard(dept);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDepartmentCard(DepartmentProgress dept) {
+    final avgScore = dept.overallCompletionRate;
+    final progressColor = _getCompletionColor(avgScore);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  dept.departmentName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
+              Text(
+                '${avgScore.toStringAsFixed(1)}%',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: progressColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: avgScore / 100,
+            backgroundColor: Colors.grey.shade200,
+            valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+            minHeight: 8,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(Icons.people, size: 16, color: Colors.grey.shade600),
+              const SizedBox(width: 4),
+              Text(
+                'Employees: ${dept.totalEmployees}',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+              const SizedBox(width: 16),
+              Icon(Icons.school, size: 16, color: Colors.grey.shade600),
+              const SizedBox(width: 4),
+              Text(
+                'Courses: ${dept.totalCourses}',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildCompletionRatesSection() {
-    if (_completionRates.isEmpty) return const SizedBox.shrink();
-
+  Widget _buildInstructorWorkloadSection() {
     return Card(
-      elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Course Completion Rates',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Instructor Workload',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/admin/instructor-workload');
+                  },
+                  child: const Text('View All'),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _completionRates.length > 5
-                  ? 5
-                  : _completionRates.length,
-              separatorBuilder: (context, index) => const Divider(),
-              itemBuilder: (context, index) {
-                final course = _completionRates[index];
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(course.courseTitle),
-                  subtitle: Text(
-                    '${course.completedStudents}/${course.totalStudents} students',
-                  ),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getCompletionColor(course.completionRate),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${course.completionRate.toStringAsFixed(1)}%',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+            if (_instructorWorkload.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text('No instructor data available'),
+                ),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _instructorWorkload.length,
+                separatorBuilder: (context, index) => const Divider(),
+                itemBuilder: (context, index) {
+                  final workload = _instructorWorkload[index];
+                  final workloadColor = _getWorkloadColor(workload.totalCourses);
+                  
+                  return InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/admin/instructor-workload-detail',
+                        arguments: workload,
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8.0,
+                        horizontal: 16.0,
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            child: Text(
+                              workload.instructor.fullName.isNotEmpty
+                                  ? workload.instructor.fullName[0].toUpperCase()
+                                  : '?',
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  workload.instructor.fullName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Courses: ${workload.totalCourses} • Students: ${workload.totalStudents}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                                if (workload.instructor.department != null)
+                                  Text(
+                                    workload.instructor.department!,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey.shade500,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: workloadColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: workloadColor),
+                            ),
+                            child: Text(
+                              '${workload.courses.length}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: workloadColor,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(Icons.chevron_right, color: Colors.grey.shade400),
+                        ],
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTopPerformersSection() {
-    if (_topPerformers.isEmpty) return const SizedBox.shrink();
-
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Top Performers',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _topPerformers.length,
-              separatorBuilder: (context, index) => const Divider(),
-              itemBuilder: (context, index) {
-                final performer = _topPerformers[index];
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: CircleAvatar(
-                    backgroundColor: _getRankColor(index),
-                    child: Text(
-                      '#${index + 1}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  title: Text(performer.student.fullName),
-                  subtitle: Text(
-                    performer.student.department ?? performer.student.email,
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 20),
-                      const SizedBox(width: 4),
-                      Text(
-                        performer.averageScore.toStringAsFixed(1),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+  Color _getActionColor(String action) {
+    switch (action) {
+      case 'login':
+        return Colors.green;
+      case 'logout':
+        return Colors.grey;
+      case 'course_enrollment':
+        return Colors.blue;
+      case 'course_completion':
+        return Colors.purple;
+      case 'assignment_submission':
+        return Colors.orange;
+      case 'quiz_attempt':
+        return Colors.teal;
+      case 'profile_update':
+        return Colors.indigo;
+      default:
+        return Colors.grey;
+    }
   }
 
-  Color _getCompletionColor(double rate) {
-    if (rate >= 80) return Colors.green;
-    if (rate >= 50) return Colors.orange;
+  IconData _getActionIcon(String action) {
+    switch (action) {
+      case 'login':
+        return Icons.login;
+      case 'logout':
+        return Icons.logout;
+      case 'course_enrollment':
+        return Icons.school;
+      case 'course_completion':
+        return Icons.check_circle;
+      case 'assignment_submission':
+        return Icons.assignment_turned_in;
+      case 'quiz_attempt':
+        return Icons.quiz;
+      case 'profile_update':
+        return Icons.person;
+      default:
+        return Icons.info;
+    }
+  }
+
+  Color _getCompletionColor(double score) {
+    if (score >= 80) return Colors.green;
+    if (score >= 60) return Colors.orange;
     return Colors.red;
   }
 
-  Color _getRankColor(int index) {
-    switch (index) {
-      case 0:
-        return Colors.amber;
-      case 1:
-        return Colors.grey;
-      case 2:
-        return Colors.brown;
-      default:
-        return Colors.blue;
-    }
+  Color _getWorkloadColor(int pending) {
+    if (pending >= 20) return Colors.red;
+    if (pending >= 10) return Colors.orange;
+    return Colors.green;
   }
 }

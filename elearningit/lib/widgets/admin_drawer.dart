@@ -16,6 +16,14 @@ class AdminDrawer extends StatelessWidget {
           _buildDrawerHeader(context),
           _buildMenuItem(
             context,
+            icon: Icons.home,
+            title: 'Home',
+            subtitle: 'Return to Home',
+            route: '/admin/home',
+          ),
+          const Divider(),
+          _buildMenuItem(
+            context,
             icon: Icons.dashboard,
             title: 'Dashboard',
             subtitle: 'Overview',
@@ -83,7 +91,7 @@ class AdminDrawer extends StatelessWidget {
             icon: Icons.school,
             title: 'Instructor Workload',
             subtitle: 'Course Assignments',
-            route: '/admin/instructors/workload',
+            route: '/admin/instructor-workload',
           ),
           const Divider(),
           _buildSectionHeader('Reports'),
