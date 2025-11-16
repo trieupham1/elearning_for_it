@@ -60,17 +60,51 @@ class _StreamTabState extends State<StreamTab> {
     }
   }
 
+  void _joinVideoCall() {
+    if (widget.currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to join the call')),
+      );
+      return;
+    }
+
+    Navigator.pushNamed(
+      context,
+      '/course-video-call',
+      arguments: {
+        'course': widget.course,
+        'currentUser': widget.currentUser,
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isInstructor = widget.currentUser?.role == 'instructor';
 
     return Column(
       children: [
+        // Video Call Button - Available for all enrolled users
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: ElevatedButton.icon(
+            onPressed: _joinVideoCall,
+            icon: const Icon(Icons.video_call),
+            label: const Text('Join Course Video Call'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+          ),
+        ),
+
         // New Announcement Button (Instructor only)
         if (isInstructor)
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: ElevatedButton.icon(
               onPressed: _showNewAnnouncementDialog,
               icon: const Icon(Icons.edit),

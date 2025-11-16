@@ -24,6 +24,107 @@ module.exports = (io) => {
       console.log(`📋 All registered user IDs:`, Array.from(userSockets.keys()));
     });
 
+    // Group video call events
+    socket.on('join_group_call', (data) => {
+      const { channelName, userId, userName, userProfile } = data;
+      socket.join(channelName);
+      socket.currentChannel = channelName;
+      socket.userId = userId;
+      console.log(`👥 ${userName} joined group call: ${channelName}`);
+      
+      // Get all sockets in this room to send existing participants
+      const socketsInRoom = io.sockets.adapter.rooms.get(channelName);
+      const existingParticipants = [];
+      
+      if (socketsInRoom) {
+        socketsInRoom.forEach((socketId) => {
+          const participantSocket = io.sockets.sockets.get(socketId);
+          if (participantSocket && participantSocket.userId && socketId !== socket.id) {
+            existingParticipants.push({
+              userId: participantSocket.userId,
+              userName: participantSocket.userName,
+              userProfile: participantSocket.userProfile,
+              agoraUid: participantSocket.agoraUid,
+            });
+          }
+        });
+      }
+      
+      // Store user info on socket
+      socket.userName = userName;
+      socket.userProfile = userProfile;
+      
+      // Send existing participants to the new joiner
+      socket.emit('existing_participants', { participants: existingParticipants });
+      
+      // Notify others in the room about new user
+      socket.to(channelName).emit('user_joined_call', {
+        userId,
+        userName,
+        userProfile,
+        socketId: socket.id,
+      });
+    });
+
+    // Broadcast Agora UID mapping
+    socket.on('share_agora_uid', (data) => {
+      const { channelName, agoraUid, userId } = data;
+      console.log(`📡 Received share_agora_uid:`);
+      console.log(`   - Channel: ${channelName}`);
+      console.log(`   - Agora UID: ${agoraUid} (type: ${typeof agoraUid})`);
+      console.log(`   - User ID: ${userId}`);
+      console.log(`   - User Name: ${socket.userName}`);
+      console.log(`   - User Profile: ${socket.userProfile}`);
+      
+      socket.agoraUid = agoraUid;
+      
+      const mappingData = {
+        userId,
+        agoraUid,
+        userName: socket.userName,
+        userProfile: socket.userProfile,
+      };
+      
+      // Broadcast to everyone in the channel including sender
+      io.to(channelName).emit('agora_uid_mapped', mappingData);
+      console.log(`✅ Broadcasted agora_uid_mapped to channel ${channelName}`);
+      console.log(`   Mapping data:`, mappingData);
+    });
+
+    socket.on('leave_group_call', (data) => {
+      const { channelName, userId } = data;
+      if (channelName) {
+        socket.leave(channelName);
+        socket.to(channelName).emit('user_left_call', { userId });
+        console.log(`👋 User ${userId} left group call: ${channelName}`);
+      }
+    });
+
+    // Chat messages in group call
+    socket.on('send_group_message', (data) => {
+      const { channelName, message, senderName, senderId, timestamp } = data;
+      // Broadcast to everyone in the channel including sender
+      io.to(channelName).emit('new_group_message', {
+        message,
+        senderName,
+        senderId,
+        timestamp,
+      });
+      console.log(`💬 Message in ${channelName} from ${senderName}: ${message}`);
+    });
+
+    // User status updates (mic/camera)
+    socket.on('update_user_status', (data) => {
+      const { channelName, agoraUid, userId, isMuted, isCameraOff } = data;
+      socket.to(channelName).emit('user_status_updated', {
+        agoraUid,
+        userId,
+        isMuted,
+        isCameraOff,
+      });
+      console.log(`🔊 User ${userId} (Agora UID: ${agoraUid}) status: muted=${isMuted}, camera=${isCameraOff}`);
+    });
+
     // Call initiated - send to callee
     socket.on('call_initiated', async (data) => {
       try {

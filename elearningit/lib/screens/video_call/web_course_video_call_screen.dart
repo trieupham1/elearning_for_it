@@ -1,0 +1,1200 @@
+// screens/video_call/web_course_video_call_screen.dart
+import 'package:flutter/material.dart';
+import '../../services/agora_web_service.dart';
+import '../../models/course.dart';
+import '../../models/user.dart';
+import '../../services/video_call_service.dart';
+import '../../config/agora_config.dart';
+import '../../config/api_config.dart';
+import 'dart:async';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:cached_network_image/cached_network_image.dart';
+// Conditional imports for web
+import 'dart:html' as html show DivElement;
+import 'dart:ui_web' as ui_web;
+import 'package:flutter/widgets.dart' show HtmlElementView;
+
+// Temporary chat message model (only exists during call)
+class ChatMessage {
+  final String senderName;
+  final String message;
+  final DateTime timestamp;
+
+  ChatMessage({
+    required this.senderName,
+    required this.message,
+    required this.timestamp,
+  });
+}
+
+class WebCourseVideoCallScreen extends StatefulWidget {
+  final Course course;
+  final User currentUser;
+
+  const WebCourseVideoCallScreen({
+    super.key,
+    required this.course,
+    required this.currentUser,
+  });
+
+  @override
+  State<WebCourseVideoCallScreen> createState() =>
+      _WebCourseVideoCallScreenState();
+}
+
+class _WebCourseVideoCallScreenState extends State<WebCourseVideoCallScreen> {
+  AgoraWebService? _webService;
+  final VideoCallService _callService = VideoCallService();
+
+  bool _isMuted = false;
+  bool _isVideoEnabled = true;
+  bool _isLoading = true;
+  bool _showSidebar = false;
+  bool _isWaitingForOthers = false;
+
+  List<int> _remoteUsers = [];
+  Map<int, String> _userNames = {};
+  Map<int, String?> _userProfilePictures = {};
+  Map<int, Map<String, bool>> _userStatuses = {}; // {uid: {isMuted: bool, isCameraOff: bool}}
+  List<ChatMessage> _chatMessages = [];
+  IO.Socket? _socket;
+
+  String? _channelName;
+  String? _token;
+  Timer? _aloneTimer;
+  DateTime? _aloneStartTime;
+
+  // Stream subscriptions
+  StreamSubscription<int>? _remoteUidSubscription;
+  StreamSubscription<int>? _remoteUserLeftSubscription;
+  StreamSubscription<String>? _connectionStateSubscription;
+
+  // HTML element view IDs for web video rendering
+  final Map<int, String> _remoteVideoViewIds = {};
+  static const String _localVideoViewId = 'local-video-course-view';
+  bool _localVideoRegistered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _registerLocalVideoView();
+    _initializeCall();
+  }
+
+  void _registerLocalVideoView() {
+    if (_localVideoRegistered) return;
+
+    ui_web.platformViewRegistry.registerViewFactory(_localVideoViewId, (
+      int viewId,
+    ) {
+      final element = html.DivElement()
+        ..id = 'local-video-container'
+        ..style.width = '100%'
+        ..style.height = '100%'
+        ..style.objectFit = 'cover';
+      return element;
+    });
+
+    _localVideoRegistered = true;
+  }
+
+  void _registerRemoteVideoView(int uid) {
+    final viewId = 'remote-video-$uid';
+    if (_remoteVideoViewIds.containsKey(uid)) return;
+
+    ui_web.platformViewRegistry.registerViewFactory(viewId, (int viewId) {
+      final element = html.DivElement()
+        ..id = 'remote-video-container-$uid'
+        ..style.width = '100%'
+        ..style.height = '100%'
+        ..style.objectFit = 'cover';
+      return element;
+    });
+
+    _remoteVideoViewIds[uid] = viewId;
+  }
+
+  Future<void> _initializeCall() async {
+    try {
+      // Generate channel name
+      _channelName = 'course_${widget.course.id}';
+      
+      // Initialize Socket.IO connection
+      _initializeSocket();
+      
+      // Get token from Agora config (uses /api/agora/generate-token)
+      _token = await AgoraConfig.getToken(_channelName!, 0); // Use uid 0 for auto-assign
+      
+      if (_token == null) {
+        throw Exception('Failed to get Agora token');
+      }
+
+      setState(() {
+        // Token and channel name are already set
+      });
+
+      // Initialize Agora Web Service
+      _webService = AgoraWebService();
+      await _webService!.initialize();
+
+      // Listen to remote user events via streams
+      _remoteUidSubscription = _webService!.remoteUid.listen((uid) {
+        debugPrint('🔵 Remote user detected via Agora: UID $uid (type: ${uid.runtimeType})');
+        debugPrint('   - Current _userNames map: $_userNames');
+        debugPrint('   - Map keys types: ${_userNames.keys.map((k) => '${k.runtimeType}').toList()}');
+        debugPrint('   - Contains key check: ${_userNames.containsKey(uid)}');
+        
+        if (mounted && !_remoteUsers.contains(uid)) {
+          setState(() {
+            _remoteUsers.add(uid);
+            _isWaitingForOthers = false;
+          });
+          _cancelAloneTimer();
+          _registerRemoteVideoView(uid);
+          
+          // Check if we already have this user's info from Socket.IO
+          if (_userNames[uid] == null) {
+            debugPrint('⚠️ No user info yet for UID $uid, waiting for Socket.IO mapping...');
+            debugPrint('   Available UIDs in map: ${_userNames.keys.toList()}');
+            // We'll get their info via Socket.IO agora_uid_mapped event
+          } else {
+            debugPrint('✅ User info already available for UID $uid: ${_userNames[uid]}');
+          }
+        }
+      });
+
+      _remoteUserLeftSubscription = _webService!.remoteUserLeft.listen((uid) {
+        if (mounted) {
+          setState(() {
+            _remoteUsers.remove(uid);
+            _remoteVideoViewIds.remove(uid);
+            _userNames.remove(uid);
+          });
+          _checkIfAlone();
+        }
+      });
+
+      _connectionStateSubscription = _webService!.connectionState.listen((state) {
+        debugPrint('Connection state changed: $state');
+        // Don't auto-leave when state changes - let user control when to leave
+      });
+
+      // Join channel (starts with mic/camera ON by default in Agora)
+      await _webService!.joinVideoChannel(
+        _channelName!,
+        token: _token,
+      );
+
+      // Broadcast our Agora UID so others can map it
+      final myAgoraUid = _webService!.localUid;
+      debugPrint('📡 Preparing to broadcast Agora UID:');
+      debugPrint('   - My Agora UID: $myAgoraUid (type: ${myAgoraUid.runtimeType})');
+      debugPrint('   - My User ID: ${widget.currentUser.id}');
+      debugPrint('   - My User Name: ${widget.currentUser.fullName}');
+      debugPrint('   - Channel: $_channelName');
+      
+      if (myAgoraUid != null) {
+        _socket?.emit('share_agora_uid', {
+          'channelName': _channelName,
+          'agoraUid': myAgoraUid,
+          'userId': widget.currentUser.id,
+        });
+        debugPrint('✅ Broadcasted Agora UID via Socket.IO');
+      } else {
+        debugPrint('❌ Cannot broadcast - Agora UID is null!');
+      }
+
+      // Mute mic and turn off camera by default (like Google Meet/Zoom)
+      await _webService!.toggleMicrophone(); // Mute mic
+      
+      // Only toggle camera if it's available
+      if (_webService!.localVideoTrack != null) {
+        await _webService!.toggleCamera(); // Turn off camera
+      }
+      
+      setState(() {
+        _isMuted = true;
+        _isVideoEnabled = _webService!.localVideoTrack != null ? false : false;
+      });
+
+      // Notify backend
+      await _callService.joinCall(
+        courseId: widget.course.id,
+        channelName: _channelName!,
+      );
+
+      setState(() {
+        _isLoading = false;
+      });
+      
+      // Check if user is alone after joining
+      _checkIfAlone();
+    } catch (e) {
+      debugPrint('Error initializing call: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to join call: $e')),
+        );
+        Navigator.pop(context);
+      }
+    }
+  }
+
+  Future<void> _fetchUserName(int uid) async {
+    try {
+      final userInfo = await _callService.getUserInfoByUid(uid);
+      if (mounted) {
+        setState(() {
+          _userNames[uid] = userInfo['userName'] ?? 'Unknown User';
+          _userProfilePictures[uid] = userInfo['profilePicture'];
+          // Initialize status for this user
+          _userStatuses[uid] = {'isMuted': true, 'isCameraOff': true};
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching user info: $e');
+    }
+  }
+
+  void _initializeSocket() {
+    try {
+      // Connect to Socket.IO server
+      final socketUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+      _socket = IO.io(socketUrl, <String, dynamic>{
+        'transports': ['websocket'],
+        'autoConnect': true,
+      });
+
+      _socket?.connect();
+
+      _socket?.on('connect', (_) {
+        debugPrint('✅ Socket connected: ${_socket?.id}');
+        
+        // Join the group call room with user info
+        _socket?.emit('join_group_call', {
+          'channelName': _channelName,
+          'userId': widget.currentUser.id,
+          'userName': '${widget.currentUser.firstName ?? ''} ${widget.currentUser.lastName ?? ''}'.trim(),
+          'userProfile': widget.currentUser.profilePicture,
+        });
+      });
+
+      // Listen for existing participants when we join
+      _socket?.on('existing_participants', (data) {
+        debugPrint('📋 Received existing participants: ${data['participants']}');
+        if (mounted && data['participants'] != null) {
+          for (var participant in data['participants']) {
+            final rawAgoraUid = participant['agoraUid'];
+            if (rawAgoraUid != null) {
+              // Convert to int to match Agora SDK's UID type
+              final agoraUid = rawAgoraUid is int ? rawAgoraUid : int.tryParse(rawAgoraUid.toString());
+              if (agoraUid != null) {
+                setState(() {
+                  _userNames[agoraUid] = participant['userName'] ?? 'Unknown User';
+                  _userProfilePictures[agoraUid] = participant['userProfile'];
+                  _userStatuses[agoraUid] = {'isMuted': true, 'isCameraOff': true};
+                });
+                debugPrint('   - Stored existing user: UID $agoraUid -> ${participant['userName']}');
+              }
+            }
+          }
+        }
+      });
+
+      // Listen for other users joining
+      _socket?.on('user_joined_call', (data) {
+        debugPrint('👤 User joined via socket: ${data['userName']}');
+        // We'll get their Agora UID later via agora_uid_mapped event
+      });
+
+      // Listen for Agora UID mapping
+      _socket?.on('agora_uid_mapped', (data) {
+        final rawAgoraUid = data['agoraUid'];
+        final userName = data['userName'];
+        final userProfile = data['userProfile'];
+        
+        debugPrint('🔗 Agora UID mapped received:');
+        debugPrint('   - Raw Agora UID: $rawAgoraUid (type: ${rawAgoraUid.runtimeType})');
+        debugPrint('   - User Name: $userName');
+        debugPrint('   - Profile: $userProfile');
+        
+        if (mounted && rawAgoraUid != null) {
+          // Convert to int to match Agora SDK's UID type
+          final agoraUid = rawAgoraUid is int ? rawAgoraUid : int.tryParse(rawAgoraUid.toString());
+          
+          if (agoraUid != null) {
+            debugPrint('   - Converted UID: $agoraUid (type: ${agoraUid.runtimeType})');
+            debugPrint('   - Current remote users: $_remoteUsers');
+            debugPrint('   - Current userNames keys: ${_userNames.keys.toList()}');
+            
+            setState(() {
+              _userNames[agoraUid] = userName ?? 'Unknown User';
+              _userProfilePictures[agoraUid] = userProfile;
+              if (!_userStatuses.containsKey(agoraUid)) {
+                _userStatuses[agoraUid] = {'isMuted': true, 'isCameraOff': true};
+              }
+            });
+            
+            debugPrint('✅ Stored user info for UID $agoraUid');
+            debugPrint('   - Stored userNames: $_userNames');
+          } else {
+            debugPrint('❌ Failed to convert Agora UID to int');
+          }
+        }
+      });
+
+      // Listen for new chat messages
+      _socket?.on('new_group_message', (data) {
+        if (mounted) {
+          setState(() {
+            _chatMessages.add(ChatMessage(
+              senderName: data['senderName'],
+              message: data['message'],
+              timestamp: DateTime.parse(data['timestamp']),
+            ));
+          });
+        }
+      });
+
+      // Listen for user status updates (mic/camera)
+      _socket?.on('user_status_updated', (data) {
+        final rawAgoraUid = data['agoraUid'];
+        if (mounted && rawAgoraUid != null) {
+          // Convert to int to match Agora SDK's UID type
+          final agoraUid = rawAgoraUid is int ? rawAgoraUid : int.tryParse(rawAgoraUid.toString());
+          if (agoraUid != null) {
+            debugPrint('🔊 Status update for UID $agoraUid: muted=${data['isMuted']}, camera=${data['isCameraOff']}');
+            setState(() {
+              if (_userStatuses.containsKey(agoraUid)) {
+                _userStatuses[agoraUid] = {
+                  'isMuted': data['isMuted'] ?? true,
+                  'isCameraOff': data['isCameraOff'] ?? true,
+                };
+              }
+            });
+          }
+        }
+      });
+
+      _socket?.on('disconnect', (_) {
+        debugPrint('❌ Socket disconnected');
+      });
+
+    } catch (e) {
+      debugPrint('Error initializing socket: $e');
+    }
+  }
+
+  void _broadcastStatusUpdate() {
+    final myAgoraUid = _webService?.localUid;
+    if (myAgoraUid != null) {
+      _socket?.emit('update_user_status', {
+        'channelName': _channelName,
+        'agoraUid': myAgoraUid,
+        'userId': widget.currentUser.id,
+        'isMuted': _isMuted,
+        'isCameraOff': !_isVideoEnabled,
+      });
+      debugPrint('📡 Broadcasted status: muted=$_isMuted, camera=${!_isVideoEnabled}');
+    }
+  }
+
+  void _checkIfAlone() {
+    if (_remoteUsers.isEmpty) {
+      setState(() {
+        _isWaitingForOthers = true;
+        _aloneStartTime = DateTime.now();
+      });
+      _startAloneTimer();
+    }
+  }
+
+  void _startAloneTimer() {
+    _cancelAloneTimer();
+    _aloneTimer = Timer(const Duration(minutes: 5), () {
+      if (mounted && _remoteUsers.isEmpty) {
+        _showTimeoutDialog();
+      }
+    });
+  }
+
+  void _cancelAloneTimer() {
+    _aloneTimer?.cancel();
+    _aloneTimer = null;
+    _aloneStartTime = null;
+  }
+
+  void _showTimeoutDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Call Ending'),
+        content: const Text(
+          'You\'ve been alone in the call for 5 minutes. The call will now end.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _leaveCall();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _toggleMute() async {
+    if (_webService != null) {
+      await _webService!.toggleMicrophone();
+      setState(() {
+        _isMuted = _webService!.isMuted;
+      });
+      _broadcastStatusUpdate();
+    }
+  }
+
+  Future<void> _toggleVideo() async {
+    if (_webService == null) return;
+    
+    // Check if camera is available
+    if (_webService!.localVideoTrack == null) {
+      // Show warning dialog like Google Meet
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.orange),
+              SizedBox(width: 8),
+              Text('Camera Not Available'),
+            ],
+          ),
+          content: const Text(
+            'Your camera could not be found or accessed. Please check your camera permissions and ensure it\'s not being used by another application.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    
+    await _webService!.toggleCamera();
+    setState(() {
+      _isVideoEnabled = _webService!.isVideoEnabled;
+    });
+    _broadcastStatusUpdate();
+  }
+
+  Future<void> _leaveCall() async {
+    try {
+      // Emit leave event via Socket.IO
+      _socket?.emit('leave_group_call', {
+        'channelName': _channelName,
+        'userId': widget.currentUser.id,
+      });
+      
+      if (_channelName != null) {
+        await _callService.leaveCall(
+          courseId: widget.course.id,
+          channelName: _channelName!,
+        );
+      }
+      
+      // Disconnect socket
+      _socket?.disconnect();
+      _socket?.dispose();
+      
+      await _webService?.leaveChannel();
+      await _webService?.dispose();
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      debugPrint('Error leaving call: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _remoteUidSubscription?.cancel();
+    _remoteUserLeftSubscription?.cancel();
+    _connectionStateSubscription?.cancel();
+    _cancelAloneTimer();
+    _socket?.disconnect();
+    _socket?.dispose();
+    _leaveCall();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('${widget.course.name} - Video Call'),
+        backgroundColor: Colors.black87,
+        actions: [
+          IconButton(
+            icon: Icon(_showSidebar ? Icons.close_fullscreen : Icons.people),
+            onPressed: () {
+              setState(() {
+                _showSidebar = !_showSidebar;
+              });
+            },
+            tooltip: _showSidebar ? 'Hide sidebar' : 'Show people & chat',
+          ),
+        ],
+      ),
+      backgroundColor: Colors.black,
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            )
+          : Row(
+              children: [
+                Expanded(
+                  child: Stack(
+                    children: [
+                      _isWaitingForOthers
+                          ? _buildWaitingRoom()
+                          : _buildVideoGrid(),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: _buildControls(),
+                      ),
+                      if (!_showSidebar)
+                        Positioned(
+                          top: 16,
+                          right: 16,
+                          child: _buildParticipantBadge(),
+                        ),
+                    ],
+                  ),
+                ),
+                if (_showSidebar) _buildSidebar(),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildWaitingRoom() {
+    final aloneFor = _aloneStartTime != null
+        ? DateTime.now().difference(_aloneStartTime!).inMinutes
+        : 0;
+    
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildLocalPreview(),
+          const SizedBox(height: 32),
+          const Icon(
+            Icons.people_outline,
+            size: 64,
+            color: Colors.white54,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Waiting for others to join...',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'You\'re the first one here!',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 16,
+            ),
+          ),
+          if (aloneFor > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Text(
+                'Alone for $aloneFor minute${aloneFor > 1 ? 's' : ''} (Call ends after 5 minutes)',
+                style: const TextStyle(
+                  color: Colors.orange,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSidebar() {
+    return Container(
+      width: 320,
+      color: Colors.grey[900],
+      child: Column(
+        children: [
+          // Tabs for People and Chat
+          Container(
+            color: Colors.grey[850],
+            child: Row(
+              children: [
+                Expanded(
+                  child: Tab(
+                    text: 'People (${_remoteUsers.length + 1})',
+                  ),
+                ),
+                Expanded(
+                  child: Tab(
+                    text: 'Chat (${_chatMessages.length})',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: DefaultTabController(
+              length: 2,
+              child: Column(
+                children: [
+                  const TabBar(
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.white54,
+                    indicatorColor: Colors.blue,
+                    tabs: [
+                      Tab(icon: Icon(Icons.people), text: 'People'),
+                      Tab(icon: Icon(Icons.chat), text: 'Chat'),
+                    ],
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _buildPeopleTab(),
+                        _buildChatTab(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPeopleTab() {
+    final allParticipants = [
+      {
+        'uid': 0, 
+        'name': '${widget.currentUser.firstName ?? ''} ${widget.currentUser.lastName ?? ''}'.trim(), 
+        'isYou': true,
+        'profilePicture': widget.currentUser.profilePicture,
+      },
+      ..._remoteUsers.map((uid) => {
+        'uid': uid, 
+        'name': _userNames[uid] ?? 'User $uid', 
+        'isYou': false,
+        'profilePicture': _userProfilePictures[uid],
+      }),
+    ];
+
+    return ListView.builder(
+      itemCount: allParticipants.length,
+      itemBuilder: (context, index) {
+        final participant = allParticipants[index];
+        final name = participant['name'] as String;
+        final isYou = participant['isYou'] as bool;
+        final uid = participant['uid'] as int;
+        final profilePicture = participant['profilePicture'] as String?;
+        
+        // Get status for this user
+        final isMuted = isYou ? _isMuted : (_userStatuses[uid]?['isMuted'] ?? true);
+        final isCameraOff = isYou ? !_isVideoEnabled : (_userStatuses[uid]?['isCameraOff'] ?? true);
+        
+        return ListTile(
+          leading: profilePicture != null && profilePicture.isNotEmpty
+              ? CircleAvatar(
+                  backgroundImage: CachedNetworkImageProvider(profilePicture),
+                  backgroundColor: Colors.grey[700],
+                )
+              : CircleAvatar(
+                  backgroundColor: Colors.blue,
+                  child: Text(
+                    name.isNotEmpty ? name[0].toUpperCase() : '?',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+          title: Text(
+            name,
+            style: const TextStyle(color: Colors.white),
+          ),
+          trailing: isYou
+              ? Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'You',
+                    style: TextStyle(color: Colors.blue, fontSize: 12),
+                  ),
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isMuted ? Icons.mic_off : Icons.mic,
+                      size: 16,
+                      color: isMuted ? Colors.red : Colors.green,
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      isCameraOff ? Icons.videocam_off : Icons.videocam,
+                      size: 16,
+                      color: isCameraOff ? Colors.red : Colors.green,
+                    ),
+                  ],
+                ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChatTab() {
+    final TextEditingController chatController = TextEditingController();
+
+    return Column(
+      children: [
+        Expanded(
+          child: _chatMessages.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.chat_bubble_outline, size: 48, color: Colors.white24),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No messages yet',
+                        style: TextStyle(color: Colors.white54),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Start the conversation!',
+                        style: TextStyle(color: Colors.white30, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _chatMessages.length,
+                  itemBuilder: (context, index) {
+                    final message = _chatMessages[index];
+                    final isMe = message.senderName == '${widget.currentUser.firstName ?? ''} ${widget.currentUser.lastName ?? ''}'.trim();
+                    
+                    return Align(
+                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        constraints: const BoxConstraints(maxWidth: 250),
+                        decoration: BoxDecoration(
+                          color: isMe ? Colors.blue : Colors.grey[800],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (!isMe)
+                              Text(
+                                message.senderName,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            Text(
+                              message.message,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${message.timestamp.hour}:${message.timestamp.minute.toString().padLeft(2, '0')}',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.5),
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey[850],
+            border: Border(top: BorderSide(color: Colors.grey[700]!)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: chatController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Type a message...',
+                    hintStyle: const TextStyle(color: Colors.white54),
+                    filled: true,
+                    fillColor: Colors.grey[800],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  onSubmitted: (text) {
+                    if (text.trim().isNotEmpty) {
+                      _sendChatMessage(text.trim());
+                      chatController.clear();
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.send, color: Colors.blue),
+                onPressed: () {
+                  if (chatController.text.trim().isNotEmpty) {
+                    _sendChatMessage(chatController.text.trim());
+                    chatController.clear();
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _sendChatMessage(String message) {
+    final timestamp = DateTime.now();
+    final senderName = '${widget.currentUser.firstName ?? ''} ${widget.currentUser.lastName ?? ''}'.trim();
+    
+    // Broadcast message via Socket.IO to all participants
+    _socket?.emit('send_group_message', {
+      'channelName': _channelName,
+      'message': message,
+      'senderName': senderName,
+      'senderId': widget.currentUser.id,
+      'timestamp': timestamp.toIso8601String(),
+    });
+  }
+
+  Widget _buildVideoGrid() {
+    final totalUsers = _remoteUsers.length + 1;
+
+    if (_remoteUsers.isEmpty) {
+      return Center(child: _buildLocalPreview());
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(8),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: totalUsers > 4 ? 3 : 2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        childAspectRatio: 0.75,
+      ),
+      itemCount: totalUsers,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return _buildLocalPreview();
+        }
+        return _buildRemoteVideo(_remoteUsers[index - 1]);
+      },
+    );
+  }
+
+  Widget _buildLocalPreview() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.blue, width: 2),
+      ),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: _isVideoEnabled
+                ? const HtmlElementView(viewType: _localVideoViewId)
+                : Container(
+                    color: Colors.grey[850],
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          widget.currentUser.profilePicture != null && widget.currentUser.profilePicture!.isNotEmpty
+                              ? CircleAvatar(
+                                  radius: 40,
+                                  backgroundImage: CachedNetworkImageProvider(widget.currentUser.profilePicture!),
+                                  backgroundColor: Colors.grey[700],
+                                )
+                              : CircleAvatar(
+                                  radius: 40,
+                                  backgroundColor: Colors.blue,
+                                  child: Text(
+                                    (widget.currentUser.firstName?.isNotEmpty ?? false)
+                                        ? widget.currentUser.firstName![0].toUpperCase()
+                                        : 'Y',
+                                    style: const TextStyle(
+                                      fontSize: 32,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${widget.currentUser.firstName ?? ''} ${widget.currentUser.lastName ?? ''}'.trim(),
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+          ),
+          // Mic status indicator
+          if (_isMuted)
+            Positioned(
+              left: 8,
+              bottom: 8,
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.mic_off,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRemoteVideo(int uid) {
+    final userName = _userNames[uid] ?? 'User $uid';
+    final viewId = _remoteVideoViewIds[uid];
+    final profilePicture = _userProfilePictures[uid];
+    final isCameraOff = _userStatuses[uid]?['isCameraOff'] ?? false;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: viewId != null && !isCameraOff
+                ? HtmlElementView(viewType: viewId)
+                : Center(
+                    child: profilePicture != null && profilePicture.isNotEmpty
+                        ? CircleAvatar(
+                            radius: 40,
+                            backgroundImage: CachedNetworkImageProvider(profilePicture),
+                            backgroundColor: Colors.grey[700],
+                          )
+                        : CircleAvatar(
+                            radius: 40,
+                            backgroundColor: Colors.grey[700],
+                            child: Text(
+                              userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                              style: const TextStyle(
+                                fontSize: 24,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                  ),
+          ),
+          Positioned(
+            left: 8,
+            bottom: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                userName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          // Mic mute indicator for remote user
+          if (_userStatuses[uid]?['isMuted'] == true)
+            Positioned(
+              right: 8,
+              bottom: 8,
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.mic_off,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildControls() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildControlButton(
+            icon: _isMuted ? Icons.mic_off : Icons.mic,
+            label: _isMuted ? 'Unmute' : 'Mute',
+            onPressed: _toggleMute,
+            backgroundColor: _isMuted ? Colors.red : Colors.white24,
+            iconColor: _isMuted ? Colors.white : Colors.white,
+          ),
+          const SizedBox(width: 20),
+          _buildControlButton(
+            icon: _webService?.localVideoTrack == null
+                ? Icons.videocam_off_outlined
+                : (_isVideoEnabled ? Icons.videocam : Icons.videocam_off),
+            label: _webService?.localVideoTrack == null
+                ? 'No camera'
+                : (_isVideoEnabled ? 'Turn off' : 'Turn on'),
+            onPressed: _toggleVideo,
+            backgroundColor: _webService?.localVideoTrack == null
+                ? Colors.orange
+                : (!_isVideoEnabled ? Colors.red : Colors.white24),
+            iconColor: Colors.white,
+          ),
+          const SizedBox(width: 20),
+          _buildControlButton(
+            icon: Icons.call_end,
+            label: 'Leave',
+            onPressed: _leaveCall,
+            backgroundColor: Colors.red,
+            iconColor: Colors.white,
+            isEndCall: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildControlButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    required Color backgroundColor,
+    required Color iconColor,
+    bool isEndCall = false,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Material(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(50),
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(50),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              child: Icon(icon, color: iconColor, size: 24),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildParticipantBadge() {
+    final totalParticipants = _remoteUsers.length + 1;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black54,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.people, color: Colors.white, size: 18),
+          const SizedBox(width: 4),
+          Text(
+            '$totalParticipants',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

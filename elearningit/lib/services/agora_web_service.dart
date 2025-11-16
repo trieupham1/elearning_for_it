@@ -19,15 +19,20 @@ class AgoraWebService {
 
   final StreamController<int> _remoteUidController =
       StreamController<int>.broadcast();
+  final StreamController<int> _remoteUserLeftController =
+      StreamController<int>.broadcast();
   final StreamController<String> _connectionStateController =
       StreamController<String>.broadcast();
 
   Stream<int> get remoteUid => _remoteUidController.stream;
+  Stream<int> get remoteUserLeft => _remoteUserLeftController.stream;
   Stream<String> get connectionState => _connectionStateController.stream;
+  int? get localUid => _localUid;
 
   bool _isMuted = false;
   bool _isCameraOff = false;
-  bool _isVideoEnabled = false;
+  bool _isVideoEnabled = true;
+  int? _localUid;
 
   bool get isMuted => _isMuted;
   bool get isCameraOff => _isCameraOff;
@@ -45,6 +50,16 @@ class AgoraWebService {
       _client = AgoraRTC.createClient(ClientConfig(mode: 'rtc', codec: 'vp8'));
 
       // Register event handlers
+      // Listen for user joining (even if they don't publish tracks yet)
+      js_util.callMethod(_client, 'on', [
+        'user-joined',
+        allowInterop((user) {
+          final uid = js_util.getProperty(user, 'uid') as int;
+          print('👤 Remote user joined: $uid');
+          _remoteUidController.add(uid);
+        }),
+      ]);
+
       js_util.callMethod(_client, 'on', [
         'user-published',
         allowInterop((user, mediaType) async {
@@ -64,7 +79,7 @@ class AgoraWebService {
             if (remoteAudioTrack != null) {
               js_util.callMethod(remoteAudioTrack, 'play', []);
             }
-            _remoteUidController.add(js_util.getProperty(user, 'uid') as int);
+            // UID already added by user-joined event
           }
 
           if (mediaType == 'video') {
@@ -72,7 +87,7 @@ class AgoraWebService {
             _remoteVideoTrack = js_util.getProperty(user, 'videoTrack');
             _remoteUser = user;
             print('📹 Remote video track received, ready to render');
-            _remoteUidController.add(js_util.getProperty(user, 'uid') as int);
+            // UID already added by user-joined event
           }
         }),
       ]);
@@ -91,11 +106,10 @@ class AgoraWebService {
       js_util.callMethod(_client, 'on', [
         'user-left',
         allowInterop((user, reason) {
-          print(
-            '👋 Remote user left: ${js_util.getProperty(user, 'uid')}, reason: $reason',
-          );
-          // Only end call when user actually leaves (not just unpublishes tracks)
-          _connectionStateController.add('ended');
+          final uid = js_util.getProperty(user, 'uid') as int;
+          print('👋 Remote user left: $uid, reason: $reason');
+          // Notify about user leaving but don't end the call
+          _remoteUserLeftController.add(uid);
         }),
       ]);
 
@@ -151,8 +165,8 @@ class AgoraWebService {
     }
 
     try {
-      // Join the channel
-      await promiseToFuture(
+      // Join the channel and get assigned UID
+      _localUid = await promiseToFuture(
         js_util.callMethod(_client, 'join', [
           AgoraConfig.appId,
           channelName,
@@ -160,22 +174,39 @@ class AgoraWebService {
           null, // uid
         ]),
       );
-      print('✅ Joined channel successfully');
+      print('✅ Joined channel successfully with UID: $_localUid');
 
-      // Create local audio and video tracks
+      // Create local audio track (required)
       _localAudioTrack = await promiseToFuture(
         AgoraRTC.createMicrophoneAudioTrack(),
       );
-      _localVideoTrack = await promiseToFuture(
-        AgoraRTC.createCameraVideoTrack(),
-      );
+      
+      // Try to create video track (optional - like Google Meet)
+      try {
+        _localVideoTrack = await promiseToFuture(
+          AgoraRTC.createCameraVideoTrack(),
+        );
+        print('✅ Camera track created successfully');
+      } catch (e) {
+        print('⚠️ Camera not available: $e');
+        print('📹 Continuing without camera (audio-only mode)');
+        _localVideoTrack = null;
+        _isCameraOff = true;
+        _isVideoEnabled = false;
+      }
 
-      // Publish tracks
-      await promiseToFuture(
-        js_util.callMethod(_client, 'publish', [
-          js_util.jsify([_localAudioTrack, _localVideoTrack]),
-        ]),
-      );
+      // Publish available tracks
+      final tracksToPublish = <Object>[];
+      if (_localAudioTrack != null) tracksToPublish.add(_localAudioTrack!);
+      if (_localVideoTrack != null) tracksToPublish.add(_localVideoTrack!);
+      
+      if (tracksToPublish.isNotEmpty) {
+        await promiseToFuture(
+          js_util.callMethod(_client, 'publish', [
+            js_util.jsify(tracksToPublish),
+          ]),
+        );
+      }
 
       _isVideoEnabled = true;
       _isCameraOff = false; // Camera starts ON
@@ -232,6 +263,11 @@ class AgoraWebService {
   }
 
   Future<void> toggleCamera() async {
+    if (_localVideoTrack == null) {
+      print('⚠️ Camera not available - cannot toggle');
+      return;
+    }
+    
     _isCameraOff = !_isCameraOff;
     _isVideoEnabled = !_isCameraOff;
     if (_localVideoTrack != null) {
@@ -265,6 +301,7 @@ class AgoraWebService {
     print('🧹 Disposing Agora Web service...');
     await leaveChannel();
     _remoteUidController.close();
+    _remoteUserLeftController.close();
     _connectionStateController.close();
     print('✅ Agora Web service disposed');
   }

@@ -42,6 +42,7 @@ const attendanceRoutes = require('./routes/attendance');
 const codeAssignmentRoutes = require('./routes/code-assignments');
 const callRoutes = require('./routes/calls');
 const agoraRoutes = require('./routes/agora');
+const videoCallRoutes = require('./routes/videoCall');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -72,6 +73,7 @@ app.use('/api/videos', videoRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/code', codeAssignmentRoutes);
 app.use('/api/calls', callRoutes);
+app.use('/api/video-call', videoCallRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

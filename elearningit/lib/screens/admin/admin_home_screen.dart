@@ -80,7 +80,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             children: [
               _buildWelcomeCard(),
               const SizedBox(height: 24),
-              _buildQuickActionsSection(),
+              _buildQuickActions(),
               const SizedBox(height: 24),
               _buildManagementSection(),
             ],
@@ -129,58 +129,64 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
 
-  Widget _buildQuickActionsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Quick Actions',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          children: [
-            _buildQuickActionCard(
-              icon: Icons.dashboard,
-              title: 'Dashboard',
-              subtitle: 'Overview',
-              color: Colors.blue,
-              onTap: () => Navigator.of(context).pushNamed('/admin/dashboard'),
+  Widget _buildQuickActions() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Quick Actions',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
-            _buildQuickActionCard(
-              icon: Icons.people,
-              title: 'Users',
-              subtitle: 'User Management',
-              color: Colors.green,
-              onTap: () => Navigator.of(context).pushNamed('/admin/users'),
-            ),
-            _buildQuickActionCard(
-              icon: Icons.business,
-              title: 'Departments',
-              subtitle: 'Department Management',
-              color: Colors.orange,
-              onTap: () =>
-                  Navigator.of(context).pushNamed('/admin/departments'),
-            ),
-            _buildQuickActionCard(
-              icon: Icons.assessment,
-              title: 'Reports',
-              subtitle: 'Generate Reports',
-              color: Colors.purple,
-              onTap: () => Navigator.of(context).pushNamed('/admin/reports'),
-            ),
-          ],
-        ),
-      ],
+          ),
+          const SizedBox(height: 16),
+          GridView.count(
+            crossAxisCount: 4, // 4 columns for better layout
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.2, // Make boxes more rectangular and compact
+            children: [
+              _buildActionCard(
+                icon: Icons.dashboard,
+                title: 'Dashboard',
+                subtitle: 'Overview',
+                color: Colors.blue,
+                onTap: () => Navigator.pushNamed(context, '/admin/dashboard'),
+              ),
+              _buildActionCard(
+                icon: Icons.people,
+                title: 'Users',
+                subtitle: 'User Management',
+                color: Colors.green,
+                onTap: () => Navigator.pushNamed(context, '/admin/users'),
+              ),
+              _buildActionCard(
+                icon: Icons.school,
+                title: 'Courses',
+                subtitle: 'Course Management',
+                color: Colors.orange,
+                onTap: () => Navigator.pushNamed(context, '/admin/courses'),
+              ),
+              _buildActionCard(
+                icon: Icons.business,
+                title: 'Departments',
+                subtitle: 'Department List',
+                color: Colors.purple,
+                onTap: () => Navigator.pushNamed(context, '/admin/departments'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildQuickActionCard({
+  Widget _buildActionCard({
     required IconData icon,
     required String title,
     required String subtitle,
@@ -189,36 +195,48 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }) {
     return Card(
       elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12.0), // Reduced padding
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12), // Smaller icon container
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  shape: BoxShape.circle,
                 ),
-                child: Icon(icon, size: 32, color: color),
+                child: Icon(
+                  icon,
+                  size: 28, // Smaller icon size
+                  color: color,
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8), // Reduced spacing
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 14, // Smaller font
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 11, // Smaller subtitle
+                  color: Colors.grey.shade600,
+                ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

@@ -44,6 +44,9 @@ import 'screens/student/code_submission_results_screen.dart';
 import 'screens/instructor/create_code_assignment_screen.dart';
 import 'models/attendance.dart';
 import 'models/code_assignment.dart';
+// Video Call Feature
+import 'screens/video_call/platform_course_video_call_screen.dart';
+import 'models/course.dart';
 
 // Global navigator key for showing dialogs/screens from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -276,6 +279,17 @@ class _ELearningAppState extends State<ELearningApp> {
               return MaterialPageRoute(
                 builder: (context) => CreateCodeAssignmentScreen(
                   courseId: args?['courseId'] ?? '',
+                ),
+              );
+            }
+
+            // ========== VIDEO CALL ROUTES ==========
+            if (settings.name == '/course-video-call') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) => PlatformCourseVideoCallScreen(
+                  course: args?['course'] as Course,
+                  currentUser: args?['currentUser'] as User,
                 ),
               );
             }
