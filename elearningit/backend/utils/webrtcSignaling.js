@@ -125,6 +125,17 @@ module.exports = (io) => {
       console.log(`🔊 User ${userId} (Agora UID: ${agoraUid}) status: muted=${isMuted}, camera=${isCameraOff}`);
     });
 
+    // Screen share status updates
+    socket.on('screen_share_status', (data) => {
+      const { channelName, agoraUid, isSharing } = data;
+      // Broadcast to everyone in the channel including sender
+      io.to(channelName).emit('screen_share_status', {
+        agoraUid,
+        isSharing,
+      });
+      console.log(`🖥️ User with Agora UID ${agoraUid} ${isSharing ? 'started' : 'stopped'} screen sharing in ${channelName}`);
+    });
+
     // Call initiated - send to callee
     socket.on('call_initiated', async (data) => {
       try {

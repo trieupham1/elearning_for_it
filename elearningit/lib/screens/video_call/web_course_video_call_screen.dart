@@ -58,6 +58,9 @@ class _WebCourseVideoCallScreenState extends State<WebCourseVideoCallScreen> {
   Map<int, Map<String, bool>> _userStatuses = {}; // {uid: {isMuted: bool, isCameraOff: bool}}
   List<ChatMessage> _chatMessages = [];
   IO.Socket? _socket;
+  int? _screenSharingUid; // UID of user currently sharing screen
+  bool _isSharingScreen = false; // Whether local user is sharing
+  bool _screenShareWithAudio = false; // Whether screen share includes audio
 
   String? _channelName;
   String? _token;
@@ -177,6 +180,26 @@ class _WebCourseVideoCallScreenState extends State<WebCourseVideoCallScreen> {
       _connectionStateSubscription = _webService!.connectionState.listen((state) {
         debugPrint('Connection state changed: $state');
         // Don't auto-leave when state changes - let user control when to leave
+      });
+
+      // Listen for screen share state changes (e.g., browser stop button)
+      _webService!.screenShareState.listen((isSharing) {
+        final myUid = _webService!.localUid;
+        if (mounted && myUid != null) {
+          setState(() {
+            _isSharingScreen = isSharing;
+            if (!isSharing && _screenSharingUid == myUid) {
+              _screenSharingUid = null;
+            }
+          });
+          
+          // Notify other users
+          _socket?.emit('screen_share_status', {
+            'channelName': _channelName,
+            'agoraUid': myUid,
+            'isSharing': isSharing,
+          });
+        }
       });
 
       // Join channel (starts with mic/camera ON by default in Agora)
@@ -376,6 +399,25 @@ class _WebCourseVideoCallScreenState extends State<WebCourseVideoCallScreen> {
         }
       });
 
+      // Listen for screen share status updates
+      _socket?.on('screen_share_status', (data) {
+        final rawAgoraUid = data['agoraUid'];
+        final isSharing = data['isSharing'] ?? false;
+        if (mounted && rawAgoraUid != null) {
+          final agoraUid = rawAgoraUid is int ? rawAgoraUid : int.tryParse(rawAgoraUid.toString());
+          if (agoraUid != null) {
+            debugPrint('🖥️ Screen share update: UID $agoraUid is ${isSharing ? 'sharing' : 'not sharing'}');
+            setState(() {
+              if (isSharing) {
+                _screenSharingUid = agoraUid;
+              } else if (_screenSharingUid == agoraUid) {
+                _screenSharingUid = null;
+              }
+            });
+          }
+        }
+      });
+
       _socket?.on('disconnect', (_) {
         debugPrint('❌ Socket disconnected');
       });
@@ -492,6 +534,113 @@ class _WebCourseVideoCallScreenState extends State<WebCourseVideoCallScreen> {
       _isVideoEnabled = _webService!.isVideoEnabled;
     });
     _broadcastStatusUpdate();
+  }
+
+  Future<void> _toggleScreenShare() async {
+    try {
+      // If currently sharing, just stop
+      if (_isSharingScreen) {
+        await _webService!.toggleScreenShare();
+        final myUid = _webService!.localUid;
+        
+        setState(() {
+          _isSharingScreen = false;
+          _screenShareWithAudio = false;
+          if (_screenSharingUid == myUid) {
+            _screenSharingUid = null;
+          }
+        });
+        
+        // Notify other users
+        if (myUid != null) {
+          _socket?.emit('screen_share_status', {
+            'channelName': _channelName,
+            'agoraUid': myUid,
+            'isSharing': false,
+          });
+        }
+        return;
+      }
+
+      // Show dialog to choose audio option
+      final includeAudio = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Share Screen'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text('Do you want to share audio from your screen?'),
+              SizedBox(height: 12),
+              Text(
+                'Note: System audio sharing is supported in Chrome and Edge browsers.',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Screen Only'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Screen + Audio'),
+            ),
+          ],
+        ),
+      );
+
+      if (includeAudio == null) return; // User cancelled
+
+      await _webService!.startScreenShare(includeAudio: includeAudio);
+      
+      final isSharingNow = _webService!.isSharingScreen;
+      final myUid = _webService!.localUid;
+      
+      setState(() {
+        _isSharingScreen = isSharingNow;
+        _screenShareWithAudio = includeAudio;
+        if (isSharingNow && myUid != null) {
+          _screenSharingUid = myUid;
+        } else if (!isSharingNow && _screenSharingUid == myUid) {
+          _screenSharingUid = null;
+        }
+      });
+      
+      // Notify other users via Socket.IO
+      if (myUid != null) {
+        _socket?.emit('screen_share_status', {
+          'channelName': _channelName,
+          'agoraUid': myUid,
+          'isSharing': isSharingNow,
+        });
+      }
+      
+      // Re-render the video if we're sharing screen
+      if (isSharingNow) {
+        // Play screen share in local preview
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (_webService?.localScreenTrack != null) {
+            _webService!.playScreenShare('local-video-container');
+          }
+        });
+      } else {
+        // Resume camera video if it was on
+        if (_webService?.localVideoTrack != null && _isVideoEnabled) {
+          Future.delayed(const Duration(milliseconds: 500), () {
+            _webService!.playLocalVideo('local-video-container');
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to share screen: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _leaveCall() async {
@@ -906,6 +1055,11 @@ class _WebCourseVideoCallScreenState extends State<WebCourseVideoCallScreen> {
   }
 
   Widget _buildVideoGrid() {
+    // If someone is sharing screen, show it in main area with others in sidebar
+    if (_screenSharingUid != null) {
+      return _buildScreenShareLayout();
+    }
+
     final totalUsers = _remoteUsers.length + 1;
 
     if (_remoteUsers.isEmpty) {
@@ -928,6 +1082,231 @@ class _WebCourseVideoCallScreenState extends State<WebCourseVideoCallScreen> {
         return _buildRemoteVideo(_remoteUsers[index - 1]);
       },
     );
+  }
+
+  Widget _buildScreenShareLayout() {
+    final localUid = _webService?.localUid;
+    
+    return Row(
+      children: [
+        // Main screen share area - show the screen being shared
+        Expanded(
+          child: Container(
+            color: Colors.black,
+            child: Center(
+              child: _buildScreenShareVideo(_screenSharingUid!),
+            ),
+          ),
+        ),
+        // Sidebar with ALL participants (including local user)
+        Container(
+          width: 200,
+          color: Colors.grey[900],
+          child: ListView(
+            padding: const EdgeInsets.all(8),
+            children: [
+              // Show local user in sidebar
+              if (localUid != null) _buildCompactVideo(localUid, isLocal: true),
+              // Show all remote users in sidebar
+              ..._remoteUsers.map((uid) => _buildCompactVideo(uid)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScreenShareVideo(int uid) {
+    final localUid = _webService?.localUid;
+    final isLocalSharing = uid == localUid;
+    final presenterName = isLocalSharing
+        ? 'You'
+        : (_userNames[uid] ?? 'Unknown User');
+    
+    Widget videoWidget;
+    
+    if (isLocalSharing) {
+      // Show local screen share
+      videoWidget = HtmlElementView(
+        key: ValueKey('screen-share-$uid'),
+        viewType: _localVideoViewId,
+      );
+    } else {
+      // Show remote screen share
+      final viewId = _remoteVideoViewIds[uid];
+      if (viewId == null) {
+        return Container(
+          color: Colors.black,
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text(
+                  'Loading screen share...',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      
+      videoWidget = HtmlElementView(
+        key: ValueKey('screen-share-$uid'),
+        viewType: viewId,
+      );
+    }
+    
+    return Container(
+      color: Colors.black,
+      child: Stack(
+        children: [
+          Center(child: videoWidget),
+          // Top presenter badge
+          Positioned(
+            top: 16,
+            left: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.screen_share,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '$presenterName ${isLocalSharing ? "are" : "is"} presenting',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (isLocalSharing && _screenShareWithAudio) ...[
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.volume_up,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactVideo(int uid, {bool isLocal = false}) {
+    final isMuted = isLocal ? _isMuted : (_userStatuses[uid]?['isMuted'] ?? true);
+    final userName = isLocal 
+        ? '${widget.currentUser.firstName ?? ''} ${widget.currentUser.lastName ?? ''}'.trim()
+        : _userNames[uid] ?? 'User $uid';
+    
+    return Container(
+      height: 150,
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey[850],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isLocal ? Colors.blue : Colors.grey[700]!,
+          width: 2,
+        ),
+      ),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: isLocal ? _buildLocalCameraPreview() : _buildRemoteVideo(uid),
+          ),
+          // Name label at bottom
+          Positioned(
+            bottom: 4,
+            left: 4,
+            right: 4,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isMuted)
+                    const Icon(
+                      Icons.mic_off,
+                      color: Colors.red,
+                      size: 12,
+                    ),
+                  if (isMuted) const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      userName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocalCameraPreview() {
+    // Show camera feed (not screen share) in compact view
+    return _isVideoEnabled
+        ? const HtmlElementView(viewType: _localVideoViewId)
+        : Container(
+            color: Colors.grey[850],
+            child: Center(
+              child: widget.currentUser.profilePicture != null && widget.currentUser.profilePicture!.isNotEmpty
+                  ? CircleAvatar(
+                      radius: 30,
+                      backgroundImage: CachedNetworkImageProvider(widget.currentUser.profilePicture!),
+                      backgroundColor: Colors.grey[700],
+                    )
+                  : CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.blue,
+                      child: Text(
+                        (widget.currentUser.firstName?.isNotEmpty ?? false)
+                            ? widget.currentUser.firstName![0].toUpperCase()
+                            : 'Y',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+            ),
+          );
   }
 
   Widget _buildLocalPreview() {
@@ -982,6 +1361,38 @@ class _WebCourseVideoCallScreenState extends State<WebCourseVideoCallScreen> {
                     ),
                   ),
           ),
+          // Screen sharing indicator
+          if (_isSharingScreen)
+            Positioned(
+              top: 8,
+              left: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(
+                      Icons.screen_share,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      'Sharing',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           // Mic status indicator
           if (_isMuted)
             Positioned(
@@ -1123,6 +1534,20 @@ class _WebCourseVideoCallScreenState extends State<WebCourseVideoCallScreen> {
           ),
           const SizedBox(width: 20),
           _buildControlButton(
+            icon: _isSharingScreen
+                ? Icons.stop_screen_share
+                : Icons.screen_share,
+            label: _isSharingScreen
+                ? 'Stop sharing'
+                : (_screenSharingUid != null ? 'Someone is sharing' : 'Share screen'),
+            onPressed: (_screenSharingUid != null && !_isSharingScreen) ? null : _toggleScreenShare,
+            backgroundColor: _isSharingScreen
+                ? Colors.green
+                : (_screenSharingUid != null ? Colors.grey[700]! : Colors.white24),
+            iconColor: (_screenSharingUid != null && !_isSharingScreen) ? Colors.grey : Colors.white,
+          ),
+          const SizedBox(width: 20),
+          _buildControlButton(
             icon: Icons.call_end,
             label: 'Leave',
             onPressed: _leaveCall,
@@ -1138,7 +1563,7 @@ class _WebCourseVideoCallScreenState extends State<WebCourseVideoCallScreen> {
   Widget _buildControlButton({
     required IconData icon,
     required String label,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     required Color backgroundColor,
     required Color iconColor,
     bool isEndCall = false,

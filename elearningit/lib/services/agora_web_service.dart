@@ -14,6 +14,7 @@ class AgoraWebService {
   dynamic _client;
   dynamic _localAudioTrack;
   dynamic _localVideoTrack;
+  dynamic _localScreenTrack;
   dynamic _remoteVideoTrack;
   dynamic _remoteUser;
 
@@ -23,20 +24,26 @@ class AgoraWebService {
       StreamController<int>.broadcast();
   final StreamController<String> _connectionStateController =
       StreamController<String>.broadcast();
+  final StreamController<bool> _screenShareStateController =
+      StreamController<bool>.broadcast();
 
   Stream<int> get remoteUid => _remoteUidController.stream;
   Stream<int> get remoteUserLeft => _remoteUserLeftController.stream;
   Stream<String> get connectionState => _connectionStateController.stream;
+  Stream<bool> get screenShareState => _screenShareStateController.stream;
   int? get localUid => _localUid;
 
   bool _isMuted = false;
   bool _isCameraOff = false;
   bool _isVideoEnabled = true;
+  bool _isSharingScreen = false;
   int? _localUid;
 
   bool get isMuted => _isMuted;
   bool get isCameraOff => _isCameraOff;
   bool get isVideoEnabled => _isVideoEnabled;
+  bool get isSharingScreen => _isSharingScreen;
+  dynamic get localScreenTrack => _localScreenTrack;
 
   Future<void> initialize() async {
     if (!kIsWeb) {
@@ -86,8 +93,14 @@ class AgoraWebService {
             // Store remote video track for rendering
             _remoteVideoTrack = js_util.getProperty(user, 'videoTrack');
             _remoteUser = user;
-            print('📹 Remote video track received, ready to render');
-            // UID already added by user-joined event
+            final uid = js_util.getProperty(user, 'uid') as int;
+            print('📹 Remote video track received for UID $uid');
+            
+            // Auto-play the video track in the remote video container
+            if (_remoteVideoTrack != null) {
+              js_util.callMethod(_remoteVideoTrack, 'play', ['remote-video-container-$uid']);
+              print('▶️ Auto-playing remote video in container: remote-video-container-$uid');
+            }
           }
         }),
       ]);
@@ -303,6 +316,7 @@ class AgoraWebService {
     _remoteUidController.close();
     _remoteUserLeftController.close();
     _connectionStateController.close();
+    _screenShareStateController.close();
     print('✅ Agora Web service disposed');
   }
 
@@ -326,6 +340,129 @@ class AgoraWebService {
       js_util.callMethod(_remoteVideoTrack, 'play', [elementId]);
     }
   }
+
+  // Toggle screen sharing
+  Future<void> toggleScreenShare({bool includeAudio = false}) async {
+    if (_isSharingScreen) {
+      // Stop screen sharing
+      await stopScreenShare();
+    } else {
+      // Start screen sharing
+      await startScreenShare(includeAudio: includeAudio);
+    }
+  }
+
+  // Start screen sharing
+  Future<void> startScreenShare({bool includeAudio = false}) async {
+    try {
+      print('🖥️ Starting screen share (audio: ${includeAudio ? "enabled" : "disabled"})...');
+
+      // Create screen video track
+      // Audio options: 'enable' = system audio, 'disable' = no audio, 'auto' = let user choose
+      final audioConfig = includeAudio ? 'enable' : 'disable';
+      
+      _localScreenTrack = await promiseToFuture(
+        AgoraRTC.createScreenVideoTrack(js_util.jsify({
+          'encoderConfig': '1080p_1',
+          'optimizationMode': 'detail',
+        }), audioConfig),
+      );
+
+      // If screen track is an array (video + audio), extract video track
+      if (js_util.hasProperty(_localScreenTrack, 'length')) {
+        final tracks = js_util.getProperty(_localScreenTrack, '0');
+        _localScreenTrack = tracks;
+      }
+
+      // Unpublish camera video if it's on
+      if (_localVideoTrack != null && !_isCameraOff) {
+        await promiseToFuture(
+          js_util.callMethod(_client, 'unpublish', [
+            js_util.jsify([_localVideoTrack]),
+          ]),
+        );
+      }
+
+      // Publish screen track
+      await promiseToFuture(
+        js_util.callMethod(_client, 'publish', [
+          js_util.jsify([_localScreenTrack]),
+        ]),
+      );
+
+      // Listen for screen share ended (user clicks "Stop sharing" in browser)
+      js_util.callMethod(_localScreenTrack, 'on', [
+        'track-ended',
+        allowInterop(() {
+          print('🛑 Screen share ended by user');
+          stopScreenShare();
+          _screenShareStateController.add(false);
+        }),
+      ]);
+
+      _isSharingScreen = true;
+      _screenShareStateController.add(true);
+      
+      // Auto-play screen share in local video container
+      if (_localScreenTrack != null) {
+        js_util.callMethod(_localScreenTrack, 'play', ['local-video-container']);
+        print('▶️ Playing screen share in local container');
+      }
+      
+      print('✅ Screen sharing started');
+    } catch (e) {
+      print('❌ Error starting screen share: $e');
+      _isSharingScreen = false;
+      rethrow;
+    }
+  }
+
+  // Stop screen sharing
+  Future<void> stopScreenShare() async {
+    try {
+      print('🛑 Stopping screen share...');
+
+      if (_localScreenTrack != null) {
+        // Unpublish screen track
+        await promiseToFuture(
+          js_util.callMethod(_client, 'unpublish', [
+            js_util.jsify([_localScreenTrack]),
+          ]),
+        );
+
+        // Close and clean up screen track
+        await promiseToFuture(
+          js_util.callMethod(_localScreenTrack, 'close', []),
+        );
+        _localScreenTrack = null;
+      }
+
+      // Re-publish camera video if it was on before screen share
+      if (_localVideoTrack != null && !_isCameraOff) {
+        await promiseToFuture(
+          js_util.callMethod(_client, 'publish', [
+            js_util.jsify([_localVideoTrack]),
+          ]),
+        );
+      }
+
+      _isSharingScreen = false;
+      _screenShareStateController.add(false);
+      print('✅ Screen sharing stopped');
+    } catch (e) {
+      print('❌ Error stopping screen share: $e');
+      _isSharingScreen = false;
+      _screenShareStateController.add(false);
+    }
+  }
+
+  // Play screen share in HTML element
+  void playScreenShare(String elementId) {
+    if (_localScreenTrack != null) {
+      print('▶️ Playing screen share in element: $elementId');
+      js_util.callMethod(_localScreenTrack, 'play', [elementId]);
+    }
+  }
 }
 
 // JavaScript interop definitions
@@ -338,6 +475,7 @@ class AgoraRTCType {
   external dynamic createClient(ClientConfig config);
   external dynamic createMicrophoneAudioTrack();
   external dynamic createCameraVideoTrack();
+  external dynamic createScreenVideoTrack(dynamic config, String screenAudioConfig);
 }
 
 @JS()
