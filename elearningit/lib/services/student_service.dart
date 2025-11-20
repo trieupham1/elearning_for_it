@@ -9,7 +9,7 @@ class StudentService {
   Future<List<User>> getStudents() async {
     final headers = await ApiConfig.headers();
     final response = await http.get(
-      Uri.parse('${ApiConfig.baseUrl}/students'),
+      Uri.parse('${ApiConfig.baseUrl}/api/students'),
       headers: headers,
     );
 

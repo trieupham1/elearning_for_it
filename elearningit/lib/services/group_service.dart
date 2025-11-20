@@ -68,7 +68,7 @@ class GroupService {
       if (token == null) throw Exception('No authentication token');
 
       final response = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/groups'),
+        Uri.parse('${ApiConfig.baseUrl}/api/groups'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

@@ -304,6 +304,26 @@ class AdminService {
     }
   }
 
+  // Delete user
+  Future<void> deleteUser(String userId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.delete(
+        Uri.parse('$baseUrl/users/$userId'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        return;
+      } else {
+        throw Exception('Failed to delete user: ${response.body}');
+      }
+    } catch (e) {
+      print('Error deleting user: $e');
+      rethrow;
+    }
+  }
+
   // Get user activity logs
   Future<ActivityLogResponse> getUserActivityLogs(
     String userId, {

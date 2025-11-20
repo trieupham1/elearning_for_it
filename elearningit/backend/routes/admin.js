@@ -449,6 +449,58 @@ router.put('/users/:id', auth, adminOnly, async (req, res) => {
   }
 });
 
+// @route   DELETE /api/admin/users/:id
+// @desc    Delete a user
+// @access  Admin only
+router.delete('/users/:id', auth, adminOnly, async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Don't allow deleting yourself
+    if (userId === req.userId) {
+      return res.status(400).json({ message: 'Cannot delete your own account' });
+    }
+
+    // Remove user from all courses
+    await Course.updateMany(
+      { students: userId },
+      { $pull: { students: userId } }
+    );
+
+    // Remove user from all departments
+    await Department.updateMany(
+      { employees: userId },
+      { $pull: { employees: userId } }
+    );
+
+    // Log activity before deletion
+    await ActivityLog.logActivity(
+      userId,
+      'user_deleted',
+      `User ${user.fullName} deleted by admin`,
+      { 
+        deletedBy: req.userId,
+        userEmail: user.email
+      },
+      req
+    );
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // @route   GET /api/admin/users/:id/activity-logs
 // @desc    Get user activity logs
 // @access  Admin only

@@ -148,4 +148,31 @@ class AdminDashboardService {
       rethrow;
     }
   }
+
+  // Get detailed user training progress for a department
+  Future<DepartmentUserProgress?> getDepartmentUserProgress(
+    String departmentId,
+  ) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/training-progress/$departmentId/users'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        return DepartmentUserProgress.fromJson(json.decode(response.body));
+      } else if (response.statusCode == 404) {
+        // Department not found or no data available
+        return null;
+      } else {
+        throw Exception(
+          'Failed to load department user progress: ${response.body}',
+        );
+      }
+    } catch (e) {
+      print('Error getting department user progress: $e');
+      rethrow;
+    }
+  }
 }

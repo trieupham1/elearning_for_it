@@ -6,11 +6,11 @@ class ApiConfig {
   // Development server URL - change this to your actual backend URL
   // Note: 
   // - Android emulator: use 10.0.2.2 (emulator's special alias for host)
-  // - Real Android device: use PC's WiFi IP address (e.g., 192.168.1.224)
+  // - Real Android device: use PC's WiFi IP address (e.g., 19  2.168.1.224)
   static const String _localBase = 'http://localhost:5000';
   static const String _androidEmulatorBase = 'http://10.0.2.2:5000';
   static const String _pcLocalIp = 'http://192.168.1.224:5000'; // Your PC's WiFi IP
-  
+
   // Set this to true if using Android emulator, false if using real device
   static const bool _useEmulator = false;
 
@@ -44,7 +44,7 @@ class ApiConfig {
   static const String attendance = '/api/attendance';
   static const String codeAssignments = '/api/code';
   static const String calls = '/api/calls';
-
+  
   // File upload endpoints
   static const String uploadFile = '/api/files/upload';
   static const String downloadFile = '/api/files';

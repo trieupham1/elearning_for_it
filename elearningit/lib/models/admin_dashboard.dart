@@ -117,7 +117,7 @@ class CompletionRate {
 class DepartmentProgress {
   final String departmentId;
   final String departmentName;
-  final String departmentCode;
+  final String? departmentCode;
   final int totalEmployees;
   final int totalCourses;
   final double overallCompletionRate;
@@ -126,7 +126,7 @@ class DepartmentProgress {
   DepartmentProgress({
     required this.departmentId,
     required this.departmentName,
-    required this.departmentCode,
+    this.departmentCode,
     required this.totalEmployees,
     required this.totalCourses,
     required this.overallCompletionRate,
@@ -140,15 +140,15 @@ class DepartmentProgress {
 
 @JsonSerializable()
 class CourseProgress {
-  final String courseTitle;
-  final String courseCode;
+  final String? courseTitle;
+  final String? courseCode;
   final int enrolledEmployees;
   final int completedEmployees;
   final double completionRate;
 
   CourseProgress({
-    required this.courseTitle,
-    required this.courseCode,
+    this.courseTitle,
+    this.courseCode,
     required this.enrolledEmployees,
     required this.completedEmployees,
     required this.completionRate,
@@ -293,4 +293,136 @@ class WorkloadCourse {
   factory WorkloadCourse.fromJson(Map<String, dynamic> json) =>
       _$WorkloadCourseFromJson(json);
   Map<String, dynamic> toJson() => _$WorkloadCourseToJson(this);
+}
+
+// ========== USER TRAINING PROGRESS MODELS ==========
+
+@JsonSerializable()
+class DepartmentUserProgress {
+  final String departmentId;
+  final String departmentName;
+  final String? departmentCode;
+  final List<UserTrainingProgress> users;
+
+  DepartmentUserProgress({
+    required this.departmentId,
+    required this.departmentName,
+    this.departmentCode,
+    required this.users,
+  });
+
+  factory DepartmentUserProgress.fromJson(Map<String, dynamic> json) =>
+      _$DepartmentUserProgressFromJson(json);
+  Map<String, dynamic> toJson() => _$DepartmentUserProgressToJson(this);
+}
+
+@JsonSerializable()
+class UserTrainingProgress {
+  final String userId;
+  final String fullName;
+  final String email;
+  final String role;
+  final String? profilePicture;
+  final List<UserCourseDetail> courses;
+
+  UserTrainingProgress({
+    required this.userId,
+    required this.fullName,
+    required this.email,
+    required this.role,
+    this.profilePicture,
+    required this.courses,
+  });
+
+  factory UserTrainingProgress.fromJson(Map<String, dynamic> json) =>
+      _$UserTrainingProgressFromJson(json);
+  Map<String, dynamic> toJson() => _$UserTrainingProgressToJson(this);
+}
+
+@JsonSerializable()
+class UserCourseDetail {
+  final String courseId;
+  final String courseTitle;
+  final String courseCode;
+  final String enrollmentStatus;
+  final AttendanceProgress? attendance;
+  final ScoreProgress? scores;
+
+  UserCourseDetail({
+    required this.courseId,
+    required this.courseTitle,
+    required this.courseCode,
+    required this.enrollmentStatus,
+    this.attendance,
+    this.scores,
+  });
+
+  factory UserCourseDetail.fromJson(Map<String, dynamic> json) =>
+      _$UserCourseDetailFromJson(json);
+  Map<String, dynamic> toJson() => _$UserCourseDetailToJson(this);
+}
+
+@JsonSerializable()
+class AttendanceProgress {
+  final int totalSessions;
+  final int attended;
+  final int late;
+  final int absent;
+  final double percentage;
+
+  AttendanceProgress({
+    required this.totalSessions,
+    required this.attended,
+    required this.late,
+    required this.absent,
+    required this.percentage,
+  });
+
+  factory AttendanceProgress.fromJson(Map<String, dynamic> json) =>
+      _$AttendanceProgressFromJson(json);
+  Map<String, dynamic> toJson() => _$AttendanceProgressToJson(this);
+}
+
+@JsonSerializable()
+class ScoreProgress {
+  final List<Assessment> quizzes;
+  final List<Assessment> assignments;
+  final Map<String, int> scoreDistribution;
+  final double averageScore;
+  final int totalAssessments;
+
+  ScoreProgress({
+    required this.quizzes,
+    required this.assignments,
+    required this.scoreDistribution,
+    required this.averageScore,
+    required this.totalAssessments,
+  });
+
+  factory ScoreProgress.fromJson(Map<String, dynamic> json) =>
+      _$ScoreProgressFromJson(json);
+  Map<String, dynamic> toJson() => _$ScoreProgressToJson(this);
+}
+
+@JsonSerializable()
+class Assessment {
+  final String id;
+  final String title;
+  final double score;
+  final double maxScore;
+  final double percentage;
+  final String? submittedAt;
+
+  Assessment({
+    required this.id,
+    required this.title,
+    required this.score,
+    required this.maxScore,
+    required this.percentage,
+    this.submittedAt,
+  });
+
+  factory Assessment.fromJson(Map<String, dynamic> json) =>
+      _$AssessmentFromJson(json);
+  Map<String, dynamic> toJson() => _$AssessmentToJson(this);
 }

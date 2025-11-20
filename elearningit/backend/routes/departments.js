@@ -211,8 +211,8 @@ router.post('/:id/add-course', auth, adminOnly, async (req, res) => {
     }
 
     await department.assignCourse(courseId);
-    await department.populate('courses', 'title code description');
-
+    
+    // Return department without populated fields (just IDs)
     res.json(department);
   } catch (error) {
     console.error('Error adding course:', error);
@@ -231,8 +231,8 @@ router.delete('/:id/remove-course/:courseId', auth, adminOnly, async (req, res) 
     }
 
     await department.removeCourse(req.params.courseId);
-    await department.populate('courses', 'title code description');
-
+    
+    // Return department without populated fields (just IDs)
     res.json(department);
   } catch (error) {
     console.error('Error removing course:', error);
@@ -307,11 +307,49 @@ router.put('/:id/add-employee', auth, adminOnly, async (req, res) => {
 
     // Add to department's employees
     await department.addEmployee(userId);
-    await department.populate('employees', 'fullName email role');
-
+    
+    // Return department without populated fields (just IDs)
     res.json(department);
   } catch (error) {
     console.error('Error adding employee:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// @route   DELETE /api/departments/:id/remove-employee/:userId
+// @desc    Remove employee from department
+// @access  Admin only
+router.delete('/:id/remove-employee/:userId', auth, adminOnly, async (req, res) => {
+  try {
+    const { id, userId } = req.params;
+
+    const department = await Department.findById(id);
+    if (!department) {
+      return res.status(404).json({ message: 'Department not found' });
+    }
+
+    // Check if employee exists in department
+    if (!department.employees.includes(userId)) {
+      return res.status(400).json({ message: 'Employee not found in this department' });
+    }
+
+    // Remove from department
+    department.employees = department.employees.filter(
+      empId => empId.toString() !== userId
+    );
+    await department.save();
+
+    // Clear user's department field
+    const user = await User.findById(userId);
+    if (user) {
+      user.department = null;
+      await user.save();
+    }
+
+    // Return department without populated fields (just IDs)
+    res.json(department);
+  } catch (error) {
+    console.error('Error removing employee:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

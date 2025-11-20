@@ -241,7 +241,6 @@ class DepartmentService {
   }
 
   // Add employee to department
-  // Add employee to department
   Future<void> addEmployee(String id, String userId) async {
     try {
       final headers = await _getHeaders();
@@ -260,6 +259,26 @@ class DepartmentService {
       // The department will be reloaded anyway
     } catch (e) {
       print('Error adding employee: $e');
+      rethrow;
+    }
+  }
+
+  // Remove employee from department
+  Future<Department> removeEmployee(String id, String userId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.delete(
+        Uri.parse('$baseUrl/$id/remove-employee/$userId'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        return Department.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Failed to remove employee: ${response.body}');
+      }
+    } catch (e) {
+      print('Error removing employee: $e');
       rethrow;
     }
   }

@@ -220,6 +220,74 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             ),
           ),
           actions: [
+            // Delete button (left side)
+            TextButton.icon(
+              onPressed: () async {
+                // Show confirmation dialog
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (dialogContext) => AlertDialog(
+                    title: const Text('Delete User'),
+                    content: Text(
+                      'Are you sure you want to delete ${user.fullName}? This action cannot be undone.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text('Delete'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed == true) {
+                  try {
+                    await _adminService.deleteUser(user.id);
+
+                    // Close the edit dialog first
+                    if (mounted) {
+                      Navigator.pop(context);
+                    }
+
+                    // Show success message and refresh
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('User deleted successfully'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                      _loadUsers(); // Refresh list
+                    }
+                  } catch (e) {
+                    // Close the edit dialog first
+                    if (mounted) {
+                      Navigator.pop(context);
+                    }
+
+                    // Show error message
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error deleting user: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
+              },
+              icon: const Icon(Icons.delete, color: Colors.red),
+              label: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+            const Spacer(), // Push other buttons to the right
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),

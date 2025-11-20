@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'dart:io';
 import '../../models/user.dart';
 import '../../services/auth_service.dart';
 import '../../services/admin_service.dart';
@@ -16,8 +15,7 @@ class BulkImportScreen extends StatefulWidget {
 class _BulkImportScreenState extends State<BulkImportScreen> {
   final AdminService _adminService = AdminService();
   User? _currentUser;
-  File? _selectedFile;
-  PlatformFile? _platformFile; // For web compatibility
+  PlatformFile? _platformFile; // Use PlatformFile for all platforms
   bool _isUploading = false;
   Map<String, dynamic>? _importResult;
 
@@ -51,13 +49,6 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
         setState(() {
           _platformFile = pickedFile; // Store the PlatformFile
           _importResult = null; // Reset previous results
-
-          // For mobile/desktop, also create a File object
-          if (pickedFile.path != null) {
-            _selectedFile = File(pickedFile.path!);
-          } else {
-            _selectedFile = null; // Web doesn't support File with path
-          }
         });
 
         if (mounted) {
@@ -94,18 +85,17 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
     try {
       Map<String, dynamic> result;
 
-      // Check if we have a file path (mobile/desktop) or bytes (web)
-      if (_selectedFile != null) {
-        // Mobile/Desktop - use file path
-        result = await _adminService.bulkImportUsers(_selectedFile!);
-      } else if (_platformFile!.bytes != null) {
-        // Web - use bytes
+      // Use bytes for all platforms (works on web, mobile, desktop)
+      if (_platformFile!.bytes != null) {
+        // Use bytes method (works on all platforms)
         result = await _adminService.bulkImportUsersFromBytes(
           _platformFile!.bytes!,
           _platformFile!.name,
         );
       } else {
-        throw Exception('No file data available');
+        throw Exception(
+          'No file data available - please try selecting the file again',
+        );
       }
 
       setState(() {
@@ -629,7 +619,6 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
                   ? null
                   : () {
                       setState(() {
-                        _selectedFile = null;
                         _platformFile = null;
                       });
                     },

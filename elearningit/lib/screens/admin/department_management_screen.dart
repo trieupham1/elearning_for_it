@@ -784,18 +784,132 @@ class _DepartmentManagementScreenState
                                       ),
                                       title: Text(displayName),
                                       subtitle: Text(employee.email),
-                                      trailing: Chip(
-                                        label: Text(
-                                          employee.role.toUpperCase(),
-                                          style: const TextStyle(fontSize: 11),
-                                        ),
-                                        backgroundColor: _getRoleColor(
-                                          employee.role,
-                                        ).withOpacity(0.2),
-                                        labelStyle: TextStyle(
-                                          color: _getRoleColor(employee.role),
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Chip(
+                                            label: Text(
+                                              employee.role.toUpperCase(),
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                              ),
+                                            ),
+                                            backgroundColor: _getRoleColor(
+                                              employee.role,
+                                            ).withOpacity(0.2),
+                                            labelStyle: TextStyle(
+                                              color: _getRoleColor(
+                                                employee.role,
+                                              ),
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.remove_circle,
+                                              color: Colors.red,
+                                            ),
+                                            tooltip: 'Remove from department',
+                                            onPressed: () async {
+                                              final confirm = await showDialog<bool>(
+                                                context: context,
+                                                builder: (ctx) => AlertDialog(
+                                                  title: const Text(
+                                                    'Remove Employee',
+                                                  ),
+                                                  content: Text(
+                                                    'Remove $displayName from ${detailed.name}?',
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            ctx,
+                                                            false,
+                                                          ),
+                                                      child: const Text(
+                                                        'Cancel',
+                                                      ),
+                                                    ),
+                                                    ElevatedButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            ctx,
+                                                            true,
+                                                          ),
+                                                      style:
+                                                          ElevatedButton.styleFrom(
+                                                            backgroundColor:
+                                                                Colors.red,
+                                                          ),
+                                                      child: const Text(
+                                                        'Remove',
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+
+                                              if (confirm == true) {
+                                                try {
+                                                  await _departmentService
+                                                      .removeEmployee(
+                                                        detailed.id,
+                                                        employee.id,
+                                                      );
+
+                                                  // Close dialog first
+                                                  if (mounted &&
+                                                      Navigator.canPop(
+                                                        context,
+                                                      )) {
+                                                    Navigator.pop(context);
+                                                  }
+
+                                                  // Show success message and refresh
+                                                  if (mounted) {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text(
+                                                          'Employee removed successfully',
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.green,
+                                                      ),
+                                                    );
+                                                    _loadDepartments(); // Refresh
+                                                  }
+                                                } catch (e) {
+                                                  // Close dialog first
+                                                  if (mounted &&
+                                                      Navigator.canPop(
+                                                        context,
+                                                      )) {
+                                                    Navigator.pop(context);
+                                                  }
+
+                                                  // Show error message
+                                                  if (mounted) {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          'Error: $e',
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                      ),
+                                                    );
+                                                  }
+                                                }
+                                              }
+                                            },
+                                          ),
+                                        ],
                                       ),
                                     );
                                   }).toList(),
@@ -849,6 +963,93 @@ class _DepartmentManagementScreenState
                                         ),
                                       ),
                                       subtitle: Text('Code: $courseCode'),
+                                      trailing: IconButton(
+                                        icon: const Icon(
+                                          Icons.remove_circle,
+                                          color: Colors.red,
+                                        ),
+                                        tooltip: 'Remove from department',
+                                        onPressed: () async {
+                                          final confirm = await showDialog<bool>(
+                                            context: context,
+                                            builder: (ctx) => AlertDialog(
+                                              title: const Text(
+                                                'Remove Course',
+                                              ),
+                                              content: Text(
+                                                'Remove $courseTitle from ${detailed.name}?',
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(ctx, false),
+                                                  child: const Text('Cancel'),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(ctx, true),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                      ),
+                                                  child: const Text('Remove'),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+
+                                          if (confirm == true) {
+                                            try {
+                                              await _departmentService
+                                                  .removeCourse(
+                                                    detailed.id,
+                                                    course.id,
+                                                  );
+
+                                              // Close dialog first
+                                              if (mounted &&
+                                                  Navigator.canPop(context)) {
+                                                Navigator.pop(context);
+                                              }
+
+                                              // Show success message and refresh
+                                              if (mounted) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      'Course removed successfully',
+                                                    ),
+                                                    backgroundColor:
+                                                        Colors.green,
+                                                  ),
+                                                );
+                                                _loadDepartments(); // Refresh
+                                              }
+                                            } catch (e) {
+                                              // Close dialog first
+                                              if (mounted &&
+                                                  Navigator.canPop(context)) {
+                                                Navigator.pop(context);
+                                              }
+
+                                              // Show error message
+                                              if (mounted) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Error: $e'),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          }
+                                        },
+                                      ),
                                     );
                                   }).toList(),
                                 ),
