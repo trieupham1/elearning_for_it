@@ -252,59 +252,51 @@ router.get('/training-progress-by-department', auth, adminOnly, async (req, res)
         const assignments = await Assignment.find({ course: course._id });
         const quizzes = await Quiz.find({ course: course._id });
 
+        // Calculate course progress based on sessions held vs total planned sessions
+        const totalPlannedSessions = fullCourse.sessions || 15;
+        const sessionsHeld = await mongoose.model('AttendanceSession').countDocuments({
+          courseId: course._id
+        });
+
+        // Course completion rate = sessions held / total planned sessions
+        const courseProgressPercentage = totalPlannedSessions > 0
+          ? (sessionsHeld / totalPlannedSessions) * 100
+          : 0;
+
+        // Count completed employees (those with >= 80% attendance of held sessions)
         let completedCount = 0;
-
-        // Check completion for department employees
         for (const employee of enrolledDeptEmployees) {
-          let hasCompleted = true;
+          const attendanceData = await calculateUserAttendance(
+            course._id, 
+            employee._id, 
+            fullCourse.sessions || 15,
+            employee.role
+          );
 
-          // Check assignments
-          for (const assignment of assignments) {
-            const submission = assignment.submissions.find(
-              sub => sub.studentId.toString() === employee._id.toString()
-            );
-            if (!submission) {
-              hasCompleted = false;
-              break;
-            }
+          if (attendanceData && attendanceData.percentage >= 80) {
+            completedCount++;
           }
-
-          // Check quizzes
-          if (hasCompleted) {
-            for (const quiz of quizzes) {
-              const attempt = await QuizAttempt.findOne({
-                quiz: quiz._id,
-                student: employee._id,
-                isCompleted: true
-              });
-              if (!attempt) {
-                hasCompleted = false;
-                break;
-              }
-            }
-          }
-
-          if (hasCompleted) completedCount++;
         }
+
+        console.log(`Course ${fullCourse.code}: ${sessionsHeld}/${totalPlannedSessions} sessions held = ${courseProgressPercentage.toFixed(2)}%`);
 
         deptData.coursesProgress.push({
           courseTitle: fullCourse.title || fullCourse.name || 'Unknown Course',
           courseCode: fullCourse.code || 'N/A',
           enrolledEmployees: enrolledDeptEmployees.length,
           completedEmployees: completedCount,
-          completionRate: enrolledDeptEmployees.length > 0
-            ? Math.round((completedCount / enrolledDeptEmployees.length) * 100 * 100) / 100
-            : 0
+          completionRate: Math.round(courseProgressPercentage * 100) / 100
         });
       }
 
-      // Calculate overall department completion rate
-      const totalEnrollments = deptData.coursesProgress.reduce((sum, cp) => sum + cp.enrolledEmployees, 0);
-      const totalCompletions = deptData.coursesProgress.reduce((sum, cp) => sum + cp.completedEmployees, 0);
-
-      deptData.overallCompletionRate = totalEnrollments > 0
-        ? Math.round((totalCompletions / totalEnrollments) * 100 * 100) / 100
+      // Calculate overall department completion rate based on average of all course completion rates
+      const totalCourseCompletionRate = deptData.coursesProgress.reduce((sum, cp) => sum + cp.completionRate, 0);
+      
+      deptData.overallCompletionRate = deptData.coursesProgress.length > 0
+        ? Math.round((totalCourseCompletionRate / deptData.coursesProgress.length) * 100) / 100
         : 0;
+
+      console.log(`Department ${dept.name}: Overall completion rate: ${deptData.overallCompletionRate}%`);
 
       departmentProgress.push(deptData);
     }
@@ -421,7 +413,7 @@ router.get('/training-progress/:departmentId/users', auth, adminOnly, async (req
     const department = await Department.findById(departmentId)
       .populate({
         path: 'employees',
-        select: 'fullName email role profilePicture'
+        select: 'firstName lastName email role profilePicture'
       });
 
     if (!department) {
@@ -431,19 +423,34 @@ router.get('/training-progress/:departmentId/users', auth, adminOnly, async (req
     // Process each user in the department
     const usersProgress = await Promise.all(
       department.employees.map(async (user) => {
-        // Find all courses the user is enrolled in
-        const courses = await Course.find({
-          students: user._id
-        }).select('_id code name');
+        // Find all courses the user is enrolled in OR teaching
+        let courses;
+        if (user.role === 'instructor') {
+          // For instructors, find courses they teach
+          courses = await Course.find({
+            instructor: user._id
+          }).select('_id code name sessions');
+        } else {
+          // For students, find courses they're enrolled in
+          courses = await Course.find({
+            students: user._id
+          }).select('_id code name sessions');
+        }
 
         // Process each course for the user
         const coursesProgress = await Promise.all(
           courses.map(async (course) => {
             // Calculate attendance
-            const attendanceData = await calculateUserAttendance(course._id, user._id);
+            const attendanceData = await calculateUserAttendance(course._id, user._id, course.sessions, user.role);
             
-            // Calculate scores
-            const scoresData = await calculateUserScores(course._id, user._id);
+            // Calculate scores (only for students)
+            const scoresData = user.role === 'student' 
+              ? await calculateUserScores(course._id, user._id)
+              : null;
+
+            if (user.role === 'student') {
+              console.log(`Student ${user.firstName} scores for ${course.code}:`, scoresData ? 'Has scores' : 'No scores');
+            }
 
             return {
               courseId: course._id,
@@ -458,7 +465,7 @@ router.get('/training-progress/:departmentId/users', auth, adminOnly, async (req
 
         return {
           userId: user._id,
-          fullName: user.fullName,
+          fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown User',
           email: user.email,
           role: user.role,
           profilePicture: user.profilePicture || null,
@@ -480,15 +487,41 @@ router.get('/training-progress/:departmentId/users', auth, adminOnly, async (req
 });
 
 // Helper function to calculate attendance for a user in a course
-async function calculateUserAttendance(courseId, userId) {
+async function calculateUserAttendance(courseId, userId, courseSessions, userRole) {
   try {
+    // Get the course to know total sessions
+    const course = await Course.findById(courseId).select('sessions');
+    const totalSessions = course?.sessions || courseSessions || 15;
+
     // Find all attendance sessions for the course
     const sessions = await mongoose.model('AttendanceSession').find({
       courseId: courseId
     });
 
+    // For instructors, return the number of sessions created as attendance
+    if (userRole === 'instructor') {
+      const percentage = totalSessions > 0 
+        ? (sessions.length / totalSessions) * 100 
+        : 0;
+
+      return {
+        totalSessions: totalSessions,
+        attended: sessions.length,
+        late: 0,
+        absent: totalSessions - sessions.length,
+        percentage: Math.round(percentage * 10) / 10
+      };
+    }
+
+    // For students, calculate actual attendance
     if (sessions.length === 0) {
-      return null; // No attendance data
+      return {
+        totalSessions: totalSessions,
+        attended: 0,
+        late: 0,
+        absent: 0,
+        percentage: 0
+      };
     }
 
     // Find all attendance records for this user in these sessions
@@ -501,18 +534,19 @@ async function calculateUserAttendance(courseId, userId) {
     // Count attendance statuses
     const attended = records.filter(r => r.status === 'present').length;
     const late = records.filter(r => r.status === 'late').length;
-    const absent = sessions.length - attended - late; // Total sessions minus present and late
+    const absent = sessions.length - attended - late;
 
+    // Calculate percentage based on actual sessions held, not total course sessions
     const percentage = sessions.length > 0 
       ? ((attended + late) / sessions.length) * 100 
       : 0;
 
     return {
-      totalSessions: sessions.length,
+      totalSessions: sessions.length, // Number of sessions actually held
       attended: attended,
       late: late,
       absent: absent,
-      percentage: Math.round(percentage * 10) / 10 // Round to 1 decimal
+      percentage: Math.round(percentage * 10) / 10
     };
   } catch (error) {
     console.error('Error calculating attendance:', error);
@@ -524,54 +558,104 @@ async function calculateUserAttendance(courseId, userId) {
 async function calculateUserScores(courseId, userId) {
   try {
     // Get quiz attempts
-    const quizzes = await Quiz.find({ courseId: courseId }).select('_id title maxScore');
+    const quizzes = await Quiz.find({ courseId: courseId }).select('_id title totalPoints');
+    
+    // Check all attempts to see what status they have
+    const allAttempts = await QuizAttempt.find({
+      quizId: { $in: quizzes.map(q => q._id) },
+      studentId: userId
+    }).select('status score');
+    console.log(`All attempts for user:`, allAttempts.map(a => ({ status: a.status, score: a.score })));
+    
     const quizAttempts = await QuizAttempt.find({
       quizId: { $in: quizzes.map(q => q._id) },
       studentId: userId,
-      status: 'completed'
-    }).populate('quizId', 'title maxScore');
+      status: { $in: ['completed', 'submitted', 'auto_submitted'] }
+    }).populate('quizId', 'title totalPoints');
 
-    // Get assignment submissions
-    const assignments = await Assignment.find({ courseId: courseId }).select('_id title maxGrade');
+    console.log(`Found ${quizzes.length} quizzes, ${quizAttempts.length} completed attempts for user`);
+    if (quizAttempts.length > 0) {
+      console.log('First quiz attempt data:', JSON.stringify({
+        id: quizAttempts[0]._id,
+        quizId: quizAttempts[0].quizId,
+        score: quizAttempts[0].score,
+        totalQuestions: quizAttempts[0].totalQuestions,
+        maxScore: quizAttempts[0].quizId?.maxScore
+      }));
+    }
+
+    // Get assignment submissions (including code assignments)
+    const assignments = await Assignment.find({ courseId: courseId }).select('_id title maxGrade type');
     const submissions = await mongoose.model('Submission').find({
       assignmentId: { $in: assignments.map(a => a._id) },
       studentId: userId,
       status: { $in: ['graded', 'returned'] }
-    }).populate('assignmentId', 'title maxGrade');
+    }).populate('assignmentId', 'title maxGrade type');
+
+    console.log(`Found ${assignments.length} assignments, ${submissions.length} submissions for user`);
 
     // Format quizzes
-    const quizzesData = quizAttempts.map(attempt => ({
-      id: attempt._id,
-      title: attempt.quizId?.title || 'Quiz',
-      score: attempt.score || 0,
-      maxScore: attempt.quizId?.maxScore || 10,
-      percentage: attempt.quizId?.maxScore 
-        ? (attempt.score / attempt.quizId.maxScore) * 100 
-        : 0,
-      submittedAt: attempt.completedAt || attempt.createdAt
-    }));
+    const quizzesData = quizAttempts.map(attempt => {
+      const maxScore = attempt.quizId?.totalPoints || 100;
+      const quizData = {
+        id: attempt._id.toString(),
+        title: attempt.quizId?.title || 'Quiz',
+        score: attempt.score || 0,
+        maxScore: maxScore,
+        percentage: (attempt.score / maxScore) * 100,
+        submittedAt: attempt.submissionTime ? attempt.submissionTime.toISOString() : attempt.createdAt.toISOString(),
+        type: 'quiz'
+      };
+      console.log('Quiz data formatted:', JSON.stringify(quizData));
+      return quizData;
+    });
 
-    // Format assignments
-    const assignmentsData = submissions
+    // Separate assignments by type
+    const regularAssignments = [];
+    const codeAssignments = [];
+
+    submissions
       .filter(sub => sub.grade !== null && sub.grade !== undefined)
-      .map(sub => ({
-        id: sub._id,
-        title: sub.assignmentId?.title || 'Assignment',
-        score: sub.grade || 0,
-        maxScore: sub.assignmentId?.maxGrade || 10,
-        percentage: sub.assignmentId?.maxGrade 
-          ? (sub.grade / sub.assignmentId.maxGrade) * 100 
-          : 0,
-        submittedAt: sub.submittedAt
-      }));
+      .forEach(sub => {
+        const assessmentData = {
+          id: sub._id,
+          title: sub.assignmentId?.title || 'Assignment',
+          score: sub.grade || 0,
+          maxScore: sub.assignmentId?.maxGrade || 10,
+          percentage: sub.assignmentId?.maxGrade 
+            ? (sub.grade / sub.assignmentId.maxGrade) * 100 
+            : 0,
+          submittedAt: sub.submittedAt,
+          type: sub.assignmentId?.type === 'code' ? 'code' : 'assignment'
+        };
 
-    const allAssessments = [...quizzesData, ...assignmentsData];
+        if (sub.assignmentId?.type === 'code') {
+          codeAssignments.push(assessmentData);
+        } else {
+          regularAssignments.push(assessmentData);
+        }
+      });
+
+    const allAssessments = [...quizzesData, ...regularAssignments, ...codeAssignments];
 
     if (allAssessments.length === 0) {
       return null; // No score data
     }
 
-    // Calculate average score (normalized to /10 scale)
+    // Calculate average scores by type with actual max scores
+    const calculateAverage = (items) => {
+      if (items.length === 0) return { average: 0, maxScore: 0 };
+      const totalScore = items.reduce((sum, item) => sum + item.score, 0);
+      const maxScore = items[0]?.maxScore || 0; // Assume all items of same type have same maxScore
+      const average = Math.round((totalScore / items.length) * 100) / 100;
+      return { average, maxScore };
+    };
+
+    const quizResult = calculateAverage(quizzesData);
+    const assignmentResult = calculateAverage(regularAssignments);
+    const codeResult = calculateAverage(codeAssignments);
+
+    // Calculate overall average score (normalized to /10 scale)
     const totalScore = allAssessments.reduce((sum, assessment) => {
       const normalizedScore = (assessment.score / assessment.maxScore) * 10;
       return sum + normalizedScore;
@@ -592,9 +676,16 @@ async function calculateUserScores(courseId, userId) {
 
     return {
       quizzes: quizzesData,
-      assignments: assignmentsData,
+      assignments: regularAssignments,
+      codeAssignments: codeAssignments,
       scoreDistribution: scoreDistribution,
-      averageScore: Math.round(averageScore * 100) / 100, // Round to 2 decimals
+      averageScore: Math.round(averageScore * 100) / 100,
+      quizAverage: quizResult.average,
+      quizMaxScore: quizResult.maxScore,
+      assignmentAverage: assignmentResult.average,
+      assignmentMaxScore: assignmentResult.maxScore,
+      codeAverage: codeResult.average,
+      codeMaxScore: codeResult.maxScore,
       totalAssessments: allAssessments.length
     };
   } catch (error) {

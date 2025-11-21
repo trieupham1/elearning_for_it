@@ -576,13 +576,13 @@ class _TrainingProgressScreenState extends State<TrainingProgressScreen> {
               ),
             )
           else
-            ...user.courses.map((course) => _buildCourseDetail(course)),
+            ...user.courses.map((course) => _buildCourseDetail(course, user.role)),
         ],
       ),
     );
   }
 
-  Widget _buildCourseDetail(UserCourseDetail course) {
+  Widget _buildCourseDetail(UserCourseDetail course, String userRole) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
@@ -633,17 +633,20 @@ class _TrainingProgressScreenState extends State<TrainingProgressScreen> {
           // Attendance Section
           if (course.attendance != null) ...[
             const SizedBox(height: 16),
-            _buildAttendanceSection(course.attendance!),
+            _buildAttendanceSection(course.attendance!, userRole: userRole),
           ],
 
-          // Scores Section
-          if (course.scores != null) ...[
+          // Scores Section (only for students)
+          if (userRole == 'student') ...[
             const SizedBox(height: 16),
-            _buildScoresSection(course.scores!),
+            if (course.scores != null)
+              _buildScoresSection(course.scores!)
+            else
+              _buildNoScoresSection(),
           ],
 
           // No Data Available
-          if (course.attendance == null && course.scores == null)
+          if (course.attendance == null && course.scores == null && userRole != 'student')
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: Text(
@@ -660,7 +663,7 @@ class _TrainingProgressScreenState extends State<TrainingProgressScreen> {
     );
   }
 
-  Widget _buildAttendanceSection(AttendanceProgress attendance) {
+  Widget _buildAttendanceSection(AttendanceProgress attendance, {String? userRole}) {
     final attendanceColor = attendance.percentage >= 80
         ? Colors.green
         : attendance.percentage >= 60
@@ -706,8 +709,11 @@ class _TrainingProgressScreenState extends State<TrainingProgressScreen> {
               attendance.attended,
               Colors.green,
             ),
-            _buildAttendanceStat('⏰ Late', attendance.late, Colors.orange),
-            _buildAttendanceStat('❌ Absent', attendance.absent, Colors.red),
+            // Only show Late and Absent for students
+            if (userRole != 'instructor') ...[
+              _buildAttendanceStat('⏰ Late', attendance.late, Colors.orange),
+              _buildAttendanceStat('❌ Absent', attendance.absent, Colors.red),
+            ],
             _buildAttendanceStat(
               '📊 Total',
               attendance.totalSessions,
@@ -737,32 +743,115 @@ class _TrainingProgressScreenState extends State<TrainingProgressScreen> {
     );
   }
 
-  Widget _buildScoresSection(ScoreProgress scores) {
-    final avgColor = scores.averageScore >= 8
+  Widget _buildScoreTypeStat(String label, double average, Color color) {
+    final avgColor = average >= 8
         ? Colors.green
-        : scores.averageScore >= 6
+        : average >= 6
         ? Colors.orange
         : Colors.red;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            average.toStringAsFixed(1),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: avgColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildScoreTypeStatWithMax(String label, double average, double maxScore, Color color) {
+    final percentage = (average / maxScore) * 100;
+    final avgColor = percentage >= 80
+        ? Colors.green
+        : percentage >= 60
+        ? Colors.orange
+        : Colors.red;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '${average.toStringAsFixed(1)}/${maxScore.toStringAsFixed(0)}',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: avgColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoScoresSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(Icons.grade, size: 16, color: avgColor),
+            Icon(Icons.grade, size: 16, color: Colors.grey.shade400),
             const SizedBox(width: 8),
             const Text(
               'Scores',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
-            const Spacer(),
-            Text(
-              'Avg: ${scores.averageScore.toStringAsFixed(1)}/10',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: avgColor,
-                fontSize: 14,
-              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'No assessments completed yet',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade600,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScoresSection(ScoreProgress scores) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.grade, size: 16, color: Colors.blue),
+            const SizedBox(width: 8),
+            const Text(
+              'Scores',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ],
         ),
@@ -771,6 +860,38 @@ class _TrainingProgressScreenState extends State<TrainingProgressScreen> {
           '${scores.totalAssessments} assessment${scores.totalAssessments != 1 ? 's' : ''}',
           style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
         ),
+
+        // Score Breakdown by Type
+        if (scores.quizzes.isNotEmpty || scores.assignments.isNotEmpty || scores.codeAssignments.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 4,
+            children: [
+              if (scores.quizzes.isNotEmpty && scores.quizAverage != null && scores.quizMaxScore != null)
+                _buildScoreTypeStatWithMax(
+                  'Quiz Avg',
+                  scores.quizAverage!,
+                  scores.quizMaxScore!,
+                  Colors.blue,
+                ),
+              if (scores.assignments.isNotEmpty && scores.assignmentAverage != null && scores.assignmentMaxScore != null)
+                _buildScoreTypeStatWithMax(
+                  'Assignment Avg',
+                  scores.assignmentAverage!,
+                  scores.assignmentMaxScore!,
+                  Colors.purple,
+                ),
+              if (scores.codeAssignments.isNotEmpty && scores.codeAverage != null && scores.codeMaxScore != null)
+                _buildScoreTypeStatWithMax(
+                  'Code Avg',
+                  scores.codeAverage!,
+                  scores.codeMaxScore!,
+                  Colors.green,
+                ),
+            ],
+          ),
+        ],
 
         // Score Distribution
         if (scores.scoreDistribution.isNotEmpty) ...[
@@ -782,10 +903,11 @@ class _TrainingProgressScreenState extends State<TrainingProgressScreen> {
           const SizedBox(height: 8),
           ...scores.scoreDistribution.entries.map((entry) {
             final score = entry.key;
-            final count = entry.value;
-            final maxCount = scores.scoreDistribution.values.reduce(
-              (a, b) => a > b ? a : b,
-            );
+            final count = entry.value as int? ?? 0;
+            final maxCount = scores.scoreDistribution.values
+                .where((v) => v != null)
+                .cast<int>()
+                .reduce((a, b) => a > b ? a : b);
             return Padding(
               padding: const EdgeInsets.only(bottom: 4),
               child: Row(
@@ -840,7 +962,7 @@ class _TrainingProgressScreenState extends State<TrainingProgressScreen> {
         ],
 
         // Assessment Details
-        if (scores.quizzes.isNotEmpty || scores.assignments.isNotEmpty) ...[
+        if (scores.quizzes.isNotEmpty || scores.assignments.isNotEmpty || scores.codeAssignments.isNotEmpty) ...[
           const SizedBox(height: 12),
           ExpansionTile(
             tilePadding: EdgeInsets.zero,
@@ -869,6 +991,18 @@ class _TrainingProgressScreenState extends State<TrainingProgressScreen> {
                 ),
                 ...scores.assignments.map(
                   (assignment) => _buildAssessmentItem(assignment),
+                ),
+              ],
+              if (scores.codeAssignments.isNotEmpty) ...[
+                const Padding(
+                  padding: EdgeInsets.only(top: 8, bottom: 4),
+                  child: Text(
+                    'Code Assignments:',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                ...scores.codeAssignments.map(
+                  (codeAssignment) => _buildAssessmentItem(codeAssignment),
                 ),
               ],
             ],

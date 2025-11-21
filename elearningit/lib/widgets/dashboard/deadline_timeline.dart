@@ -36,30 +36,24 @@ class DeadlineTimeline extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
+    return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: deadlines.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final deadline = deadlines[index];
-        final isLast = index == deadlines.length - 1;
-
-        return _DeadlineTimelineItem(
-          deadline: deadline,
-          isLast: isLast,
-        );
+        return _DeadlineCard(deadline: deadline);
       },
     );
   }
 }
 
-class _DeadlineTimelineItem extends StatelessWidget {
+class _DeadlineCard extends StatelessWidget {
   final UpcomingDeadline deadline;
-  final bool isLast;
 
-  const _DeadlineTimelineItem({
+  const _DeadlineCard({
     required this.deadline,
-    required this.isLast,
   });
 
   Color _getUrgencyColor() {
@@ -86,113 +80,88 @@ class _DeadlineTimelineItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final urgencyColor = _getUrgencyColor();
+    final typeText = deadline.type == 'quiz' ? 'Quiz' : 'Assignment';
 
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Timeline line
-          SizedBox(
-            width: 40,
-            child: Column(
-              children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: urgencyColor,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                ),
-                if (!isLast)
-                  Expanded(
-                    child: Container(
-                      width: 2,
-                      color: Colors.grey.shade300,
-                    ),
-                  ),
-              ],
+    return Card(
+      elevation: 1,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            // Icon
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: urgencyColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(_getTypeIcon(), color: urgencyColor, size: 24),
             ),
-          ),
-
-          // Content
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 20),
-              child: Card(
-                elevation: 1,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: urgencyColor.withOpacity(0.3),
-                    width: 1,
-                  ),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(12),
-                  leading: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: urgencyColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(_getTypeIcon(), color: urgencyColor, size: 24),
-                  ),
-                  title: Text(
-                    deadline.title,
+            const SizedBox(width: 16),
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    deadline.title.isNotEmpty ? deadline.title : 'Untitled $typeText',
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       fontSize: 15,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 4),
+                  Text(
+                    deadline.courseTitle.isNotEmpty ? deadline.courseTitle : 'Unknown Course',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
                     children: [
-                      const SizedBox(height: 4),
+                      Icon(Icons.access_time, size: 14, color: Colors.grey.shade500),
+                      const SizedBox(width: 4),
                       Text(
-                        deadline.courseTitle,
+                        DateFormat('MMM d, h:mm a').format(deadline.deadline),
                         style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                          color: Colors.grey.shade500,
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.access_time, size: 14, color: Colors.grey.shade500),
-                          const SizedBox(width: 4),
-                          Text(
-                            DateFormat('MMM d, h:mm a').format(deadline.deadline),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: urgencyColor.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      _getTimeUntilText(),
-                      style: TextStyle(
-                        color: urgencyColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
+                ],
+              ),
+            ),
+            // Time badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: urgencyColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                _getTimeUntilText(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

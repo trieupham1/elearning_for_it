@@ -18,7 +18,7 @@ class QuestionService extends ApiService {
         queryParams['category'] = category;
       }
       
-      String endpoint = '/questions/course/$courseId';
+      String endpoint = '/api/questions/course/$courseId';
       if (queryParams.isNotEmpty) {
         final queryString = queryParams.entries
             .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
@@ -91,7 +91,7 @@ class QuestionService extends ApiService {
     try {
       print('🔍 QuestionService: Fetching question $questionId');
       
-      final response = await get('/questions/$questionId');
+      final response = await get('/api/questions/$questionId');
       
       if (response.statusCode == 200) {
         final question = json.decode(response.body);
@@ -113,7 +113,7 @@ class QuestionService extends ApiService {
       print('🔍 QuestionService: Creating new question');
       print('🔍 QuestionService: Question data: $questionData');
       
-      final response = await post('/questions', body: questionData);
+      final response = await post('/api/questions', body: questionData);
       
       if (response.statusCode == 201) {
         final question = json.decode(response.body);
@@ -134,7 +134,7 @@ class QuestionService extends ApiService {
     try {
       print('🔍 QuestionService: Updating question $questionId');
       
-      final response = await put('/questions/$questionId', body: questionData);
+      final response = await put('/api/questions/$questionId', body: questionData);
       
       if (response.statusCode == 200) {
         final question = json.decode(response.body);
@@ -155,7 +155,7 @@ class QuestionService extends ApiService {
     try {
       print('🔍 QuestionService: Deleting question $questionId');
       
-      final response = await delete('/questions/$questionId');
+      final response = await delete('/api/questions/$questionId');
       
       if (response.statusCode == 200) {
         print('✅ QuestionService: Successfully deleted question');

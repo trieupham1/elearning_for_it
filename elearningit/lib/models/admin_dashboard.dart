@@ -387,15 +387,29 @@ class AttendanceProgress {
 class ScoreProgress {
   final List<Assessment> quizzes;
   final List<Assessment> assignments;
-  final Map<String, int> scoreDistribution;
-  final double averageScore;
+  final List<Assessment> codeAssignments;
+  final Map<String, dynamic> scoreDistribution;
+  final double? averageScore;
+  final double? quizAverage;
+  final double? quizMaxScore;
+  final double? assignmentAverage;
+  final double? assignmentMaxScore;
+  final double? codeAverage;
+  final double? codeMaxScore;
   final int totalAssessments;
 
   ScoreProgress({
     required this.quizzes,
     required this.assignments,
+    required this.codeAssignments,
     required this.scoreDistribution,
-    required this.averageScore,
+    this.averageScore,
+    this.quizAverage,
+    this.quizMaxScore,
+    this.assignmentAverage,
+    this.assignmentMaxScore,
+    this.codeAverage,
+    this.codeMaxScore,
     required this.totalAssessments,
   });
 

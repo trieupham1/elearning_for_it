@@ -2,7 +2,7 @@ const axios = require('axios');
 
 // Judge0 CE (Community Edition) API configuration
 const JUDGE0_API_URL = process.env.JUDGE0_API_URL || 'https://judge0-ce.p.rapidapi.com';
-const JUDGE0_API_KEY = process.env.JUDGE0_API_KEY || ''; // Get from RapidAPI
+const JUDGE0_API_KEY = process.env.JUDGE0_API_KEY || ''; //
 const JUDGE0_API_HOST = process.env.JUDGE0_API_HOST || 'judge0-ce.p.rapidapi.com';
 
 // Language ID mappings for Judge0

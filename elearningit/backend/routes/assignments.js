@@ -115,7 +115,7 @@ router.post('/', authMiddleware, instructorOnly, async (req, res) => {
         const studentIds = course.students.map(s => s.toString());
         await notifyNewAssignmentHelper(
           courseId.toString(),
-          course.title,
+          course.name || course.title || 'Unknown Course',
           title,
           deadline,
           studentIds
@@ -138,7 +138,9 @@ router.post('/', authMiddleware, instructorOnly, async (req, res) => {
 router.get('/course/:courseId', authMiddleware, async (req, res) => {
   try {
     const { courseId } = req.params;
+    console.log(`🎯 GET /assignments/course/${courseId} - User: ${req.user.userId}`);
     const user = await User.findById(req.user.userId);
+    console.log(`   User role: ${user.role}`);
 
     let assignments;
 
@@ -149,13 +151,31 @@ router.get('/course/:courseId', authMiddleware, async (req, res) => {
       // Students see only assignments for their groups
       const { groupId } = await getStudentGroup(courseId, req.user.userId);
       
-      assignments = await Assignment.find({
-        courseId,
-        $or: [
-          { groupIds: { $size: 0 } }, // All groups
-          { groupIds: groupId } // Student's specific group
-        ]
-      }).sort({ createdAt: -1 });
+      console.log(`📚 Student ${req.user.userId} getting assignments for course ${courseId}, groupId: ${groupId}`);
+      
+      if (groupId) {
+        // Student has a group - show assignments for all groups OR their specific group
+        assignments = await Assignment.find({
+          courseId,
+          $or: [
+            { groupIds: { $size: 0 } }, // All groups
+            { groupIds: groupId } // Student's specific group
+          ]
+        }).sort({ createdAt: -1 });
+        console.log(`  Found ${assignments.length} assignments (for grouped student)`);
+      } else {
+        // Student has no group - show only assignments for all groups (empty groupIds)
+        assignments = await Assignment.find({
+          courseId,
+          groupIds: { $size: 0 }
+        }).sort({ createdAt: -1 });
+        console.log(`  Found ${assignments.length} assignments (for ungrouped student - only showing assignments for all groups)`);
+      }
+      
+      // Log each assignment's group targeting
+      assignments.forEach(a => {
+        console.log(`  - "${a.title}": groupIds = [${a.groupIds.join(', ')}]`);
+      });
     }
 
     res.json(assignments);
@@ -455,12 +475,28 @@ router.get('/:id/tracking', authMiddleware, instructorOnly, async (req, res) => 
     // Build tracking data
     const trackingData = [];
     
+    console.log(`Assignment ${assignment.title} - groupIds:`, assignment.groupIds);
+    console.log(`Course has ${course.students.length} students`);
+    
     for (const student of course.students) {
       const { groupId, groupName } = await getStudentGroup(assignment.courseId, student._id);
       
       // Check if student is in the assignment's target groups
-      const isInTargetGroup = assignment.groupIds.length === 0 || 
-                             assignment.groupIds.some(gid => gid.toString() === groupId?.toString());
+      // If groupIds is empty, assignment is for all students
+      // If groupIds has values, only students in those groups should see it
+      let isInTargetGroup;
+      if (assignment.groupIds.length === 0) {
+        // Assignment for all students
+        isInTargetGroup = true;
+      } else if (groupId) {
+        // Student has a group - check if it's in the assignment's target groups
+        isInTargetGroup = assignment.groupIds.some(gid => gid.toString() === groupId.toString());
+      } else {
+        // Student has no group and assignment is group-specific - exclude them
+        isInTargetGroup = false;
+      }
+      
+      console.log(`Student ${student.fullName || student.email} - groupId: ${groupId}, groupName: ${groupName}, isInTargetGroup: ${isInTargetGroup}`);
       
       if (!isInTargetGroup) continue;
 

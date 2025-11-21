@@ -7,6 +7,8 @@ const Course = require('../models/Course');
 const Video = require('../models/Video');
 const AttendanceSession = require('../models/AttendanceSession');
 const CodeSubmission = require('../models/CodeSubmission');
+const User = require('../models/User');
+const Group = require('../models/Group');
 const { authMiddleware, instructorOnly } = require('../middleware/auth');
 const { notifyNewAssignment, notifyNewQuiz, notifyNewMaterial } = require('../utils/notificationHelper');
 
@@ -20,25 +22,74 @@ router.get('/course/:courseId', authMiddleware, async (req, res) => {
     
     let classwork = [];
     
+    // Get user and their group for filtering
+    const user = await User.findById(req.user.userId);
+    let studentGroupId = null;
+    
+    if (user.role === 'student') {
+      const groups = await Group.find({ courseId });
+      for (const group of groups) {
+        if (group.members && group.members.some(memberId => memberId.toString() === req.user.userId)) {
+          studentGroupId = group._id;
+          break;
+        }
+      }
+      console.log(`📚 Classwork for student ${req.user.userId}, groupId: ${studentGroupId}`);
+    }
+    
     // Fetch based on filter
     if (!filter || filter === 'assignments') {
-      const assignments = await Assignment.find({ 
+      let assignmentQuery = { 
         courseId,
         type: { $ne: 'code' } // Exclude code assignments (they're handled separately)
-      })
+      };
+      
+      // Filter by group for students
+      if (user.role === 'student') {
+        if (studentGroupId) {
+          // Student has a group - show assignments for all groups OR their specific group
+          assignmentQuery.$or = [
+            { groupIds: { $size: 0 } }, // All groups
+            { groupIds: studentGroupId } // Student's specific group
+          ];
+        } else {
+          // Student has no group - only show assignments for all groups
+          assignmentQuery.groupIds = { $size: 0 };
+        }
+      }
+      
+      const assignments = await Assignment.find(assignmentQuery)
         .sort({ deadline: -1 })
         .lean();
+      console.log(`  Found ${assignments.length} regular assignments`);
       classwork = [...classwork, ...assignments.map(a => ({ ...a, type: 'assignment' }))];
     }
     
     // NEW: Code Assignments (from Assignment model with type='code')
     if (!filter || filter === 'code_assignments') {
-      const codeAssignments = await Assignment.find({ 
+      let codeAssignmentQuery = { 
         courseId,
         type: 'code' // Only get code type assignments
-      })
+      };
+      
+      // Filter by group for students
+      if (user.role === 'student') {
+        if (studentGroupId) {
+          // Student has a group - show assignments for all groups OR their specific group
+          codeAssignmentQuery.$or = [
+            { groupIds: { $size: 0 } }, // All groups
+            { groupIds: studentGroupId } // Student's specific group
+          ];
+        } else {
+          // Student has no group - only show assignments for all groups
+          codeAssignmentQuery.groupIds = { $size: 0 };
+        }
+      }
+      
+      const codeAssignments = await Assignment.find(codeAssignmentQuery)
         .sort({ deadline: -1 })
         .lean();
+      console.log(`  Found ${codeAssignments.length} code assignments`);
         
       // For students, check submission status
       let codeAssignmentsWithStatus = codeAssignments.map(c => ({ 

@@ -741,13 +741,16 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 
   Widget _buildDeadlinesSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: DeadlineTimeline(
-          deadlines: _dashboardData!.upcomingDeadlines.take(5).toList(),
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: DeadlineTimeline(
+            deadlines: _dashboardData!.upcomingDeadlines.take(5).toList(),
+          ),
         ),
       ),
     );

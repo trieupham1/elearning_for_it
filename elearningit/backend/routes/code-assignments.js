@@ -57,19 +57,19 @@ router.post('/assignments', auth, async (req, res) => {
       title,
       description,
       type: 'code',
-      groupIds: groupIds || [],
+      groupIds: Array.isArray(groupIds) && groupIds.length > 0 ? groupIds : [],
       startDate,
       deadline,
       allowLateSubmission: allowLateSubmission || false,
-      lateDeadline,
+      lateDeadline: allowLateSubmission ? lateDeadline : undefined,
       maxAttempts: maxAttempts || 999, // Allow unlimited attempts for code assignments
       points: points || 100,
       codeConfig: {
-        language,
-        languageId: LANGUAGE_IDS[language],
-        starterCode,
-        solutionCode,
-        allowedLanguages: allowedLanguages || [language],
+        language: language || 'c',
+        languageId: LANGUAGE_IDS[language || 'c'],
+        starterCode: starterCode || '',
+        solutionCode: solutionCode || '',
+        allowedLanguages: Array.isArray(allowedLanguages) && allowedLanguages.length > 0 ? allowedLanguages : [language || 'c'],
         timeLimit: timeLimit || 5000,
         memoryLimit: memoryLimit || 128000,
         showTestCases: showTestCases !== false
@@ -97,9 +97,25 @@ router.post('/assignments', auth, async (req, res) => {
     }
 
     // Send notifications to students
-    const students = course.students || [];
-    if (students.length > 0) {
-      await notifyNewAssignment(assignment, students);
+    try {
+      const students = course.students || [];
+      if (students.length > 0) {
+        const studentIds = students.map(s => s ? s.toString() : null).filter(id => id !== null);
+        if (studentIds.length > 0) {
+          await notifyNewAssignment(
+            courseId.toString(),
+            course.name || course.title || 'Unknown Course',
+            title,
+            deadline ? new Date(deadline).toLocaleString() : 'No deadline',
+            studentIds,
+            assignment
+          );
+          console.log(`📬 Sent code assignment notifications to ${studentIds.length} students`);
+        }
+      }
+    } catch (notifError) {
+      console.error('Error sending code assignment notifications:', notifError);
+      // Don't fail the assignment creation if notification fails
     }
 
     res.status(201).json({

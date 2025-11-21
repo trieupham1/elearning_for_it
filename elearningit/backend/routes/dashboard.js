@@ -27,9 +27,43 @@ router.get('/student/summary', authMiddleware, async (req, res) => {
     courses.forEach(c => console.log(`   - ${c.code}: ${c.name} (ID: ${c._id})`));
 
     // --- ASSIGNMENT STATISTICS ---
-    const allAssignments = await Assignment.find({ courseId: { $in: courseIds } })
-      .select('_id deadline')
-      .lean();
+    // Import Group model to check student's group
+    const Group = require('../models/Group');
+    
+    // Get all assignments for courses, filtered by student's group membership
+    let allAssignments = [];
+    for (const course of courses) {
+      // Check if student is in a group for this course
+      const groups = await Group.find({ courseId: course._id });
+      let studentGroupId = null;
+      for (const group of groups) {
+        if (group.members && group.members.some(memberId => memberId.toString() === studentId)) {
+          studentGroupId = group._id;
+          break;
+        }
+      }
+      
+      // Fetch assignments based on group membership
+      let courseAssignments;
+      if (studentGroupId) {
+        // Student has a group - get assignments for all groups OR their specific group
+        courseAssignments = await Assignment.find({
+          courseId: course._id,
+          $or: [
+            { groupIds: { $size: 0 } }, // All groups
+            { groupIds: studentGroupId } // Student's specific group
+          ]
+        }).select('_id title courseId deadline').lean();
+      } else {
+        // Student has no group - only get assignments for all groups
+        courseAssignments = await Assignment.find({
+          courseId: course._id,
+          groupIds: { $size: 0 }
+        }).select('_id title courseId deadline').lean();
+      }
+      
+      allAssignments = allAssignments.concat(courseAssignments);
+    }
     
     const assignmentIds = allAssignments.map(a => a._id);
     
@@ -149,30 +183,22 @@ router.get('/student/summary', authMiddleware, async (req, res) => {
     // --- UPCOMING DEADLINES ---
     const upcomingDeadlines = [];
 
-    // Get upcoming assignment deadlines with course info
-    const upcomingAssignments = await Assignment.find({
-      courseId: { $in: courseIds },
-      deadline: { $gte: now },
-      _id: { $nin: Array.from(submittedAssignmentIds) }
-    })
-      .populate('courseId', 'name code')
-      .sort({ deadline: 1 })
-      .limit(10)
-      .lean();
+    // Get upcoming assignment deadlines with course info - filtered by assignments visible to student
+    const upcomingAssignments = allAssignments.filter(a => {
+      const assignment = a;
+      return assignment.deadline && new Date(assignment.deadline) >= now && 
+             !submittedAssignmentIds.has(assignment._id.toString());
+    });
 
-    upcomingAssignments.forEach(assignment => {
-      // Get course title with fallback to courses array
-      let courseTitle = 'Unknown Course';
-      if (assignment.courseId && typeof assignment.courseId === 'object') {
-        courseTitle = assignment.courseId.name;
-        console.log(`✅ Assignment "${assignment.title}" course populated: ${courseTitle}`);
-      } else if (assignment.courseId) {
-        console.log(`⚠️ Assignment "${assignment.title}" courseId not populated: ${assignment.courseId}`);
-        const course = courses.find(c => c._id.toString() === assignment.courseId.toString());
-        courseTitle = course?.name || 'Unknown Course';
-        console.log(`   Fallback lookup result: ${courseTitle}`);
-      }
-
+    // Populate course info for these assignments
+    for (const assignment of upcomingAssignments) {
+      // courseId should already be an ObjectId, compare directly
+      const courseIdStr = assignment.courseId ? assignment.courseId.toString() : null;
+      const course = courseIdStr ? courses.find(c => c._id.toString() === courseIdStr) : null;
+      const courseTitle = course?.name || 'Unknown Course';
+      
+      console.log(`📅 Assignment "${assignment.title}" - courseId: ${courseIdStr}, found course: ${course?.name || 'NOT FOUND'}`);
+      
       upcomingDeadlines.push({
         id: assignment._id.toString(),
         title: assignment.title,
@@ -181,7 +207,10 @@ router.get('/student/summary', authMiddleware, async (req, res) => {
         deadline: assignment.deadline,
         status: 'pending'
       });
-    });
+    }
+
+    // Sort and limit
+    upcomingDeadlines.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
     // Get upcoming quiz deadlines with course info
     const upcomingQuizzes = await Quiz.find({
