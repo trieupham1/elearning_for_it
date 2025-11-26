@@ -80,7 +80,7 @@ async function notifyNewAnnouncement(courseId, courseName, announcementTitle, st
   return result;
 }
 
-// Notify students when new assignment is created (with email for approaching deadline)
+// Notify students when new assignment is created (with email notification)
 async function notifyNewAssignment(courseId, courseName, assignmentTitle, dueDate, studentIds, assignmentData = {}) {
   const notifications = studentIds.map(studentId => ({
     userId: studentId,
@@ -95,7 +95,45 @@ async function notifyNewAssignment(courseId, courseName, assignmentTitle, dueDat
     }
   }));
 
-  return await Notification.createBulkNotifications(notifications);
+  const result = await Notification.createBulkNotifications(notifications);
+  
+  // Send emails to students asynchronously
+  if (assignmentData && assignmentData._id) {
+    setImmediate(async () => {
+      try {
+        const students = await User.find({ 
+          _id: { $in: studentIds },
+          role: 'student'
+        }).select('email fullName');
+        
+        console.log(`📧 Preparing to send assignment emails to ${students.length} students for "${assignmentTitle}"`);
+        
+        let emailsSent = 0;
+        for (const student of students) {
+          if (student.email) {
+            try {
+              await emailService.sendNewAssignmentEmail(
+                student,
+                assignmentData,
+                courseName
+              );
+              emailsSent++;
+            } catch (emailError) {
+              console.error(`❌ Failed to send email to ${student.email}:`, emailError.message);
+            }
+          } else {
+            console.log(`⚠️ Student ${student.fullName} has no email address`);
+          }
+        }
+        
+        console.log(`✅ Successfully sent ${emailsSent} assignment notification emails`);
+      } catch (error) {
+        console.error('Error sending assignment emails:', error);
+      }
+    });
+  }
+  
+  return result;
 }
 
 // Notify students when new quiz is available (with email)

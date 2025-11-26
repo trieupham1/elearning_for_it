@@ -96,6 +96,53 @@ class EmailService {
     return this.sendEmail(user.email, subject, html);
   }
 
+  async sendNewAssignmentEmail(user, assignment, courseTitle) {
+    const subject = `New Assignment: ${assignment.title}`;
+    const deadlineDate = new Date(assignment.deadline);
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #2196F3; color: white; padding: 20px; text-align: center; }
+          .content { padding: 20px; background-color: #f5f5f5; }
+          .assignment-info { background-color: #e3f2fd; padding: 15px; margin: 15px 0; 
+                             border-radius: 5px; border-left: 4px solid #2196F3; }
+          .button { display: inline-block; padding: 10px 20px; background-color: #2196F3; 
+                    color: white; text-decoration: none; border-radius: 5px; margin-top: 15px; }
+          .footer { padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📝 New Assignment Posted</h1>
+          </div>
+          <div class="content">
+            <p>A new assignment has been posted in <strong>${courseTitle}</strong>:</p>
+            <h2>${assignment.title}</h2>
+            <div class="assignment-info">
+              <strong>Assignment Details:</strong><br>
+              ${assignment.description ? assignment.description.substring(0, 200) + '...' : 'No description provided'}<br><br>
+              <strong>📅 Deadline:</strong> ${deadlineDate.toLocaleString()}<br>
+              ${assignment.maxScore ? `<strong>📊 Max Score:</strong> ${assignment.maxScore} points<br>` : ''}
+            </div>
+            <a href="${process.env.FRONTEND_URL}/courses/${assignment.courseId}/assignments/${assignment._id}" 
+               class="button">View Assignment</a>
+          </div>
+          <div class="footer">
+            <p>Faculty of Information Technology - E-Learning System</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return this.sendEmail(user.email, subject, html);
+  }
+
   async sendAssignmentDeadlineEmail(user, assignment, courseTitle, daysRemaining) {
     const subject = `Reminder: ${assignment.title} - Due in ${daysRemaining} days`;
     const html = `

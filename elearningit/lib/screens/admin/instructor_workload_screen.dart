@@ -65,40 +65,196 @@ class _InstructorWorkloadScreenState extends State<InstructorWorkloadScreen> {
     }
   }
 
+  List<Widget> _buildAppBarActions(BuildContext context) {
+    return [
+      PopupMenuButton<String>(
+        icon: const Icon(Icons.sort),
+        onSelected: (value) {
+          setState(() {
+            _sortBy = value;
+            _sortWorkloads();
+          });
+        },
+        itemBuilder: (context) => [
+          const PopupMenuItem(
+            value: 'name',
+            child: Text('Sort by Name'),
+          ),
+          const PopupMenuItem(
+            value: 'courses',
+            child: Text('Sort by Course Count'),
+          ),
+          const PopupMenuItem(
+            value: 'students',
+            child: Text('Sort by Student Count'),
+          ),
+        ],
+      ),
+      IconButton(
+        icon: const Icon(Icons.refresh),
+        onPressed: _loadData,
+      ),
+      Stack(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            tooltip: 'Notifications',
+            onPressed: () {
+              Navigator.pushNamed(context, '/notifications');
+            },
+          ),
+          Positioned(
+            right: 8,
+            top: 8,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(
+                minWidth: 16,
+                minHeight: 16,
+              ),
+              child: const Text(
+                '3',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(width: 8),
+      Stack(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.message),
+            tooltip: 'Messages',
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Messages feature coming soon')),
+              );
+            },
+          ),
+          Positioned(
+            right: 8,
+            top: 8,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(
+                minWidth: 16,
+                minHeight: 16,
+              ),
+              child: const Text(
+                '5',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(width: 8),
+      PopupMenuButton<String>(
+        tooltip: 'Profile',
+        offset: const Offset(0, 50),
+        child: const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8.0),
+          child: CircleAvatar(
+            radius: 18,
+            child: Icon(Icons.person, size: 20),
+          ),
+        ),
+        onSelected: (value) async {
+          switch (value) {
+            case 'profile':
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Profile feature coming soon')),
+              );
+              break;
+            case 'settings':
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Settings feature coming soon')),
+              );
+              break;
+            case 'logout':
+              _handleLogout();
+              break;
+          }
+        },
+        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+          const PopupMenuItem<String>(
+            value: 'profile',
+            child: Row(
+              children: [
+                Icon(Icons.person),
+                SizedBox(width: 8),
+                Text('My Profile'),
+              ],
+            ),
+          ),
+          const PopupMenuItem<String>(
+            value: 'settings',
+            child: Row(
+              children: [
+                Icon(Icons.settings),
+                SizedBox(width: 8),
+                Text('Settings'),
+              ],
+            ),
+          ),
+          const PopupMenuDivider(),
+          const PopupMenuItem<String>(
+            value: 'logout',
+            child: Row(
+              children: [
+                Icon(Icons.logout, color: Colors.red),
+                SizedBox(width: 8),
+                Text('Logout', style: TextStyle(color: Colors.red)),
+              ],
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(width: 8),
+    ];
+  }
+
+  Future<void> _handleLogout() async {
+    try {
+      final authService = AuthService();
+      await authService.logout();
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error logging out: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Instructor Workload'),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.sort),
-            onSelected: (value) {
-              setState(() {
-                _sortBy = value;
-                _sortWorkloads();
-              });
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'name',
-                child: Text('Sort by Name'),
-              ),
-              const PopupMenuItem(
-                value: 'courses',
-                child: Text('Sort by Course Count'),
-              ),
-              const PopupMenuItem(
-                value: 'students',
-                child: Text('Sort by Student Count'),
-              ),
-            ],
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadData,
-          ),
-        ],
+        actions: _buildAppBarActions(context),
       ),
       drawer: _currentUser != null ? AdminDrawer(currentUser: _currentUser!) : null,
       body: _isLoading

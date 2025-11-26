@@ -13,6 +13,9 @@ import 'screens/forgot_password_screen.dart';
 import 'screens/reset_password_screen.dart';
 import 'screens/messages_list_screen.dart';
 import 'screens/chat_screen.dart';
+import 'screens/notifications_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/settings_screen.dart';
 // Admin screens
 import 'screens/admin/admin_home_screen.dart';
 import 'screens/admin/admin_dashboard_screen.dart';
@@ -93,6 +96,8 @@ class _ELearningAppState extends State<ELearningApp> {
             '/profile': (context) => const ProfileScreen(),
             '/api-test': (context) => const ApiTestScreen(),
             '/forgot-password': (context) => const ForgotPasswordScreen(),
+            '/notifications': (context) => const NotificationsScreen(),
+            '/settings': (context) => const SettingsScreen(),
             '/manage-students': (context) => const ManageStudentsScreen(),
             // Admin routes
             '/admin/home': (context) => const AdminHomeScreen(),
@@ -298,33 +303,6 @@ class _ELearningAppState extends State<ELearningApp> {
           },
         );
       },
-    );
-  }
-}
-
-// Simple Profile Screen placeholder
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.account_circle, size: 100, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'Profile Screen',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text('Coming soon!'),
-          ],
-        ),
-      ),
     );
   }
 }

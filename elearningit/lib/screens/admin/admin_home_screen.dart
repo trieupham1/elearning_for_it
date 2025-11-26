@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/user.dart';
 import '../../services/auth_service.dart';
+import '../../services/notification_service.dart';
+import '../../services/message_service.dart';
 import '../../widgets/admin_drawer.dart';
 
 class AdminHomeScreen extends StatefulWidget {
@@ -13,11 +15,17 @@ class AdminHomeScreen extends StatefulWidget {
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
   User? _currentUser;
   bool _isLoading = true;
+  int _unreadNotifications = 0;
+  int _unreadMessages = 0;
+  final NotificationService _notificationService = NotificationService();
+  final MessageService _messageService = MessageService();
 
   @override
   void initState() {
     super.initState();
     _loadCurrentUser();
+    _loadNotificationCount();
+    _loadMessageCount();
   }
 
   Future<void> _loadCurrentUser() async {
@@ -35,6 +43,48 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading user information: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadNotificationCount() async {
+    try {
+      final count = await _notificationService.getUnreadCount();
+      if (mounted) {
+        setState(() {
+          _unreadNotifications = count;
+        });
+      }
+    } catch (e) {
+      // Silently fail - notification count is not critical
+    }
+  }
+
+  Future<void> _loadMessageCount() async {
+    try {
+      final count = await _messageService.getUnreadCount();
+      if (mounted) {
+        setState(() {
+          _unreadMessages = count;
+        });
+      }
+    } catch (e) {
+      // Silently fail - message count is not critical
+    }
+  }
+
+  Future<void> _handleLogout() async {
+    try {
+      final authService = AuthService();
+      await authService.logout();
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error logging out: $e')),
         );
       }
     }
@@ -68,7 +118,151 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin Portal'), elevation: 0),
+      appBar: AppBar(
+        title: const Text('Admin Portal'),
+        elevation: 0,
+        actions: [
+          // Notifications
+          IconButton(
+            icon: Stack(
+              children: [
+                const Icon(Icons.notifications_outlined),
+                if (_unreadNotifications > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '$_unreadNotifications',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            onPressed: () {
+              Navigator.pushNamed(context, '/notifications');
+            },
+            tooltip: 'Notifications',
+          ),
+          // Messages
+          IconButton(
+            icon: Stack(
+              children: [
+                const Icon(Icons.message_outlined),
+                if (_unreadMessages > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        '$_unreadMessages',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            onPressed: () {
+              Navigator.pushNamed(context, '/messages');
+            },
+            tooltip: 'Messages',
+          ),
+          // Profile
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: PopupMenuButton<String>(
+              icon: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Text(
+                  _currentUser!.fullName.isNotEmpty
+                      ? _currentUser!.fullName[0].toUpperCase()
+                      : 'A',
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              tooltip: 'Profile',
+              onSelected: (value) {
+                switch (value) {
+                  case 'profile':
+                    Navigator.pushNamed(context, '/profile');
+                    break;
+                  case 'settings':
+                    Navigator.pushNamed(context, '/settings');
+                    break;
+                  case 'logout':
+                    _handleLogout();
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'profile',
+                  child: Row(
+                    children: const [
+                      Icon(Icons.person, size: 20),
+                      SizedBox(width: 12),
+                      Text('My Profile'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'settings',
+                  child: Row(
+                    children: const [
+                      Icon(Icons.settings, size: 20),
+                      SizedBox(width: 12),
+                      Text('Settings'),
+                    ],
+                  ),
+                ),
+                const PopupMenuDivider(),
+                PopupMenuItem(
+                  value: 'logout',
+                  child: Row(
+                    children: const [
+                      Icon(Icons.logout, size: 20, color: Colors.red),
+                      SizedBox(width: 12),
+                      Text('Logout', style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
       drawer: AdminDrawer(currentUser: _currentUser!),
       body: RefreshIndicator(
         onRefresh: _loadCurrentUser,

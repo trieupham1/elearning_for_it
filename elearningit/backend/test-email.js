@@ -5,7 +5,7 @@ const emailService = require('./utils/emailService'); // Import the instance dir
 async function testEmail() {
   
   // Replace with your test email
-  const testEmail = 'khangjaki12@gmail.com'; // Testing with your own email
+  const testEmail = 'trieup920@gmail.com'; // Testing with sender's own email
   
   try {
     console.log('Testing email configuration...');
