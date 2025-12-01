@@ -6,6 +6,7 @@ import '../../services/auth_service.dart';
 import '../../services/admin_service.dart';
 import '../../services/student_service.dart';
 import '../../services/group_service.dart';
+import '../../services/notification_service.dart';
 import '../../models/course.dart';
 import '../../models/semester.dart';
 import '../../models/user.dart';
@@ -25,12 +26,14 @@ class _ManageCoursesScreenState extends State<ManageCoursesScreen> {
   final _authService = AuthService();
   final _adminService = AdminService();
   final _studentService = StudentService();
+  final _notificationService = NotificationService();
 
   List<Course> _courses = [];
   List<Semester> _semesters = [];
   List<User> _instructors = [];
   User? _currentUser;
   bool _isLoading = true;
+  int _unreadNotificationCount = 0;
 
   // Predefined colors for courses
   final List<String> _courseColors = [
@@ -52,6 +55,21 @@ class _ManageCoursesScreenState extends State<ManageCoursesScreen> {
     _loadData();
   }
 
+  Future<void> _handleLogout() async {
+    try {
+      await _authService.logout();
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error logging out: $e')),
+        );
+      }
+    }
+  }
+
   List<Widget> _buildAppBarActions(BuildContext context) {
     return [
       IconButton(
@@ -64,96 +82,80 @@ class _ManageCoursesScreenState extends State<ManageCoursesScreen> {
           IconButton(
             icon: const Icon(Icons.notifications),
             tooltip: 'Notifications',
-            onPressed: () {
-              Navigator.pushNamed(context, '/notifications');
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/notifications');
+              try {
+                final count = await _notificationService.getUnreadCount();
+                setState(() => _unreadNotificationCount = count);
+              } catch (e) {
+                print('Error reloading notification count: $e');
+              }
             },
           ),
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 16,
-                minHeight: 16,
-              ),
-              child: const Text(
-                '3',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+          if (_unreadNotificationCount > 0)
+            Positioned(
+              right: 8,
+              top: 8,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
                 ),
-                textAlign: TextAlign.center,
+                constraints: const BoxConstraints(
+                  minWidth: 16,
+                  minHeight: 16,
+                ),
+                child: Text(
+                  _unreadNotificationCount > 99 ? '99+' : '$_unreadNotificationCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
-          ),
         ],
       ),
       const SizedBox(width: 8),
-      Stack(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.message),
-            tooltip: 'Messages',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Messages feature coming soon')),
-              );
-            },
-          ),
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 16,
-                minHeight: 16,
-              ),
-              child: const Text(
-                '5',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ],
+      IconButton(
+        icon: const Icon(Icons.message),
+        tooltip: 'Messages',
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Messages feature coming soon')),
+          );
+        },
       ),
       const SizedBox(width: 8),
       PopupMenuButton<String>(
         tooltip: 'Profile',
         offset: const Offset(0, 50),
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8.0),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: CircleAvatar(
             radius: 18,
-            child: Icon(Icons.person, size: 20),
+            backgroundColor: Theme.of(context).primaryColor,
+            child: Text(
+              _currentUser?.fullName.isNotEmpty == true
+                  ? _currentUser!.fullName[0].toUpperCase()
+                  : 'A',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
         onSelected: (value) async {
           switch (value) {
             case 'profile':
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile feature coming soon')),
-              );
+              Navigator.pushNamed(context, '/profile');
               break;
             case 'settings':
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Settings feature coming soon')),
-              );
+              Navigator.pushNamed(context, '/settings');
               break;
             case 'logout':
               _handleLogout();
@@ -198,22 +200,6 @@ class _ManageCoursesScreenState extends State<ManageCoursesScreen> {
     ];
   }
 
-  Future<void> _handleLogout() async {
-    try {
-      final authService = AuthService();
-      await authService.logout();
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/login');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error logging out: $e')),
-        );
-      }
-    }
-  }
-
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
@@ -235,6 +221,14 @@ class _ManageCoursesScreenState extends State<ManageCoursesScreen> {
         } catch (e) {
           print('Error loading instructors: $e');
         }
+      }
+
+      // Load notification count
+      try {
+        final count = await _notificationService.getUnreadCount();
+        setState(() => _unreadNotificationCount = count);
+      } catch (e) {
+        print('Error loading notification count: $e');
       }
 
       setState(() {

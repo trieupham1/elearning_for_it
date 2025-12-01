@@ -108,10 +108,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.school,
-                      size: 64,
-                      color: Theme.of(context).primaryColor,
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Icon(
+                        Icons.school_rounded,
+                        size: 64,
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -224,22 +231,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/api-test');
-                      },
-                      child: const Text(
-                        'Test API Connection',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Test credentials: admin/admin123 or test/test123',
-                      style: TextStyle(fontSize: 11, color: Colors.grey),
-                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),

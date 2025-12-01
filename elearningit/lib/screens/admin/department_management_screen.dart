@@ -6,6 +6,7 @@ import '../../services/auth_service.dart';
 import '../../services/department_service.dart';
 import '../../services/admin_service.dart';
 import '../../services/course_service.dart';
+import '../../services/notification_service.dart';
 import '../../widgets/admin_drawer.dart';
 
 class DepartmentManagementScreen extends StatefulWidget {
@@ -19,9 +20,11 @@ class DepartmentManagementScreen extends StatefulWidget {
 class _DepartmentManagementScreenState
     extends State<DepartmentManagementScreen> {
   final DepartmentService _departmentService = DepartmentService();
+  final _notificationService = NotificationService();
   User? _currentUser;
   List<Department> _departments = [];
   bool _isLoading = true;
+  int _unreadNotificationCount = 0;
 
   @override
   void initState() {
@@ -35,6 +38,14 @@ class _DepartmentManagementScreenState
       final authService = AuthService();
       final user = await authService.getCurrentUser();
       setState(() => _currentUser = user);
+      
+      // Load notification count
+      try {
+        final count = await _notificationService.getUnreadCount();
+        setState(() => _unreadNotificationCount = count);
+      } catch (e) {
+        print('Error loading notification count: $e');
+      }
     } catch (e) {
       // Handle error silently
     }
@@ -52,96 +63,80 @@ class _DepartmentManagementScreenState
           IconButton(
             icon: const Icon(Icons.notifications),
             tooltip: 'Notifications',
-            onPressed: () {
-              Navigator.pushNamed(context, '/notifications');
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/notifications');
+              try {
+                final count = await _notificationService.getUnreadCount();
+                setState(() => _unreadNotificationCount = count);
+              } catch (e) {
+                print('Error reloading notification count: $e');
+              }
             },
           ),
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 16,
-                minHeight: 16,
-              ),
-              child: const Text(
-                '3',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+          if (_unreadNotificationCount > 0)
+            Positioned(
+              right: 8,
+              top: 8,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
                 ),
-                textAlign: TextAlign.center,
+                constraints: const BoxConstraints(
+                  minWidth: 16,
+                  minHeight: 16,
+                ),
+                child: Text(
+                  _unreadNotificationCount > 99 ? '99+' : '$_unreadNotificationCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
-          ),
         ],
       ),
       const SizedBox(width: 8),
-      Stack(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.message),
-            tooltip: 'Messages',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Messages feature coming soon')),
-              );
-            },
-          ),
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 16,
-                minHeight: 16,
-              ),
-              child: const Text(
-                '5',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ],
+      IconButton(
+        icon: const Icon(Icons.message),
+        tooltip: 'Messages',
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Messages feature coming soon')),
+          );
+        },
       ),
       const SizedBox(width: 8),
       PopupMenuButton<String>(
         tooltip: 'Profile',
         offset: const Offset(0, 50),
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8.0),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: CircleAvatar(
             radius: 18,
-            child: Icon(Icons.person, size: 20),
+            backgroundColor: Theme.of(context).primaryColor,
+            child: Text(
+              _currentUser?.fullName.isNotEmpty == true
+                  ? _currentUser!.fullName[0].toUpperCase()
+                  : 'A',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
         onSelected: (value) async {
           switch (value) {
             case 'profile':
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile feature coming soon')),
-              );
+              Navigator.pushNamed(context, '/profile');
               break;
             case 'settings':
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Settings feature coming soon')),
-              );
+              Navigator.pushNamed(context, '/settings');
               break;
             case 'logout':
               _handleLogout();
@@ -440,7 +435,7 @@ class _DepartmentManagementScreenState
     List<User> filteredUsers = [];
     String searchQuery = '';
     bool isLoading = true;
-    User? selectedUser;
+    Set<String> selectedUserIds = {};
 
     // Show dialog
     await showDialog(
@@ -517,18 +512,26 @@ class _DepartmentManagementScreenState
                         itemCount: users.length,
                         itemBuilder: (context, index) {
                           final user = users[index];
-                          final isSelected = selectedUser?.id == user.id;
+                          final isSelected = selectedUserIds.contains(user.id);
 
                           // Create display name with fallback
                           final displayName = user.fullName.isNotEmpty
                               ? user.fullName
                               : user.email.split('@')[0];
 
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: isSelected
-                                  ? Theme.of(context).primaryColor
-                                  : _getAvatarColor(displayName),
+                          return CheckboxListTile(
+                            value: isSelected,
+                            onChanged: (bool? checked) {
+                              setDialogState(() {
+                                if (checked == true) {
+                                  selectedUserIds.add(user.id);
+                                } else {
+                                  selectedUserIds.remove(user.id);
+                                }
+                              });
+                            },
+                            secondary: CircleAvatar(
+                              backgroundColor: _getAvatarColor(displayName),
                               backgroundImage:
                                   user.profilePicture != null &&
                                       user.profilePicture!.isNotEmpty
@@ -547,22 +550,22 @@ class _DepartmentManagementScreenState
                                   : null,
                             ),
                             title: Text(displayName),
-                            subtitle: Text(user.email),
-                            trailing: Chip(
-                              label: Text(
-                                user.role.toUpperCase(),
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                              backgroundColor: _getRoleColor(
-                                user.role,
-                              ).withOpacity(0.2),
+                            subtitle: Row(
+                              children: [
+                                Expanded(child: Text(user.email)),
+                                const SizedBox(width: 8),
+                                Chip(
+                                  label: Text(
+                                    user.role.toUpperCase(),
+                                    style: const TextStyle(fontSize: 10),
+                                  ),
+                                  backgroundColor: _getRoleColor(
+                                    user.role,
+                                  ).withOpacity(0.2),
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              ],
                             ),
-                            selected: isSelected,
-                            onTap: () {
-                              setDialogState(() {
-                                selectedUser = user;
-                              });
-                            },
                           );
                         },
                       );
@@ -578,7 +581,7 @@ class _DepartmentManagementScreenState
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: selectedUser == null
+              onPressed: selectedUserIds.isEmpty
                   ? null
                   : () async {
                       Navigator.pop(context); // Close selection dialog
@@ -587,29 +590,43 @@ class _DepartmentManagementScreenState
                       showDialog(
                         context: this.context,
                         barrierDismissible: false,
-                        builder: (loadingContext) =>
-                            const Center(child: CircularProgressIndicator()),
+                        builder: (loadingContext) => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
                       );
 
                       try {
-                        await _departmentService.addEmployee(
-                          department.id,
-                          selectedUser!.id,
-                        );
+                        int successCount = 0;
+                        int failCount = 0;
+
+                        // Add each selected user
+                        for (String userId in selectedUserIds) {
+                          try {
+                            await _departmentService.addEmployee(
+                              department.id,
+                              userId,
+                            );
+                            successCount++;
+                          } catch (e) {
+                            print('Error adding user $userId: $e');
+                            failCount++;
+                          }
+                        }
 
                         if (mounted) {
                           Navigator.of(this.context).pop(); // Close loading
 
-                          final successName = selectedUser!.fullName.isNotEmpty
-                              ? selectedUser!.fullName
-                              : selectedUser!.email.split('@')[0];
+                          String message;
+                          if (failCount == 0) {
+                            message = '✓ $successCount employee${successCount > 1 ? 's' : ''} added successfully';
+                          } else {
+                            message = '⚠ $successCount added, $failCount failed';
+                          }
 
                           ScaffoldMessenger.of(this.context).showSnackBar(
                             SnackBar(
-                              content: Text(
-                                '✓ $successName added to department',
-                              ),
-                              backgroundColor: Colors.green,
+                              content: Text(message),
+                              backgroundColor: failCount == 0 ? Colors.green : Colors.orange,
                             ),
                           );
                           await _loadDepartments();
@@ -619,14 +636,18 @@ class _DepartmentManagementScreenState
                           Navigator.of(this.context).pop(); // Close loading
                           ScaffoldMessenger.of(this.context).showSnackBar(
                             SnackBar(
-                              content: Text('Error adding employee: $e'),
+                              content: Text('Error adding employees: $e'),
                               backgroundColor: Colors.red,
                             ),
                           );
                         }
                       }
                     },
-              child: const Text('Add Employee'),
+              child: Text(
+                selectedUserIds.isEmpty
+                    ? 'Add Employees'
+                    : 'Add ${selectedUserIds.length} Employee${selectedUserIds.length > 1 ? 's' : ''}',
+              ),
             ),
           ],
         ),

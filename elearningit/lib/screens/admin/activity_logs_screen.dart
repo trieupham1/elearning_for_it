@@ -4,6 +4,7 @@ import '../../models/activity_log.dart';
 import '../../models/user.dart';
 import '../../services/admin_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/notification_service.dart';
 import '../../widgets/admin_drawer.dart';
 
 class ActivityLogsScreen extends StatefulWidget {
@@ -15,6 +16,7 @@ class ActivityLogsScreen extends StatefulWidget {
 
 class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
   final AdminService _adminService = AdminService();
+  final _notificationService = NotificationService();
   User? _currentUser;
   List<ActivityLog> _logs = [];
   bool _isLoading = true;
@@ -23,6 +25,7 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
   String? _selectedAction;
   String? _selectedUserId;
   final int _limit = 20;
+  int _unreadNotificationCount = 0;
 
   final List<String> _actionTypes = [
     'All',
@@ -53,6 +56,14 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
       setState(() => _currentUser = user);
 
       await _loadLogs();
+      
+      // Load notification count
+      try {
+        final count = await _notificationService.getUnreadCount();
+        setState(() => _unreadNotificationCount = count);
+      } catch (e) {
+        print('Error loading notification count: $e');
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -102,96 +113,80 @@ class _ActivityLogsScreenState extends State<ActivityLogsScreen> {
           IconButton(
             icon: const Icon(Icons.notifications),
             tooltip: 'Notifications',
-            onPressed: () {
-              Navigator.pushNamed(context, '/notifications');
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/notifications');
+              try {
+                final count = await _notificationService.getUnreadCount();
+                setState(() => _unreadNotificationCount = count);
+              } catch (e) {
+                print('Error reloading notification count: $e');
+              }
             },
           ),
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 16,
-                minHeight: 16,
-              ),
-              child: const Text(
-                '3',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+          if (_unreadNotificationCount > 0)
+            Positioned(
+              right: 8,
+              top: 8,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
                 ),
-                textAlign: TextAlign.center,
+                constraints: const BoxConstraints(
+                  minWidth: 16,
+                  minHeight: 16,
+                ),
+                child: Text(
+                  _unreadNotificationCount > 99 ? '99+' : '$_unreadNotificationCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
-          ),
         ],
       ),
       const SizedBox(width: 8),
-      Stack(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.message),
-            tooltip: 'Messages',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Messages feature coming soon')),
-              );
-            },
-          ),
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 16,
-                minHeight: 16,
-              ),
-              child: const Text(
-                '5',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ],
+      IconButton(
+        icon: const Icon(Icons.message),
+        tooltip: 'Messages',
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Messages feature coming soon')),
+          );
+        },
       ),
       const SizedBox(width: 8),
       PopupMenuButton<String>(
         tooltip: 'Profile',
         offset: const Offset(0, 50),
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8.0),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: CircleAvatar(
             radius: 18,
-            child: Icon(Icons.person, size: 20),
+            backgroundColor: Theme.of(context).primaryColor,
+            child: Text(
+              _currentUser?.fullName.isNotEmpty == true
+                  ? _currentUser!.fullName[0].toUpperCase()
+                  : 'A',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
         onSelected: (value) async {
           switch (value) {
             case 'profile':
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile feature coming soon')),
-              );
+              Navigator.pushNamed(context, '/profile');
               break;
             case 'settings':
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Settings feature coming soon')),
-              );
+              Navigator.pushNamed(context, '/settings');
               break;
             case 'logout':
               _handleLogout();

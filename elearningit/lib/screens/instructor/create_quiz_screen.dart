@@ -244,11 +244,13 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => _buildQuestionSelector(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => _buildQuestionSelector(setModalState),
+      ),
     );
   }
 
-  Widget _buildQuestionSelector() {
+  Widget _buildQuestionSelector(StateSetter setModalState) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
       padding: const EdgeInsets.all(16),
@@ -333,12 +335,14 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                     color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : null,
                     child: ListTile(
                       onTap: () {
-                        setState(() {
-                          if (isSelected) {
-                            _selectedQuestions.remove(question);
-                          } else {
-                            _selectedQuestions.add(question);
-                          }
+                        setModalState(() {
+                          setState(() {
+                            if (isSelected) {
+                              _selectedQuestions.remove(question);
+                            } else {
+                              _selectedQuestions.add(question);
+                            }
+                          });
                         });
                       },
                       title: Text(

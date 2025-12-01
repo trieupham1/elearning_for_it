@@ -673,70 +673,10 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                   ],
                 ),
               ),
-              PopupMenuButton<String>(
-                onSelected: (value) {
-                  switch (value) {
-                    case 'edit':
-                      _showEditCourseDialog(context, course);
-                      break;
-                    case 'students':
-                      _showStudentsList(context, course);
-                      break;
-                    case 'assignments':
-                      _showAssignments(context, course);
-                      break;
-                    case 'materials':
-                      _showMaterials(context, course);
-                      break;
-                  }
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Text('Edit Course'),
-                  ),
-                  const PopupMenuItem(
-                    value: 'students',
-                    child: Text('View Students'),
-                  ),
-                  const PopupMenuItem(
-                    value: 'assignments',
-                    child: Text('Assignments'),
-                  ),
-                  const PopupMenuItem(
-                    value: 'materials',
-                    child: Text('Materials'),
-                  ),
-                ],
-              ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  void _showEditCourseDialog(BuildContext context, Course course) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Edit ${course.name} coming soon!')));
-  }
-
-  void _showStudentsList(BuildContext context, Course course) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Students list for ${course.name} coming soon!')),
-    );
-  }
-
-  void _showAssignments(BuildContext context, Course course) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Assignments for ${course.name} coming soon!')),
-    );
-  }
-
-  void _showMaterials(BuildContext context, Course course) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Materials for ${course.name} coming soon!')),
     );
   }
 }

@@ -50,104 +50,40 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   List<Widget> _buildAppBarActions(BuildContext context) {
     return [
-      // Notifications icon with badge
-      Stack(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            tooltip: 'Notifications',
-            onPressed: () {
-              Navigator.pushNamed(context, '/notifications');
-            },
-          ),
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 16,
-                minHeight: 16,
-              ),
-              child: const Text(
-                '3',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ],
+      IconButton(
+        icon: const Icon(Icons.notifications),
+        tooltip: 'Notifications',
+        onPressed: () {
+          Navigator.pushNamed(context, '/notifications');
+        },
       ),
-      const SizedBox(width: 8),
-      // Messages icon with badge
-      Stack(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.message),
-            tooltip: 'Messages',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Messages feature coming soon')),
-              );
-            },
-          ),
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 16,
-                minHeight: 16,
-              ),
-              child: const Text(
-                '5',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(width: 8),
       // Profile icon with dropdown
       PopupMenuButton<String>(
         tooltip: 'Profile',
         offset: const Offset(0, 50),
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8.0),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: CircleAvatar(
             radius: 18,
-            child: Icon(Icons.person, size: 20),
+            backgroundColor: Theme.of(context).primaryColor,
+            child: Text(
+              _currentUser?.fullName.isNotEmpty == true
+                  ? _currentUser!.fullName[0].toUpperCase()
+                  : 'A',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
         onSelected: (value) async {
           switch (value) {
             case 'profile':
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile feature coming soon')),
-              );
+              Navigator.pushNamed(context, '/profile');
               break;
             case 'settings':
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Settings feature coming soon')),
-              );
+              Navigator.pushNamed(context, '/settings');
               break;
             case 'logout':
               _handleLogout();
