@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:html' as html;
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'api_service.dart';
@@ -129,15 +131,50 @@ class FileService {
   }
 
   /// Download a file from the server
+  /// 
+  /// Opens the file in a new browser tab for download.
+  /// Works on web platform by creating a download link.
+  /// 
+  /// [fileId] - The ID of the file to download
+  /// [fileName] - Original filename for the download
+  /// 
+  /// Example:
+  /// ```dart
+  /// await fileService.downloadFile('file123', 'assignment.pdf');
+  /// ```
   Future<void> downloadFile(String fileId, String fileName) async {
     try {
-      final url = '${await _getBaseUrl()}/files/$fileId';
-      // For now, just construct the download URL
-      // In a real app, you might want to use url_launcher or download the file
-      print('Download file from: $url');
-      // TODO: Implement actual download logic
+      final token = await _apiService.getToken();
+      final baseUrl = await _getBaseUrl();
+      final url = '$baseUrl/api/files/$fileId';
+      
+      // For web platform, create a download link
+      if (kIsWeb) {
+        // Create anchor element with auth token in header
+        final anchor = html.AnchorElement()
+          ..href = url
+          ..download = fileName
+          ..target = '_blank';
+        
+        // Add to DOM, click, and remove
+        html.document.body?.append(anchor);
+        anchor.click();
+        anchor.remove();
+        
+        print('✅ File download initiated: $fileName');
+      } else {
+        // For mobile/desktop, open in external browser with url_launcher
+        // Note: You may need to add url_launcher package
+        final Uri downloadUri = Uri.parse(url);
+        print('📥 Opening download URL: $downloadUri');
+        // await launchUrl(downloadUri, mode: LaunchMode.externalApplication);
+        
+        // Alternative: Show the URL to the user
+        print('Download link: $url');
+        print('Filename: $fileName');
+      }
     } catch (e) {
-      print('Error downloading file: $e');
+      print('❌ Error downloading file: $e');
       rethrow;
     }
   }

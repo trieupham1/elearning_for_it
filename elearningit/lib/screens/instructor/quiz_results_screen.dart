@@ -806,7 +806,15 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       setState(() => _isLoading = true);
       
       final student = attempt['studentId'];
-      final studentId = student['_id'].toString();
+      if (student == null) {
+        throw Exception('Student data is missing');
+      }
+      
+      final studentId = student['_id']?.toString();
+      if (studentId == null || studentId.isEmpty) {
+        throw Exception('Student ID is missing');
+      }
+      
       final firstName = student['firstName'] ?? '';
       final lastName = student['lastName'] ?? '';
       final username = student['username'] ?? '';
@@ -1021,17 +1029,32 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
     final timeSpent = attempt['timeSpent'] ?? 0;
     final submissionTime = attempt['submissionTime'];
     final attemptNumber = attempt['attemptNumber'] ?? (index + 1);
+    final attemptId = attempt['_id'];
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () async {
+          if (attemptId == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Cannot load attempt: Missing attempt ID'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return;
+          }
+
           Navigator.of(context).pop(); // Close selection dialog
           
           try {
             setState(() => _isLoading = true);
             
-            final detailedAttempt = await _quizService.getAttemptDetails(attempt['_id']);
+            final detailedAttempt = await _quizService.getAttemptDetails(attemptId);
+            
+            if (detailedAttempt == null) {
+              throw Exception('Attempt details not found');
+            }
             
             setState(() => _isLoading = false);
             
@@ -1154,6 +1177,16 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
   }
 
   void _showAttemptDetailsDialog(Map<String, dynamic> detailedAttempt) {
+    // Extract and validate data with null-safety
+    final student = detailedAttempt['student'] ?? {};
+    final quiz = detailedAttempt['quiz'] ?? {};
+    final studentName = student['name'] ?? 'Unknown Student';
+    final quizTitle = quiz['title'] ?? 'Unknown Quiz';
+    final score = detailedAttempt['score'] ?? 0;
+    final correctAnswers = detailedAttempt['correctAnswers'] ?? 0;
+    final totalQuestions = detailedAttempt['totalQuestions'] ?? 0;
+    final timeSpent = detailedAttempt['timeSpent'] ?? 0;
+
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -1188,7 +1221,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${detailedAttempt['student']['name']} • ${detailedAttempt['quiz']['title']}',
+                            '$studentName • $quizTitle',
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
@@ -1213,13 +1246,13 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                   children: [
                     _buildSummaryItem(
                       'Score',
-                      '${detailedAttempt['score']}%',
+                      '$score%',
                       Icons.grade,
-                      _getScoreColor(detailedAttempt['score']),
+                      _getScoreColor(score),
                     ),
                     _buildSummaryItem(
                       'Correct',
-                      '${detailedAttempt['correctAnswers']}/${detailedAttempt['totalQuestions']}',
+                      '$correctAnswers/$totalQuestions',
                       Icons.check_circle,
                       Colors.green,
                     ),

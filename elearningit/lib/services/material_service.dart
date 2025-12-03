@@ -117,17 +117,17 @@ class MaterialService extends ApiService {
 
   // Track material view
   Future<void> trackMaterialView(String materialId) async {
-    await post('/materials/$materialId/view');
+    await post('/api/materials/$materialId/view');
   }
 
   // Track material download
   Future<void> trackMaterialDownload(String materialId, String fileName) async {
-    await post('/materials/$materialId/download', body: {'fileName': fileName});
+    await post('/api/materials/$materialId/download', body: {'fileName': fileName});
   }
 
   // Get material tracking data (instructor only)
   Future<Map<String, dynamic>> getMaterialTracking(String materialId) async {
-    final response = await get('/materials/$materialId/analytics');
+    final response = await get('/api/materials/$materialId/analytics');
     return parseResponse(response);
   }
 
@@ -135,7 +135,7 @@ class MaterialService extends ApiService {
   Future<List<Map<String, dynamic>>> getCourseMaterialsTracking(
     String courseId,
   ) async {
-    final response = await get('/materials/course/$courseId/analytics');
+    final response = await get('/api/materials/course/$courseId/analytics');
     final data = parseResponse(response);
     final List<Map<String, dynamic>> result = [];
 
@@ -155,7 +155,7 @@ class MaterialService extends ApiService {
 
   // Export material tracking as CSV
   Future<String> exportMaterialTracking(String materialId) async {
-    final response = await get('/materials/$materialId/analytics');
+    final response = await get('/api/materials/$materialId/export-csv');
     return response.body;
   }
 

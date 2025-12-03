@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
+import 'dart:html' as html;
 import 'package:csv/csv.dart';
 import '../models/import_models.dart';
 
@@ -115,10 +116,49 @@ class _CsvImportDialogState<T> extends State<CsvImportDialog<T>> {
   }
 
   void _downloadTemplate() {
-    // TODO: Implement template download
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Template download coming soon!')),
-    );
+    try {
+      // Create CSV content with headers
+      final List<List<dynamic>> csvData = [
+        widget.csvHeaders, // Header row
+        // Add a sample data row to show format
+        List.generate(widget.csvHeaders.length, (index) => 'Sample ${widget.csvHeaders[index]}'),
+      ];
+      
+      // Convert to CSV string
+      final csvString = const ListToCsvConverter().convert(csvData);
+      
+      // Create blob and download
+      final bytes = utf8.encode(csvString);
+      final blob = html.Blob([bytes], 'text/csv');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      
+      final anchor = html.AnchorElement()
+        ..href = url
+        ..download = '${widget.entityName.toLowerCase()}_import_template.csv'
+        ..click();
+      
+      html.Url.revokeObjectUrl(url);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 8),
+              Text('Template downloaded: ${widget.entityName.toLowerCase()}_import_template.csv'),
+            ],
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error downloading template: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override

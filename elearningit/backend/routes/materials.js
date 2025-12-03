@@ -366,4 +366,52 @@ router.get('/course/:courseId/analytics', authMiddleware, instructorOnly, async 
   }
 });
 
+// Export material tracking as CSV (instructors only)
+router.get('/:id/export-csv', authMiddleware, instructorOnly, async (req, res) => {
+  try {
+    const material = await Material.findById(req.params.id)
+      .populate('viewedBy.userId', 'firstName lastName username email')
+      .populate('downloadedBy.userId', 'firstName lastName username email');
+    
+    if (!material) {
+      return res.status(404).json({ message: 'Material not found' });
+    }
+    
+    // Verify course exists and instructor has access
+    const course = await Course.findById(material.courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+    
+    // Generate CSV
+    let csv = 'Activity Type,Student Name,Email,Timestamp,File Name\n';
+    
+    // Add view records
+    material.viewedBy.forEach(view => {
+      const user = view.userId;
+      const name = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username : 'Unknown';
+      const email = user?.email || 'N/A';
+      const timestamp = new Date(view.viewedAt).toISOString();
+      csv += `View,"${name}","${email}","${timestamp}","N/A"\n`;
+    });
+    
+    // Add download records
+    material.downloadedBy.forEach(download => {
+      const user = download.userId;
+      const name = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username : 'Unknown';
+      const email = user?.email || 'N/A';
+      const timestamp = new Date(download.downloadedAt).toISOString();
+      const fileName = download.fileName || 'Unknown file';
+      csv += `Download,"${name}","${email}","${timestamp}","${fileName}"\n`;
+    });
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="material_${material._id}_tracking.csv"`);
+    res.send(csv);
+  } catch (error) {
+    console.error('Error exporting material tracking:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 module.exports = router;

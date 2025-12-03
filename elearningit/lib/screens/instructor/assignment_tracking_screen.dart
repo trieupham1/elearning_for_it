@@ -1,7 +1,10 @@
 // screens/instructor/assignment_tracking_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:intl/intl.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'dart:html' as html;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -160,18 +163,32 @@ class _AssignmentTrackingScreenState extends State<AssignmentTrackingScreen> {
         widget.assignmentId,
       );
 
-      // Save to temporary file
-      final directory = await getTemporaryDirectory();
-      final file = File(
-        '${directory.path}/assignment_${_trackingData!.assignmentInfo.title.replaceAll(' ', '_')}_tracking.csv',
-      );
-      await file.writeAsString(csvData);
+      final timestamp = DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.now());
+      final filename = 'assignment_${_trackingData!.assignmentInfo.title.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), '_')}_$timestamp.csv';
 
-      // Share file
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: 'Assignment Tracking - ${_trackingData!.assignmentInfo.title}',
-      );
+      if (kIsWeb) {
+        // Web platform - create downloadable file
+        _downloadCsvWeb(csvData, filename);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('📁 CSV file "$filename" downloaded successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        // Mobile platforms - save and share
+        final directory = await getTemporaryDirectory();
+        final file = File('${directory.path}/$filename');
+        await file.writeAsString(csvData);
+
+        await Share.shareXFiles(
+          [XFile(file.path)],
+          subject: 'Assignment Tracking - ${_trackingData!.assignmentInfo.title}',
+        );
+      }
 
       setState(() => _isExporting = false);
     } catch (e) {
@@ -182,6 +199,17 @@ class _AssignmentTrackingScreenState extends State<AssignmentTrackingScreen> {
         ).showSnackBar(SnackBar(content: Text('Error exporting CSV: $e')));
       }
     }
+  }
+
+  void _downloadCsvWeb(String csvContent, String filename) {
+    // Web-specific download using data URL
+    final bytes = utf8.encode(csvContent);
+    final blob = html.Blob([bytes]);
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute('download', filename)
+      ..click();
+    html.Url.revokeObjectUrl(url);
   }
 
   Future<void> _showGradeDialog(StudentTrackingData student) async {
