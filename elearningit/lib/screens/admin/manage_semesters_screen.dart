@@ -110,9 +110,7 @@ class _ManageSemestersScreenState extends State<ManageSemestersScreen> {
         icon: const Icon(Icons.message),
         tooltip: 'Messages',
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Messages feature coming soon')),
-          );
+          Navigator.pushNamed(context, '/messages');
         },
       ),
       const SizedBox(width: 8),

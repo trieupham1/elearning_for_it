@@ -387,15 +387,15 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.blue[50],
+                      color: Theme.of(context).primaryColor.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.blue[200]!, width: 1),
+                      border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.3), width: 1),
                     ),
                     child: Text(
                       tag,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.blue[700],
+                        color: Theme.of(context).primaryColor,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -409,7 +409,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                 Icon(
                   Icons.visibility_outlined,
                   size: 20,
-                  color: Colors.blue[600],
+                  color: Theme.of(context).primaryColor,
                 ),
                 const SizedBox(width: 6),
                 Text(
@@ -417,13 +417,13 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey[700],
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
                 const SizedBox(width: 20),
                 Container(
                   decoration: BoxDecoration(
-                    color: isLiked ? Colors.red[50] : Colors.grey[100],
+                    color: isLiked ? Colors.red.withOpacity(0.15) : Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: InkWell(
@@ -439,14 +439,14 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                         children: [
                           Icon(
                             isLiked ? Icons.favorite : Icons.favorite_border,
-                            color: isLiked ? Colors.red : Colors.grey[600],
+                            color: isLiked ? Colors.red : Theme.of(context).iconTheme.color,
                             size: 20,
                           ),
                           const SizedBox(width: 6),
                           Text(
                             '${_topic!.likes.length}',
                             style: TextStyle(
-                              color: isLiked ? Colors.red : Colors.grey[700],
+                              color: isLiked ? Colors.red : Theme.of(context).textTheme.bodyMedium?.color,
                               fontWeight: FontWeight.w600,
                               fontSize: 15,
                             ),
@@ -577,7 +577,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       height: 1.5,
-                      color: Colors.grey[800],
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -585,7 +585,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                          color: isLiked ? Colors.red[50] : Colors.grey[100],
+                          color: isLiked ? Colors.red.withOpacity(0.15) : Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: InkWell(
@@ -606,7 +606,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                                   size: 16,
                                   color: isLiked
                                       ? Colors.red
-                                      : Colors.grey[600],
+                                      : Theme.of(context).iconTheme.color,
                                 ),
                                 const SizedBox(width: 5),
                                 Text(
@@ -614,7 +614,7 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                                   style: TextStyle(
                                     color: isLiked
                                         ? Colors.red
-                                        : Colors.grey[700],
+                                        : Theme.of(context).textTheme.bodyMedium?.color,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 13,
                                   ),
@@ -629,11 +629,11 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                         icon: Icon(
                           Icons.reply,
                           size: 16,
-                          color: Colors.blue[600],
+                          color: Theme.of(context).primaryColor,
                         ),
                         label: Text(
                           'Reply',
-                          style: TextStyle(color: Colors.blue[600]),
+                          style: TextStyle(color: Theme.of(context).primaryColor),
                         ),
                         onPressed: () => _setReplyingTo(reply),
                         style: TextButton.styleFrom(
@@ -658,10 +658,10 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
   Widget _buildReplyInput() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Theme.of(context).shadowColor.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -676,13 +676,13 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: Colors.blue[50],
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue[200]!, width: 1),
+                border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.3), width: 1),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.reply, size: 18, color: Colors.blue[600]),
+                  Icon(Icons.reply, size: 18, color: Theme.of(context).primaryColor),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -690,12 +690,12 @@ class _TopicDetailScreenState extends State<TopicDetailScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        color: Colors.blue[700],
+                        color: Theme.of(context).primaryColor,
                       ),
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close, size: 20, color: Colors.blue[600]),
+                    icon: Icon(Icons.close, size: 20, color: Theme.of(context).primaryColor),
                     onPressed: () => _setReplyingTo(null),
                     visualDensity: VisualDensity.compact,
                   ),

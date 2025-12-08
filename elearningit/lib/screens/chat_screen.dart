@@ -242,7 +242,7 @@ class _ChatScreenState extends State<ChatScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         padding: const EdgeInsets.all(20),
@@ -262,8 +262,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                 .substring(0, 1)
                                 .toUpperCase()
                           : 'U',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
@@ -394,12 +394,12 @@ class _ChatScreenState extends State<ChatScreen> {
           SnackBar(
             content: Row(
               children: [
-                const SizedBox(
+                SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onSurface),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -584,12 +584,12 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.blue,
+        backgroundColor: Theme.of(context).primaryColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
@@ -598,7 +598,7 @@ class _ChatScreenState extends State<ChatScreen> {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).cardColor,
                   backgroundImage: widget.recipient.profilePicture != null
                       ? NetworkImage(widget.recipient.profilePicture!)
                       : null,
@@ -609,8 +609,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                     .substring(0, 1)
                                     .toUpperCase()
                               : 'U',
-                          style: const TextStyle(
-                            color: Colors.blue,
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColor,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -626,7 +626,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     decoration: BoxDecoration(
                       color: Colors.green,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.blue, width: 2),
+                      border: Border.all(color: Theme.of(context).primaryColor, width: 2),
                     ),
                   ),
                 ),
@@ -640,15 +640,15 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: [
                   Text(
                     widget.recipient.fullName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const Text(
+                  Text(
                     'Active now',
-                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7)),
                   ),
                 ],
               ),
@@ -657,7 +657,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.info_outline, color: Colors.white),
+            icon: Icon(Icons.info_outline, color: Theme.of(context).colorScheme.onPrimary),
             onPressed: _showInfoPanel,
           ),
         ],
@@ -668,17 +668,17 @@ class _ChatScreenState extends State<ChatScreen> {
           if (_showSearch)
             Container(
               padding: const EdgeInsets.all(8),
-              color: Colors.grey.shade100,
+              color: Theme.of(context).scaffoldBackgroundColor,
               child: TextField(
                 controller: _searchController,
                 autofocus: true,
-                style: const TextStyle(color: Colors.black87),
+                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                 decoration: InputDecoration(
                   hintText: 'Search in conversation...',
-                  hintStyle: TextStyle(color: Colors.grey.shade600),
-                  prefixIcon: Icon(Icons.search, color: Colors.grey.shade700),
+                  hintStyle: TextStyle(color: Theme.of(context).hintColor),
+                  prefixIcon: Icon(Icons.search, color: Theme.of(context).iconTheme.color),
                   suffixIcon: IconButton(
-                    icon: Icon(Icons.close, color: Colors.grey.shade700),
+                    icon: Icon(Icons.close, color: Theme.of(context).iconTheme.color),
                     onPressed: () {
                       setState(() {
                         _showSearch = false;
@@ -688,7 +688,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     },
                   ),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: Theme.of(context).cardColor,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
                     borderSide: BorderSide.none,
@@ -705,8 +705,8 @@ class _ChatScreenState extends State<ChatScreen> {
           // Messages List
           Expanded(
             child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: Colors.blue),
+                ? Center(
+                    child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
                   )
                 : _filteredMessages.isEmpty
                 ? Center(
@@ -769,10 +769,10 @@ class _ChatScreenState extends State<ChatScreen> {
           // Message Input
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.shade300,
+                  color: Theme.of(context).shadowColor.withOpacity(0.1),
                   blurRadius: 4,
                   offset: const Offset(0, -2),
                 ),
@@ -785,7 +785,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   // Attachment Button
                   IconButton(
                     icon: const Icon(Icons.add_circle_outline),
-                    color: Colors.blue,
+                    color: Theme.of(context).primaryColor,
                     iconSize: 28,
                     onPressed: _isSending ? null : _pickAndSendFile,
                   ),
@@ -794,15 +794,15 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: TextField(
                         controller: _messageController,
-                        style: const TextStyle(color: Colors.black87),
+                        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                         decoration: InputDecoration(
                           hintText: 'Type a message...',
-                          hintStyle: TextStyle(color: Colors.grey.shade600),
+                          hintStyle: TextStyle(color: Theme.of(context).hintColor),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -824,19 +824,19 @@ class _ChatScreenState extends State<ChatScreen> {
                   // Send Button (only shown when there's text)
                   if (_messageController.text.trim().isNotEmpty || _isSending)
                     _isSending
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 28,
                             height: 28,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.blue,
+                                Theme.of(context).primaryColor,
                               ),
                             ),
                           )
                         : IconButton(
                             icon: const Icon(Icons.send),
-                            color: Colors.blue,
+                            color: Theme.of(context).primaryColor,
                             iconSize: 28,
                             onPressed: _sendMessage,
                           ),
@@ -845,42 +845,6 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
         ],
-      ),
-      // DEBUG: Show socket connection status
-      floatingActionButton: FloatingActionButton.small(
-        onPressed: () {
-          final socketService = SocketService();
-          final status = socketService.getConnectionStatus();
-          final userId = socketService.getCurrentUserId();
-
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Socket Debug Info'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Status: $status'),
-                  const SizedBox(height: 8),
-                  Text('User ID: $userId'),
-                  const SizedBox(height: 8),
-                  Text('Current User: ${widget.currentUser.id}'),
-                  const SizedBox(height: 8),
-                  Text('Recipient: ${widget.recipient.id}'),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Close'),
-                ),
-              ],
-            ),
-          );
-        },
-        backgroundColor: Colors.blue.withOpacity(0.7),
-        child: const Icon(Icons.wifi, size: 20),
       ),
     );
   }
@@ -1016,8 +980,8 @@ class _MessageBubble extends StatelessWidget {
                       recipient.fullName.isNotEmpty
                           ? recipient.fullName.substring(0, 1).toUpperCase()
                           : 'U',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -1037,7 +1001,7 @@ class _MessageBubble extends StatelessWidget {
                   : CrossAxisAlignment.start,
               children: [
                 if (message.isCallMessage)
-                  _buildCallMessage()
+                  _buildCallMessage(context)
                 else if (isImage)
                   _buildImagePreview(context)
                 else if (isVideo)
@@ -1045,7 +1009,7 @@ class _MessageBubble extends StatelessWidget {
                 else if (hasFile)
                   _buildFileAttachment(context)
                 else
-                  _buildTextMessage(),
+                  _buildTextMessage(context),
                 if (showAvatar)
                   Padding(
                     padding: const EdgeInsets.only(top: 2, left: 12, right: 12),
@@ -1053,7 +1017,7 @@ class _MessageBubble extends StatelessWidget {
                       timeago.format(message.createdAt),
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.grey.shade600,
+                        color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
                       ),
                     ),
                   ),
@@ -1076,8 +1040,8 @@ class _MessageBubble extends StatelessWidget {
                       currentUser.fullName.isNotEmpty
                           ? currentUser.fullName.substring(0, 1).toUpperCase()
                           : 'U',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -1111,31 +1075,37 @@ class _MessageBubble extends StatelessWidget {
                 color: isMe ? Colors.blue.shade100 : Colors.grey.shade200,
                 child: const Center(child: CircularProgressIndicator()),
               ),
-              errorWidget: (context, url, error) => Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isMe ? Colors.blue : Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.broken_image,
-                      color: isMe ? Colors.white : Colors.grey,
-                      size: 40,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Failed to load image',
-                      style: TextStyle(
-                        color: isMe ? Colors.white : Colors.black87,
-                        fontSize: 12,
+              errorWidget: (context, url, error) {
+                final theme = Theme.of(context);
+                final isDark = theme.brightness == Brightness.dark;
+                return Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isMe 
+                        ? theme.primaryColor 
+                        : (isDark ? theme.colorScheme.surface : Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.broken_image,
+                        color: isMe ? theme.colorScheme.onPrimary : Colors.grey,
+                        size: 40,
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Failed to load image',
+                        style: TextStyle(
+                          color: isMe ? theme.colorScheme.onPrimary : theme.textTheme.bodyLarge?.color,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ),
@@ -1146,70 +1116,83 @@ class _MessageBubble extends StatelessWidget {
   Widget _buildVideoPreview(BuildContext context) {
     return GestureDetector(
       onTap: () => _openVideo(context),
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 250),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isMe ? Colors.blue : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 200,
-              height: 120,
-              decoration: BoxDecoration(
-                color: Colors.black12,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.black45,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.play_arrow, color: Colors.white, size: 40),
-                ),
-              ),
+      child: Builder(
+        builder: (context) {
+          final theme = Theme.of(context);
+          final isDark = theme.brightness == Brightness.dark;
+          return Container(
+            constraints: const BoxConstraints(maxWidth: 250),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isMe 
+                  ? theme.primaryColor 
+                  : (isDark ? theme.colorScheme.surface : Colors.grey.shade200),
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(height: 8),
-            Row(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.videocam,
-                  color: isMe ? Colors.white : Colors.blue,
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    message.content.replaceAll('📎 ', '').replaceAll('🎥 ', ''),
-                    style: TextStyle(
-                      color: isMe ? Colors.white : Colors.black87,
-                      fontSize: 13,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                Container(
+                  width: 200,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.black12,
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black45,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.play_arrow, color: Colors.white, size: 40),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.videocam,
+                      color: isMe ? theme.colorScheme.onPrimary : theme.primaryColor,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        message.content.replaceAll('📎 ', '').replaceAll('🎥 ', ''),
+                        style: TextStyle(
+                          color: isMe ? theme.colorScheme.onPrimary : theme.textTheme.bodyLarge?.color,
+                          fontSize: 13,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildFileAttachment(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return GestureDetector(
       onTap: () => _downloadFile(context),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isMe ? Colors.blue : Colors.grey.shade200,
+          color: isMe 
+              ? theme.primaryColor 
+              : (isDark ? theme.colorScheme.surface : Colors.grey.shade200),
           borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
@@ -1217,7 +1200,7 @@ class _MessageBubble extends StatelessWidget {
           children: [
             Icon(
               Icons.insert_drive_file,
-              color: isMe ? Colors.white : Colors.blue,
+              color: isMe ? theme.colorScheme.onPrimary : theme.primaryColor,
               size: 20,
             ),
             const SizedBox(width: 8),
@@ -1225,7 +1208,7 @@ class _MessageBubble extends StatelessWidget {
               child: Text(
                 message.content.replaceAll('📎 ', '').replaceAll('📄 ', ''),
                 style: TextStyle(
-                  color: isMe ? Colors.white : Colors.black87,
+                  color: isMe ? theme.colorScheme.onPrimary : theme.textTheme.bodyLarge?.color,
                   fontSize: 14,
                 ),
               ),
@@ -1233,7 +1216,7 @@ class _MessageBubble extends StatelessWidget {
             const SizedBox(width: 4),
             Icon(
               Icons.download,
-              color: isMe ? Colors.white : Colors.blue,
+              color: isMe ? theme.colorScheme.onPrimary : theme.primaryColor,
               size: 16,
             ),
           ],
@@ -1242,7 +1225,7 @@ class _MessageBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildCallMessage() {
+  Widget _buildCallMessage(BuildContext context) {
     // Determine call icon and color based on type and status
     IconData callIcon;
     Color iconColor;
@@ -1268,9 +1251,12 @@ class _MessageBubble extends StatelessWidget {
           : const Color(0xFF00A884); // Green for successful
     }
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     backgroundColor = isMe
-        ? Colors.blue.withOpacity(0.1)
-        : Colors.grey.shade100;
+        ? theme.primaryColor.withOpacity(0.15)
+        : (isDark ? theme.colorScheme.surface : Colors.grey.shade100);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -1278,7 +1264,7 @@ class _MessageBubble extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isMe ? Colors.blue.withOpacity(0.3) : Colors.grey.shade300,
+          color: isMe ? theme.primaryColor.withOpacity(0.3) : theme.dividerColor,
           width: 1,
         ),
       ),
@@ -1294,7 +1280,7 @@ class _MessageBubble extends StatelessWidget {
               Text(
                 message.isVideoCall ? 'Video call' : 'Audio call',
                 style: TextStyle(
-                  color: Colors.grey.shade800,
+                  color: theme.textTheme.bodyLarge?.color,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -1302,7 +1288,7 @@ class _MessageBubble extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 message.content, // Contains duration or status text
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                style: TextStyle(color: theme.hintColor, fontSize: 12),
               ),
             ],
           ),
@@ -1311,17 +1297,24 @@ class _MessageBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildTextMessage() {
+  Widget _buildTextMessage(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: isMe ? Colors.blue : Colors.grey.shade200,
+        color: isMe 
+            ? theme.primaryColor 
+            : (isDark ? theme.colorScheme.surface : Colors.grey.shade200),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Text(
         message.content,
         style: TextStyle(
-          color: isMe ? Colors.white : Colors.black87,
+          color: isMe 
+              ? theme.colorScheme.onPrimary 
+              : theme.textTheme.bodyLarge?.color,
           fontSize: 15,
         ),
       ),

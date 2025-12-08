@@ -42,12 +42,12 @@ class CodeSubmissionResultsScreen extends StatelessWidget {
         title: const Text('Submission Results'),
         actions: [
           if (submission.isBestSubmission)
-            const Padding(
-              padding: EdgeInsets.all(8.0),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Chip(
-                avatar: Icon(Icons.star, size: 16, color: Colors.amber),
-                label: Text('Best', style: TextStyle(fontSize: 12)),
-                backgroundColor: Colors.white,
+                avatar: const Icon(Icons.star, size: 16, color: Colors.amber),
+                label: const Text('Best', style: TextStyle(fontSize: 12)),
+                backgroundColor: Theme.of(context).cardColor,
               ),
             ),
         ],

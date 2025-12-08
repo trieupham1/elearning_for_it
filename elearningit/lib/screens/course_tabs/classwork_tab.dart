@@ -118,7 +118,7 @@ class _ClassworkTabState extends State<ClassworkTab> {
         children: [
           // Search and Filter Bar
           Container(
-            color: Colors.grey.shade100,
+            color: Theme.of(context).scaffoldBackgroundColor,
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
@@ -140,7 +140,7 @@ class _ClassworkTabState extends State<ClassworkTab> {
                           )
                         : null,
                     border: const OutlineInputBorder(),
-                    fillColor: Colors.white,
+                    fillColor: Theme.of(context).cardColor,
                     filled: true,
                   ),
                   onChanged: (value) {

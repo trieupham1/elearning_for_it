@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/admin_dashboard.dart';
 import '../../models/user.dart';
 import '../../services/auth_service.dart';
+import '../../services/notification_service.dart';
 import '../../widgets/admin_drawer.dart';
 
 class InstructorWorkloadDetailScreen extends StatefulWidget {
@@ -14,8 +15,10 @@ class InstructorWorkloadDetailScreen extends StatefulWidget {
 
 class _InstructorWorkloadDetailScreenState
     extends State<InstructorWorkloadDetailScreen> {
+  final _notificationService = NotificationService();
   User? _currentUser;
   bool _isLoading = true;
+  int _unreadNotificationCount = 0;
 
   @override
   void initState() {
@@ -31,6 +34,14 @@ class _InstructorWorkloadDetailScreenState
         _currentUser = user;
         _isLoading = false;
       });
+      
+      // Load notification count
+      try {
+        final count = await _notificationService.getUnreadCount();
+        setState(() => _unreadNotificationCount = count);
+      } catch (e) {
+        print('Error loading notification count: $e');
+      }
     } catch (e) {
       setState(() => _isLoading = false);
     }
@@ -43,6 +54,7 @@ class _InstructorWorkloadDetailScreenState
     return Scaffold(
       appBar: AppBar(
         title: const Text('Instructor Workload Details'),
+        actions: _buildAppBarActions(context),
       ),
       drawer: _currentUser != null ? AdminDrawer(currentUser: _currentUser!) : null,
       body: _isLoading
@@ -250,6 +262,62 @@ class _InstructorWorkloadDetailScreenState
         trailing: Icon(Icons.check_circle, color: Colors.green.shade400),
       ),
     );
+  }
+
+  List<Widget> _buildAppBarActions(BuildContext context) {
+    return [
+      Stack(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            tooltip: 'Notifications',
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/notifications');
+              try {
+                final count = await _notificationService.getUnreadCount();
+                setState(() => _unreadNotificationCount = count);
+              } catch (e) {
+                print('Error reloading notification count: $e');
+              }
+            },
+          ),
+          if (_unreadNotificationCount > 0)
+            Positioned(
+              right: 8,
+              top: 8,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 16,
+                  minHeight: 16,
+                ),
+                child: Text(
+                  _unreadNotificationCount > 99 ? '99+' : '$_unreadNotificationCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+        ],
+      ),
+      const SizedBox(width: 8),
+      IconButton(
+        icon: const Icon(Icons.message),
+        tooltip: 'Messages',
+        onPressed: () {
+          Navigator.pushNamed(context, '/messages');
+        },
+      ),
+      const SizedBox(width: 16),
+    ];
   }
 
 }

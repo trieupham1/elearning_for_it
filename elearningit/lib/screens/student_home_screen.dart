@@ -110,7 +110,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         IconButton(
           icon: CircleAvatar(
             radius: 16,
-            backgroundColor: Colors.white,
+            backgroundColor: Theme.of(context).cardColor,
             backgroundImage: _currentUser?.profilePicture != null
                 ? NetworkImage(_currentUser!.profilePicture!)
                 : null,
@@ -147,7 +147,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             accountName: Text(_currentUser?.fullName ?? 'Loading...'),
             accountEmail: Text(_currentUser?.email ?? ''),
             currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.white,
+              backgroundColor: Theme.of(context).cardColor,
               backgroundImage: _currentUser?.profilePicture != null
                   ? NetworkImage(_currentUser!.profilePicture!)
                   : null,

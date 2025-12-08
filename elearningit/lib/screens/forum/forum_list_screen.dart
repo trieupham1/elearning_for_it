@@ -214,7 +214,7 @@ class _ForumListScreenState extends State<ForumListScreen> {
                               )
                             : null,
                         filled: true,
-                        fillColor: Colors.grey[50],
+                        fillColor: Theme.of(context).colorScheme.surface,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 16,
@@ -226,13 +226,13 @@ class _ForumListScreenState extends State<ForumListScreen> {
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(
-                            color: Colors.grey[200]!,
+                            color: Theme.of(context).dividerColor,
                             width: 1,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.blue, width: 2),
+                          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
                         ),
                       ),
                       onSubmitted: _onSearch,
@@ -242,14 +242,14 @@ class _ForumListScreenState extends State<ForumListScreen> {
                   // Filter button
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.blue[50],
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue[200]!, width: 1),
+                      border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.3), width: 1),
                     ),
                     child: PopupMenuButton<String>(
                       icon: Icon(
                         Icons.filter_list,
-                        color: Colors.blue[700],
+                        color: Theme.of(context).primaryColor,
                         size: 24,
                       ),
                       tooltip: 'Sort by',
@@ -545,13 +545,13 @@ class _ForumListScreenState extends State<ForumListScreen> {
                       margin: const EdgeInsets.only(left: 4),
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
                         Icons.lock,
                         size: 18,
-                        color: Colors.grey[600],
+                        color: Theme.of(context).iconTheme.color,
                       ),
                     ),
                 ],
@@ -573,7 +573,7 @@ class _ForumListScreenState extends State<ForumListScreen> {
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.grey[700],
+                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
                     fontSize: 14,
                     height: 1.5,
                   ),
@@ -591,15 +591,15 @@ class _ForumListScreenState extends State<ForumListScreen> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.blue[50],
+                        color: Theme.of(context).primaryColor.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.blue[200]!, width: 1),
+                        border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.3), width: 1),
                       ),
                       child: Text(
                         tag,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.blue[700],
+                          color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -625,7 +625,7 @@ class _ForumListScreenState extends State<ForumListScreen> {
                   const Spacer(),
                   Container(
                     decoration: BoxDecoration(
-                      color: isLiked ? Colors.red[50] : Colors.grey[100],
+                      color: isLiked ? Colors.red.withOpacity(0.15) : Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: InkWell(

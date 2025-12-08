@@ -580,7 +580,7 @@ class _AssignmentTrackingScreenState extends State<AssignmentTrackingScreen> {
                       borderSide: BorderSide.none,
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: Theme.of(context).colorScheme.surface,
                   ),
                   onChanged: (value) {
                     setState(() {
@@ -737,7 +737,7 @@ class _AssignmentTrackingScreenState extends State<AssignmentTrackingScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: color.withOpacity(0.3)),
         ),

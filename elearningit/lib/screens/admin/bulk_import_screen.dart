@@ -100,9 +100,7 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
         icon: const Icon(Icons.message),
         tooltip: 'Messages',
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Messages feature coming soon')),
-          );
+          Navigator.pushNamed(context, '/messages');
         },
       ),
       const SizedBox(width: 8),
@@ -576,7 +574,7 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
 
   Widget _buildQuickActions() {
     return Card(
-      color: Colors.blue[50],
+      color: Theme.of(context).colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -584,7 +582,7 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.flash_on, color: Colors.blue[700]),
+                Icon(Icons.flash_on, color: Theme.of(context).primaryColor),
                 const SizedBox(width: 8),
                 const Text(
                   'Quick Actions',
@@ -637,7 +635,7 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.info, color: Colors.blue[700]),
+                Icon(Icons.info, color: Theme.of(context).primaryColor),
                 const SizedBox(width: 8),
                 const Text(
                   'Instructions',
@@ -735,12 +733,12 @@ class _BulkImportScreenState extends State<BulkImportScreen> {
     if (_platformFile == null) return const SizedBox.shrink();
 
     return Card(
-      color: Colors.blue[50],
+      color: Theme.of(context).colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            const Icon(Icons.insert_drive_file, color: Colors.blue),
+            Icon(Icons.insert_drive_file, color: Theme.of(context).primaryColor),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

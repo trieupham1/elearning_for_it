@@ -87,7 +87,7 @@ class _MessagesListScreenState extends State<MessagesListScreen> {
       appBar: AppBar(
         title: const Text('Messages'),
         backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         elevation: 0,
       ),
       body: Column(
@@ -114,7 +114,7 @@ class _MessagesListScreenState extends State<MessagesListScreen> {
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: Theme.of(context).cardColor,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 12,
@@ -126,7 +126,7 @@ class _MessagesListScreenState extends State<MessagesListScreen> {
           // Conversations list
           Expanded(
             child: Container(
-              color: Colors.grey.shade50,
+              color: Theme.of(context).scaffoldBackgroundColor,
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _errorMessage != null
@@ -211,7 +211,7 @@ class _MessagesListScreenState extends State<MessagesListScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -240,8 +240,8 @@ class _MessagesListScreenState extends State<MessagesListScreen> {
                   conversation.userAvatar!.isEmpty
               ? Text(
                   conversation.userName.substring(0, 1).toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
                   ),
@@ -301,8 +301,8 @@ class _MessagesListScreenState extends State<MessagesListScreen> {
                   ),
                   child: Text(
                     conversation.unreadCount.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onError,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -461,8 +461,8 @@ class _NewMessageDialogState extends State<NewMessageDialog> {
                                       user.fullName
                                           .substring(0, 1)
                                           .toUpperCase(),
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.onPrimary,
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                       ),

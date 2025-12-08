@@ -14,7 +14,7 @@ class StudentDrawer extends StatelessWidget {
             accountName: const Text('Nguyen Van Student'),
             accountEmail: const Text('student@fit.edu.vn'),
             currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.white,
+              backgroundColor: Theme.of(context).cardColor,
               child: Text(
                 'NS',
                 style: TextStyle(

@@ -110,9 +110,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         icon: const Icon(Icons.message),
         tooltip: 'Messages',
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Messages feature coming soon')),
-          );
+          Navigator.pushNamed(context, '/messages');
         },
       ),
       const SizedBox(width: 8),

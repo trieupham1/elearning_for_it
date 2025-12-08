@@ -52,13 +52,31 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withOpacity(0.2),
+                    Colors.white.withOpacity(0.1),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.dashboard_customize, size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Text('Instructor Dashboard'),
+          ],
+        ),
         actions: [
           // Notification icon with badge
           Stack(
             children: [
               IconButton(
-                icon: const Icon(Icons.notifications),
+                icon: const Icon(Icons.notifications_outlined),
                 onPressed: () async {
                   await Navigator.push(
                     context,
@@ -66,7 +84,6 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                       builder: (_) => const NotificationsScreen(),
                     ),
                   );
-                  // Reload unread count when returning from notifications screen
                   _loadUnreadCount();
                 },
               ),
@@ -74,54 +91,99 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                 Positioned(
                   right: 8,
                   top: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      _unreadCount > 99 ? '99+' : _unreadCount.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.8, end: 1.0),
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.elasticOut,
+                    builder: (context, value, child) {
+                      return Transform.scale(
+                        scale: value,
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Colors.red, Colors.redAccent],
+                            ),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.red.withOpacity(0.5),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 18,
+                            minHeight: 18,
+                          ),
+                          child: Text(
+                            _unreadCount > 99 ? '99+' : _unreadCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
             ],
           ),
           const SizedBox(width: 8),
 
-          // Profile icon
-          IconButton(
-            icon: CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.white,
-              backgroundImage: _currentUser?.profilePicture != null
-                  ? NetworkImage(_currentUser!.profilePicture!)
-                  : null,
-              child: _currentUser?.profilePicture == null
-                  ? Text(
-                      _currentUser?.username.substring(0, 2).toUpperCase() ??
-                          'I',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Theme.of(context).primaryColor,
+          // Profile icon with animation
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 600),
+            builder: (context, value, child) {
+              return Transform.scale(
+                scale: 0.8 + (value * 0.2),
+                child: IconButton(
+                  icon: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.5),
+                        width: 2,
                       ),
-                    )
-                  : null,
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundColor: Colors.white,
+                      backgroundImage: _currentUser?.profilePicture != null
+                          ? NetworkImage(_currentUser!.profilePicture!)
+                          : null,
+                      child: _currentUser?.profilePicture == null
+                          ? Text(
+                              _currentUser?.username.substring(0, 2).toUpperCase() ??
+                                  'I',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Theme.of(context).primaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          : null,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    );
+                  },
+                ),
               );
             },
           ),
@@ -142,7 +204,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
             accountName: Text(_currentUser?.fullName ?? 'Loading...'),
             accountEmail: Text(_currentUser?.email ?? ''),
             currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.white,
+              backgroundColor: Theme.of(context).cardColor,
               child: Text(
                 _currentUser?.username.substring(0, 2).toUpperCase() ?? 'I',
                 style: TextStyle(

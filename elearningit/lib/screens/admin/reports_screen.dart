@@ -6,6 +6,7 @@ import '../../services/auth_service.dart';
 import '../../services/report_service.dart';
 import '../../services/department_service.dart';
 import '../../services/admin_service.dart';
+import '../../services/notification_service.dart';
 import '../../widgets/admin_drawer.dart';
 import 'dart:html' as html;
 
@@ -20,11 +21,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
   final ReportService _reportService = ReportService();
   final DepartmentService _departmentService = DepartmentService();
   final AdminService _adminService = AdminService();
+  final _notificationService = NotificationService();
 
   User? _currentUser;
   List<Department> _departments = [];
   List<User> _users = [];
   bool _isLoading = false;
+  int _unreadNotificationCount = 0;
 
   String _reportType = 'department';
   String _format = 'excel';
@@ -43,6 +46,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final authService = AuthService();
       final user = await authService.getCurrentUser();
       setState(() => _currentUser = user);
+      
+      // Load notification count
+      try {
+        final count = await _notificationService.getUnreadCount();
+        setState(() => _unreadNotificationCount = count);
+      } catch (e) {
+        print('Error loading notification count: $e');
+      }
     } catch (e) {
       // Handle error silently
     }
@@ -50,13 +61,57 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   List<Widget> _buildAppBarActions(BuildContext context) {
     return [
+      Stack(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            tooltip: 'Notifications',
+            onPressed: () async {
+              await Navigator.pushNamed(context, '/notifications');
+              try {
+                final count = await _notificationService.getUnreadCount();
+                setState(() => _unreadNotificationCount = count);
+              } catch (e) {
+                print('Error reloading notification count: $e');
+              }
+            },
+          ),
+          if (_unreadNotificationCount > 0)
+            Positioned(
+              right: 8,
+              top: 8,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 16,
+                  minHeight: 16,
+                ),
+                child: Text(
+                  _unreadNotificationCount > 99 ? '99+' : '$_unreadNotificationCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+        ],
+      ),
+      const SizedBox(width: 8),
       IconButton(
-        icon: const Icon(Icons.notifications),
-        tooltip: 'Notifications',
+        icon: const Icon(Icons.message),
+        tooltip: 'Messages',
         onPressed: () {
-          Navigator.pushNamed(context, '/notifications');
+          Navigator.pushNamed(context, '/messages');
         },
       ),
+      const SizedBox(width: 8),
       // Profile icon with dropdown
       PopupMenuButton<String>(
         tooltip: 'Profile',

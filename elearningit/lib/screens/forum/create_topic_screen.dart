@@ -83,7 +83,7 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
             child: TextButton(
               onPressed: _isSubmitting ? null : _submitTopic,
               style: TextButton.styleFrom(
-                backgroundColor: Colors.white.withOpacity(0.2),
+                backgroundColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 8,
@@ -93,18 +93,18 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                 ),
               ),
               child: _isSubmitting
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary),
                       ),
                     )
-                  : const Text(
+                  : Text(
                       'POST',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       ),
@@ -123,26 +123,26 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
               decoration: InputDecoration(
                 labelText: 'Title',
                 labelStyle: TextStyle(
-                  color: Colors.grey[700],
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                   fontWeight: FontWeight.w600,
                 ),
                 hintText: 'Enter topic title',
-                hintStyle: TextStyle(color: Colors.grey[400]),
+                hintStyle: TextStyle(color: Theme.of(context).hintColor),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blue[400]!, width: 2),
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
                 ),
                 filled: true,
-                fillColor: Colors.grey[50],
-                prefixIcon: Icon(Icons.title, color: Colors.blue[600]),
+                fillColor: Theme.of(context).colorScheme.surface,
+                prefixIcon: Icon(Icons.title, color: Theme.of(context).primaryColor),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -162,25 +162,25 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
               decoration: InputDecoration(
                 labelText: 'Content (optional)',
                 labelStyle: TextStyle(
-                  color: Colors.grey[700],
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                   fontWeight: FontWeight.w600,
                 ),
                 hintText: 'Describe your topic in detail...',
-                hintStyle: TextStyle(color: Colors.grey[400]),
+                hintStyle: TextStyle(color: Theme.of(context).hintColor),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blue[400]!, width: 2),
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
                 ),
                 filled: true,
-                fillColor: Colors.grey[50],
+                fillColor: Theme.of(context).colorScheme.surface,
                 alignLabelWithHint: true,
               ),
               maxLines: 8,
@@ -193,26 +193,26 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
               decoration: InputDecoration(
                 labelText: 'Tags (optional)',
                 labelStyle: TextStyle(
-                  color: Colors.grey[700],
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                   fontWeight: FontWeight.w600,
                 ),
                 hintText: 'homework, lecture, question...',
-                hintStyle: TextStyle(color: Colors.grey[400]),
+                hintStyle: TextStyle(color: Theme.of(context).hintColor),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.blue[400]!, width: 2),
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
                 ),
                 filled: true,
-                fillColor: Colors.grey[50],
-                prefixIcon: Icon(Icons.label_outline, color: Colors.blue[600]),
+                fillColor: Theme.of(context).colorScheme.surface,
+                prefixIcon: Icon(Icons.label_outline, color: Theme.of(context).primaryColor),
                 helperText: 'Separate tags with commas',
               ),
               maxLength: 100,
@@ -220,11 +220,11 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
             ),
             const SizedBox(height: 28),
             Card(
-              color: Colors.blue[50],
+              color: Theme.of(context).colorScheme.surface,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.blue[200]!, width: 1),
+                side: BorderSide(color: Theme.of(context).primaryColor.withOpacity(0.3), width: 1),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -236,12 +236,12 @@ class _CreateTopicScreenState extends State<CreateTopicScreen> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.blue[100],
+                            color: Theme.of(context).primaryColor.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
                             Icons.lightbulb_outline,
-                            color: Colors.blue[700],
+                            color: Theme.of(context).primaryColor,
                             size: 20,
                           ),
                         ),

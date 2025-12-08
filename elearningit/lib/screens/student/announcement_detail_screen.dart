@@ -384,7 +384,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundColor: Colors.grey.shade200,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             backgroundImage: comment.userAvatar != null
                 ? NetworkImage(comment.userAvatar!)
                 : null,
@@ -444,7 +444,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
   Widget _buildCommentInput() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
