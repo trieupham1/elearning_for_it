@@ -95,11 +95,15 @@ class AgoraWebService {
             _remoteUser = user;
             final uid = js_util.getProperty(user, 'uid') as int;
             print('📹 Remote video track received for UID $uid');
-            
+
             // Auto-play the video track in the remote video container
             if (_remoteVideoTrack != null) {
-              js_util.callMethod(_remoteVideoTrack, 'play', ['remote-video-container-$uid']);
-              print('▶️ Auto-playing remote video in container: remote-video-container-$uid');
+              js_util.callMethod(_remoteVideoTrack, 'play', [
+                'remote-video-container-$uid',
+              ]);
+              print(
+                '▶️ Auto-playing remote video in container: remote-video-container-$uid',
+              );
             }
           }
         }),
@@ -193,7 +197,7 @@ class AgoraWebService {
       _localAudioTrack = await promiseToFuture(
         AgoraRTC.createMicrophoneAudioTrack(),
       );
-      
+
       // Try to create video track (optional - like Google Meet)
       try {
         _localVideoTrack = await promiseToFuture(
@@ -212,7 +216,7 @@ class AgoraWebService {
       final tracksToPublish = <Object>[];
       if (_localAudioTrack != null) tracksToPublish.add(_localAudioTrack!);
       if (_localVideoTrack != null) tracksToPublish.add(_localVideoTrack!);
-      
+
       if (tracksToPublish.isNotEmpty) {
         await promiseToFuture(
           js_util.callMethod(_client, 'publish', [
@@ -280,7 +284,7 @@ class AgoraWebService {
       print('⚠️ Camera not available - cannot toggle');
       return;
     }
-    
+
     _isCameraOff = !_isCameraOff;
     _isVideoEnabled = !_isCameraOff;
     if (_localVideoTrack != null) {
@@ -355,17 +359,34 @@ class AgoraWebService {
   // Start screen sharing
   Future<void> startScreenShare({bool includeAudio = false}) async {
     try {
-      print('🖥️ Starting screen share (audio: ${includeAudio ? "enabled" : "disabled"})...');
+      print(
+        '🖥️ Starting screen share (audio: ${includeAudio ? "enabled" : "disabled"})...',
+      );
 
-      // Create screen video track
+      // STEP 1: Unpublish camera video FIRST if it's currently published
+      if (_localVideoTrack != null && !_isCameraOff) {
+        print('📹 Unpublishing camera video before screen share...');
+        await promiseToFuture(
+          js_util.callMethod(_client, 'unpublish', [
+            js_util.jsify([_localVideoTrack]),
+          ]),
+        );
+        print('✅ Camera video unpublished');
+      }
+
+      // STEP 2: Create screen video track
       // Audio options: 'enable' = system audio, 'disable' = no audio, 'auto' = let user choose
       final audioConfig = includeAudio ? 'enable' : 'disable';
-      
+
+      print('🎬 Creating screen share track...');
       _localScreenTrack = await promiseToFuture(
-        AgoraRTC.createScreenVideoTrack(js_util.jsify({
-          'encoderConfig': '1080p_1',
-          'optimizationMode': 'detail',
-        }), audioConfig),
+        AgoraRTC.createScreenVideoTrack(
+          js_util.jsify({
+            'encoderConfig': '1080p_1',
+            'optimizationMode': 'detail',
+          }),
+          audioConfig,
+        ),
       );
 
       // If screen track is an array (video + audio), extract video track
@@ -374,16 +395,8 @@ class AgoraWebService {
         _localScreenTrack = tracks;
       }
 
-      // Unpublish camera video if it's on
-      if (_localVideoTrack != null && !_isCameraOff) {
-        await promiseToFuture(
-          js_util.callMethod(_client, 'unpublish', [
-            js_util.jsify([_localVideoTrack]),
-          ]),
-        );
-      }
-
-      // Publish screen track
+      // STEP 3: Publish screen track
+      print('📤 Publishing screen share track...');
       await promiseToFuture(
         js_util.callMethod(_client, 'publish', [
           js_util.jsify([_localScreenTrack]),
@@ -402,13 +415,15 @@ class AgoraWebService {
 
       _isSharingScreen = true;
       _screenShareStateController.add(true);
-      
+
       // Auto-play screen share in local video container
       if (_localScreenTrack != null) {
-        js_util.callMethod(_localScreenTrack, 'play', ['local-video-container']);
+        js_util.callMethod(_localScreenTrack, 'play', [
+          'local-video-container',
+        ]);
         print('▶️ Playing screen share in local container');
       }
-      
+
       print('✅ Screen sharing started');
     } catch (e) {
       print('❌ Error starting screen share: $e');
@@ -475,7 +490,10 @@ class AgoraRTCType {
   external dynamic createClient(ClientConfig config);
   external dynamic createMicrophoneAudioTrack();
   external dynamic createCameraVideoTrack();
-  external dynamic createScreenVideoTrack(dynamic config, String screenAudioConfig);
+  external dynamic createScreenVideoTrack(
+    dynamic config,
+    String screenAudioConfig,
+  );
 }
 
 @JS()
