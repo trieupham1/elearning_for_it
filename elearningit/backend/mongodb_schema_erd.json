@@ -1,0 +1,519 @@
+{
+  "database": "elearning_database",
+  "version": "1.0",
+  "description": "E-Learning Management System MongoDB Schema for ERD Diagram",
+  "collections": [
+    {
+      "name": "users",
+      "description": "User accounts (students, instructors, admins)",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "username", "type": "String", "required": true, "unique": true, "indexed": true },
+        { "name": "password", "type": "String", "required": true },
+        { "name": "email", "type": "String", "required": true, "unique": true, "indexed": true },
+        { "name": "role", "type": "String", "enum": ["student", "instructor", "admin"], "default": "student", "indexed": true },
+        { "name": "firstName", "type": "String" },
+        { "name": "lastName", "type": "String" },
+        { "name": "studentId", "type": "String", "sparse": true },
+        { "name": "department", "type": "String", "default": "Information Technology" },
+        { "name": "year", "type": "Number" },
+        { "name": "profilePicture", "type": "String" },
+        { "name": "phoneNumber", "type": "String" },
+        { "name": "bio", "type": "String" },
+        { "name": "isActive", "type": "Boolean", "default": true },
+        { "name": "resetPasswordToken", "type": "String" },
+        { "name": "resetPasswordExpires", "type": "Date" },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [],
+      "indexes": ["username", "email", "role"]
+    },
+    {
+      "name": "semesters",
+      "description": "Academic semesters/terms",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "code", "type": "String", "required": true, "unique": true },
+        { "name": "name", "type": "String", "required": true },
+        { "name": "year", "type": "Number", "required": true },
+        { "name": "startDate", "type": "Date", "required": true },
+        { "name": "endDate", "type": "Date", "required": true },
+        { "name": "isActive", "type": "Boolean", "default": true },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": []
+    },
+    {
+      "name": "courses",
+      "description": "Course offerings",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "code", "type": "String", "required": true, "unique": true },
+        { "name": "name", "type": "String", "required": true },
+        { "name": "description", "type": "String" },
+        { "name": "instructor", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "semester", "type": "ObjectId", "ref": "Semester" },
+        { "name": "students", "type": "Array<ObjectId>", "ref": "User" },
+        { "name": "sessions", "type": "Number", "default": 15 },
+        { "name": "color", "type": "String", "default": "#1976D2" },
+        { "name": "image", "type": "String" },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "users", "field": "instructor", "description": "Course taught by instructor" },
+        { "type": "many-to-one", "collection": "semesters", "field": "semester", "description": "Course belongs to semester" },
+        { "type": "many-to-many", "collection": "users", "field": "students", "description": "Students enrolled in course" }
+      ]
+    },
+    {
+      "name": "groups",
+      "description": "Student groups within courses",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "name", "type": "String", "required": true },
+        { "name": "courseId", "type": "ObjectId", "ref": "Course", "required": true },
+        { "name": "members", "type": "Array<ObjectId>", "ref": "User" },
+        { "name": "createdBy", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "description", "type": "String" },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "courses", "field": "courseId", "description": "Group belongs to course" },
+        { "type": "many-to-many", "collection": "users", "field": "members", "description": "Group members" },
+        { "type": "many-to-one", "collection": "users", "field": "createdBy", "description": "Group creator" }
+      ]
+    },
+    {
+      "name": "assignments",
+      "description": "Course assignments (file-based and code)",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "courseId", "type": "ObjectId", "ref": "Course", "required": true, "indexed": true },
+        { "name": "createdBy", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "createdByName", "type": "String", "required": true },
+        { "name": "title", "type": "String", "required": true },
+        { "name": "description", "type": "String" },
+        { "name": "type", "type": "String", "enum": ["file", "code"], "default": "file" },
+        { "name": "groupIds", "type": "Array<ObjectId>", "ref": "Group", "indexed": true },
+        { "name": "startDate", "type": "Date", "required": true },
+        { "name": "deadline", "type": "Date", "required": true, "indexed": true },
+        { "name": "allowLateSubmission", "type": "Boolean", "default": false },
+        { "name": "lateDeadline", "type": "Date" },
+        { "name": "maxAttempts", "type": "Number", "default": 1 },
+        { "name": "allowedFileTypes", "type": "Array<String>" },
+        { "name": "maxFileSize", "type": "Number", "default": 10485760 },
+        { "name": "attachments", "type": "Array<Object>", "schema": { "fileName": "String", "fileUrl": "String", "fileSize": "Number", "mimeType": "String" } },
+        { "name": "points", "type": "Number", "default": 100 },
+        { "name": "codeConfig", "type": "Object", "schema": { "language": "String", "languageId": "Number", "starterCode": "String", "solutionCode": "String", "allowedLanguages": "Array<String>", "timeLimit": "Number", "memoryLimit": "Number", "showTestCases": "Boolean" } },
+        { "name": "viewedBy", "type": "Array<Object>", "schema": { "userId": "ObjectId", "viewedAt": "Date" } },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "courses", "field": "courseId", "description": "Assignment belongs to course" },
+        { "type": "many-to-one", "collection": "users", "field": "createdBy", "description": "Created by instructor" },
+        { "type": "many-to-many", "collection": "groups", "field": "groupIds", "description": "Assigned to groups" }
+      ],
+      "indexes": ["courseId", "deadline", "groupIds"]
+    },
+    {
+      "name": "submissions",
+      "description": "Student assignment submissions",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "assignmentId", "type": "ObjectId", "ref": "Assignment", "required": true, "indexed": true },
+        { "name": "studentId", "type": "ObjectId", "ref": "User", "required": true, "indexed": true },
+        { "name": "studentName", "type": "String", "required": true },
+        { "name": "studentEmail", "type": "String" },
+        { "name": "groupId", "type": "ObjectId", "ref": "Group" },
+        { "name": "groupName", "type": "String" },
+        { "name": "attemptNumber", "type": "Number", "default": 1 },
+        { "name": "files", "type": "Array<Object>", "schema": { "fileName": "String", "fileUrl": "String", "fileSize": "Number", "mimeType": "String" } },
+        { "name": "submittedAt", "type": "Date", "default": "Date.now" },
+        { "name": "isLate", "type": "Boolean" },
+        { "name": "grade", "type": "Number" },
+        { "name": "feedback", "type": "String" },
+        { "name": "gradedAt", "type": "Date" },
+        { "name": "gradedBy", "type": "ObjectId", "ref": "User" },
+        { "name": "gradedByName", "type": "String" },
+        { "name": "status", "type": "String", "enum": ["submitted", "graded", "returned"], "default": "submitted" },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "assignments", "field": "assignmentId", "description": "Submission for assignment" },
+        { "type": "many-to-one", "collection": "users", "field": "studentId", "description": "Submitted by student" },
+        { "type": "many-to-one", "collection": "groups", "field": "groupId", "description": "Student's group" },
+        { "type": "many-to-one", "collection": "users", "field": "gradedBy", "description": "Graded by instructor" }
+      ],
+      "indexes": ["assignmentId", "studentId"]
+    },
+    {
+      "name": "codesubmissions",
+      "description": "Code assignment submissions with test results",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "assignmentId", "type": "ObjectId", "ref": "Assignment", "required": true, "indexed": true },
+        { "name": "studentId", "type": "ObjectId", "ref": "User", "required": true, "indexed": true },
+        { "name": "code", "type": "String", "required": true },
+        { "name": "language", "type": "String", "enum": ["python", "java", "cpp", "javascript", "c"], "required": true },
+        { "name": "languageId", "type": "Number", "required": true },
+        { "name": "status", "type": "String", "enum": ["pending", "running", "completed", "failed", "error"], "default": "pending" },
+        { "name": "testResults", "type": "Array<Object>", "schema": { "testCaseId": "ObjectId", "input": "String", "expectedOutput": "String", "actualOutput": "String", "status": "String", "executionTime": "Number", "memoryUsed": "Number", "errorMessage": "String", "weight": "Number" } },
+        { "name": "totalScore", "type": "Number", "default": 0 },
+        { "name": "passedTests", "type": "Number", "default": 0 },
+        { "name": "totalTests", "type": "Number", "default": 0 },
+        { "name": "executionTime", "type": "Number" },
+        { "name": "memoryUsed", "type": "Number" },
+        { "name": "errorMessage", "type": "String" },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "assignments", "field": "assignmentId", "description": "Code submission for assignment" },
+        { "type": "many-to-one", "collection": "users", "field": "studentId", "description": "Submitted by student" }
+      ],
+      "indexes": ["assignmentId", "studentId"]
+    },
+    {
+      "name": "questions",
+      "description": "Quiz questions",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "courseId", "type": "ObjectId", "ref": "Course", "required": true, "indexed": true },
+        { "name": "createdBy", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "questionText", "type": "String", "required": true },
+        { "name": "choices", "type": "Array<Object>", "schema": { "text": "String", "isCorrect": "Boolean" } },
+        { "name": "difficulty", "type": "String", "enum": ["easy", "medium", "hard"], "required": true, "indexed": true },
+        { "name": "explanation", "type": "String" },
+        { "name": "category", "type": "String", "default": "" },
+        { "name": "tags", "type": "Array<String>" },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "courses", "field": "courseId", "description": "Question belongs to course" },
+        { "type": "many-to-one", "collection": "users", "field": "createdBy", "description": "Created by instructor" }
+      ],
+      "indexes": ["courseId", "difficulty"]
+    },
+    {
+      "name": "quizzes",
+      "description": "Quizzes/tests",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "courseId", "type": "ObjectId", "ref": "Course", "required": true, "indexed": true },
+        { "name": "createdBy", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "title", "type": "String", "required": true },
+        { "name": "description", "type": "String" },
+        { "name": "groupIds", "type": "Array<ObjectId>", "ref": "Group", "indexed": true },
+        { "name": "openDate", "type": "Date", "required": true, "indexed": true },
+        { "name": "closeDate", "type": "Date", "required": true, "indexed": true },
+        { "name": "duration", "type": "Number", "required": true },
+        { "name": "maxAttempts", "type": "Number", "default": 1 },
+        { "name": "allowRetakes", "type": "Boolean", "default": false },
+        { "name": "shuffleQuestions", "type": "Boolean", "default": true },
+        { "name": "showResultsImmediately", "type": "Boolean", "default": false },
+        { "name": "questionStructure", "type": "Object", "schema": { "easy": "Number", "medium": "Number", "hard": "Number" } },
+        { "name": "randomizeQuestions", "type": "Boolean", "default": true },
+        { "name": "selectedQuestions", "type": "Array<ObjectId>", "ref": "Question" },
+        { "name": "totalPoints", "type": "Number", "default": 100 },
+        { "name": "isActive", "type": "Boolean", "default": true },
+        { "name": "status", "type": "String", "enum": ["draft", "active", "closed", "archived"], "default": "draft" },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "courses", "field": "courseId", "description": "Quiz belongs to course" },
+        { "type": "many-to-one", "collection": "users", "field": "createdBy", "description": "Created by instructor" },
+        { "type": "many-to-many", "collection": "groups", "field": "groupIds", "description": "Assigned to groups" },
+        { "type": "many-to-many", "collection": "questions", "field": "selectedQuestions", "description": "Quiz questions" }
+      ],
+      "indexes": ["courseId", "openDate", "closeDate", "groupIds"]
+    },
+    {
+      "name": "quizattempts",
+      "description": "Student quiz attempts and results",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "quizId", "type": "ObjectId", "ref": "Quiz", "required": true, "indexed": true },
+        { "name": "studentId", "type": "ObjectId", "ref": "User", "required": true, "indexed": true },
+        { "name": "attemptNumber", "type": "Number", "required": true },
+        { "name": "startTime", "type": "Date", "required": true },
+        { "name": "endTime", "type": "Date" },
+        { "name": "submissionTime", "type": "Date", "indexed": true },
+        { "name": "timeSpent", "type": "Number", "default": 0 },
+        { "name": "duration", "type": "Number", "required": true },
+        { "name": "questions", "type": "Array<Object>", "schema": { "questionId": "ObjectId", "questionText": "String", "choices": "Array", "difficulty": "String", "selectedAnswer": "Array<String>", "isCorrect": "Boolean", "timeSpent": "Number" } },
+        { "name": "totalQuestions", "type": "Number", "required": true },
+        { "name": "correctAnswers", "type": "Number", "default": 0 },
+        { "name": "score", "type": "Number", "default": 0 },
+        { "name": "pointsEarned", "type": "Number", "default": 0 },
+        { "name": "totalPoints", "type": "Number", "required": true },
+        { "name": "status", "type": "String", "enum": ["in_progress", "completed", "submitted", "auto_submitted", "expired"], "default": "in_progress", "indexed": true },
+        { "name": "ipAddress", "type": "String" },
+        { "name": "userAgent", "type": "String" },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "quizzes", "field": "quizId", "description": "Attempt for quiz" },
+        { "type": "many-to-one", "collection": "users", "field": "studentId", "description": "Attempted by student" }
+      ],
+      "indexes": ["quizId", "studentId", "status", "submissionTime"]
+    },
+    {
+      "name": "materials",
+      "description": "Course learning materials",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "courseId", "type": "ObjectId", "ref": "Course", "required": true, "indexed": true },
+        { "name": "createdBy", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "title", "type": "String", "required": true },
+        { "name": "description", "type": "String" },
+        { "name": "files", "type": "Array<Object>", "schema": { "fileName": "String", "fileUrl": "String", "fileSize": "Number", "mimeType": "String" } },
+        { "name": "links", "type": "Array<String>" },
+        { "name": "viewedBy", "type": "Array<Object>", "schema": { "userId": "ObjectId", "viewedAt": "Date" } },
+        { "name": "downloadedBy", "type": "Array<Object>", "schema": { "userId": "ObjectId", "fileName": "String", "downloadedAt": "Date" } },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "courses", "field": "courseId", "description": "Material belongs to course" },
+        { "type": "many-to-one", "collection": "users", "field": "createdBy", "description": "Uploaded by instructor" }
+      ],
+      "indexes": ["courseId"]
+    },
+    {
+      "name": "announcements",
+      "description": "Course announcements",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "courseId", "type": "ObjectId", "ref": "Course", "required": true, "indexed": true },
+        { "name": "title", "type": "String", "required": true },
+        { "name": "content", "type": "String", "required": true },
+        { "name": "authorId", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "authorName", "type": "String", "required": true },
+        { "name": "authorAvatar", "type": "String" },
+        { "name": "groupIds", "type": "Array<ObjectId>", "ref": "Group", "indexed": true },
+        { "name": "attachments", "type": "Array<Object>", "schema": { "fileName": "String", "fileUrl": "String", "fileSize": "Number", "mimeType": "String" } },
+        { "name": "comments", "type": "Array<Object>", "schema": { "userId": "ObjectId", "userName": "String", "userAvatar": "String", "text": "String", "createdAt": "Date" } },
+        { "name": "viewedBy", "type": "Array<Object>", "schema": { "userId": "ObjectId", "viewedAt": "Date" } },
+        { "name": "downloadedBy", "type": "Array<Object>", "schema": { "userId": "ObjectId", "fileName": "String", "downloadedAt": "Date" } },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "courses", "field": "courseId", "description": "Announcement belongs to course" },
+        { "type": "many-to-one", "collection": "users", "field": "authorId", "description": "Posted by instructor" },
+        { "type": "many-to-many", "collection": "groups", "field": "groupIds", "description": "Targeted to groups" }
+      ],
+      "indexes": ["courseId", "groupIds"]
+    },
+    {
+      "name": "forumtopics",
+      "description": "Course forum discussion topics",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "courseId", "type": "ObjectId", "ref": "Course", "required": true, "indexed": true },
+        { "name": "authorId", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "authorName", "type": "String", "required": true },
+        { "name": "authorRole", "type": "String", "enum": ["student", "instructor"], "required": true },
+        { "name": "title", "type": "String", "required": true },
+        { "name": "content", "type": "String" },
+        { "name": "attachments", "type": "Array<Object>", "schema": { "fileName": "String", "fileUrl": "String", "fileSize": "Number", "mimeType": "String" } },
+        { "name": "isPinned", "type": "Boolean", "default": false },
+        { "name": "isLocked", "type": "Boolean", "default": false },
+        { "name": "views", "type": "Number", "default": 0 },
+        { "name": "likes", "type": "Array<ObjectId>", "ref": "User" },
+        { "name": "replyCount", "type": "Number", "default": 0 },
+        { "name": "lastActivityAt", "type": "Date", "default": "Date.now" },
+        { "name": "tags", "type": "Array<String>" },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "courses", "field": "courseId", "description": "Topic belongs to course" },
+        { "type": "many-to-one", "collection": "users", "field": "authorId", "description": "Created by user" }
+      ],
+      "indexes": ["courseId", { "compound": ["isPinned", "lastActivityAt"] }]
+    },
+    {
+      "name": "forumreplies",
+      "description": "Replies to forum topics",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "topicId", "type": "ObjectId", "ref": "ForumTopic", "required": true, "indexed": true },
+        { "name": "authorId", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "authorName", "type": "String", "required": true },
+        { "name": "authorRole", "type": "String", "enum": ["student", "instructor"], "required": true },
+        { "name": "content", "type": "String", "required": true },
+        { "name": "parentReplyId", "type": "ObjectId", "ref": "ForumReply", "indexed": true },
+        { "name": "attachments", "type": "Array<Object>", "schema": { "fileName": "String", "fileUrl": "String", "fileSize": "Number", "mimeType": "String" } },
+        { "name": "likes", "type": "Array<ObjectId>", "ref": "User" },
+        { "name": "isEdited", "type": "Boolean", "default": false },
+        { "name": "editedAt", "type": "Date" },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "forumtopics", "field": "topicId", "description": "Reply to topic" },
+        { "type": "many-to-one", "collection": "users", "field": "authorId", "description": "Posted by user" },
+        { "type": "many-to-one", "collection": "forumreplies", "field": "parentReplyId", "description": "Reply to another reply" }
+      ],
+      "indexes": ["topicId", "parentReplyId"]
+    },
+    {
+      "name": "messages",
+      "description": "Private messages between users",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "senderId", "type": "ObjectId", "ref": "User", "required": true, "indexed": true },
+        { "name": "receiverId", "type": "ObjectId", "ref": "User", "required": true, "indexed": true },
+        { "name": "content", "type": "String", "required": true },
+        { "name": "fileId", "type": "String" },
+        { "name": "attachments", "type": "Array<Object>", "schema": { "fileName": "String", "fileUrl": "String", "fileSize": "Number", "mimeType": "String" } },
+        { "name": "isRead", "type": "Boolean", "default": false },
+        { "name": "readAt", "type": "Date" },
+        { "name": "messageType", "type": "String", "enum": ["text", "audio_call", "video_call"], "default": "text" },
+        { "name": "callDuration", "type": "Number" },
+        { "name": "callStatus", "type": "String", "enum": ["completed", "missed", "rejected", "no_answer"], "default": "completed" },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "users", "field": "senderId", "description": "Sent by user" },
+        { "type": "many-to-one", "collection": "users", "field": "receiverId", "description": "Sent to user" }
+      ],
+      "indexes": [{ "compound": ["senderId", "receiverId", "createdAt"] }]
+    },
+    {
+      "name": "notifications",
+      "description": "User notifications",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "userId", "type": "ObjectId", "ref": "User", "required": true, "indexed": true },
+        { "name": "type", "type": "String", "enum": ["material", "announcement", "assignment", "comment", "message", "quiz", "submission", "quiz_attempt", "course_invite", "course_join_request", "teacher_invite", "teacher_invite_response"], "required": true },
+        { "name": "title", "type": "String", "required": true },
+        { "name": "message", "type": "String", "required": true },
+        { "name": "data", "type": "Mixed", "default": {} },
+        { "name": "isRead", "type": "Boolean", "default": false, "indexed": true },
+        { "name": "readAt", "type": "Date" },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "users", "field": "userId", "description": "Notification for user" }
+      ],
+      "indexes": ["userId", "isRead", { "compound": ["userId", "isRead"] }]
+    },
+    {
+      "name": "departments",
+      "description": "Academic departments",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "name", "type": "String", "required": true, "unique": true },
+        { "name": "code", "type": "String", "required": true, "unique": true },
+        { "name": "description", "type": "String" },
+        { "name": "headOfDepartment", "type": "ObjectId", "ref": "User" },
+        { "name": "isActive", "type": "Boolean", "default": true },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "users", "field": "headOfDepartment", "description": "Department head" }
+      ]
+    },
+    {
+      "name": "activitylogs",
+      "description": "System activity audit logs",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "user", "type": "ObjectId", "ref": "User", "indexed": true },
+        { "name": "action", "type": "String", "required": true },
+        { "name": "description", "type": "String", "required": true },
+        { "name": "ipAddress", "type": "String" },
+        { "name": "userAgent", "type": "String" },
+        { "name": "metadata", "type": "Mixed" },
+        { "name": "timestamp", "type": "Date", "default": "Date.now", "indexed": true },
+        { "name": "createdAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "users", "field": "user", "description": "Activity by user" }
+      ],
+      "indexes": ["user", "timestamp"]
+    },
+    {
+      "name": "attendancesessions",
+      "description": "Attendance tracking sessions",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "courseId", "type": "ObjectId", "ref": "Course", "required": true, "indexed": true },
+        { "name": "sessionDate", "type": "Date", "required": true },
+        { "name": "sessionNumber", "type": "Number", "required": true },
+        { "name": "status", "type": "String", "enum": ["scheduled", "ongoing", "completed"], "default": "scheduled" },
+        { "name": "qrCode", "type": "String" },
+        { "name": "expiresAt", "type": "Date" },
+        { "name": "createdBy", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "courses", "field": "courseId", "description": "Session for course" },
+        { "type": "many-to-one", "collection": "users", "field": "createdBy", "description": "Created by instructor" }
+      ],
+      "indexes": ["courseId", "sessionDate"]
+    },
+    {
+      "name": "attendancerecords",
+      "description": "Individual attendance records",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "sessionId", "type": "ObjectId", "ref": "AttendanceSession", "required": true, "indexed": true },
+        { "name": "studentId", "type": "ObjectId", "ref": "User", "required": true, "indexed": true },
+        { "name": "status", "type": "String", "enum": ["present", "absent", "late", "excused"], "required": true },
+        { "name": "checkInTime", "type": "Date" },
+        { "name": "note", "type": "String" },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "attendancesessions", "field": "sessionId", "description": "Record for session" },
+        { "type": "many-to-one", "collection": "users", "field": "studentId", "description": "Attendance of student" }
+      ],
+      "indexes": ["sessionId", "studentId"]
+    },
+    {
+      "name": "playlists",
+      "description": "Video/content playlists",
+      "fields": [
+        { "name": "_id", "type": "ObjectId", "primaryKey": true },
+        { "name": "courseId", "type": "ObjectId", "ref": "Course", "required": true, "indexed": true },
+        { "name": "title", "type": "String", "required": true },
+        { "name": "description", "type": "String" },
+        { "name": "videos", "type": "Array<Object>", "schema": { "videoId": "String", "title": "String", "duration": "Number", "order": "Number" } },
+        { "name": "isPublished", "type": "Boolean", "default": false },
+        { "name": "createdBy", "type": "ObjectId", "ref": "User", "required": true },
+        { "name": "createdAt", "type": "Date", "auto": true },
+        { "name": "updatedAt", "type": "Date", "auto": true }
+      ],
+      "relationships": [
+        { "type": "many-to-one", "collection": "courses", "field": "courseId", "description": "Playlist for course" },
+        { "type": "many-to-one", "collection": "users", "field": "createdBy", "description": "Created by instructor" }
+      ],
+      "indexes": ["courseId"]
+    }
+  ],
+  "summary": {
+    "totalCollections": 24,
+    "coreEntities": ["users", "courses", "semesters"],
+    "contentTypes": ["assignments", "quizzes", "materials", "announcements"],
+    "interactionTypes": ["submissions", "quizattempts", "messages", "notifications"],
+    "forumSystem": ["forumtopics", "forumreplies"],
+    "trackingSystem": ["attendancesessions", "attendancerecords", "activitylogs"]
+  }
+}

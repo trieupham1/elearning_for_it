@@ -7,27 +7,54 @@ class EmailService {
   constructor() {
     // Check if email is configured
     this.isConfigured = !!(
-      process.env.EMAIL_SERVICE &&
-      process.env.EMAIL_USER &&
-      process.env.EMAIL_PASSWORD &&
-      process.env.EMAIL_FROM
+      (process.env.EMAIL_SERVICE && process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) ||
+      process.env.RESEND_API_KEY ||
+      process.env.SENDGRID_API_KEY
     );
 
     if (!this.isConfigured) {
-      console.warn('⚠️ Email service not configured. Set EMAIL_SERVICE, EMAIL_USER, EMAIL_PASSWORD, and EMAIL_FROM in .env file');
+      console.warn('⚠️ Email service not configured. Set EMAIL credentials, RESEND_API_KEY, or SENDGRID_API_KEY in .env file');
       console.warn('⚠️ Email notifications will be skipped until configuration is complete');
       return;
     }
 
     try {
-      this.transporter = nodemailer.createTransport({
-        service: process.env.EMAIL_SERVICE || 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD
-        }
-      });
-      console.log('✅ Email service initialized successfully');
+      // Option 1: Resend (recommended - free 3000 emails/month, never expires)
+      if (process.env.RESEND_API_KEY) {
+        this.transporter = nodemailer.createTransport({
+          host: 'smtp.resend.com',
+          port: 465,
+          secure: true,
+          auth: {
+            user: 'resend',
+            pass: process.env.RESEND_API_KEY
+          }
+        });
+        console.log('✅ Email service initialized with Resend');
+      }
+      // Option 2: SendGrid (free 100 emails/day)
+      else if (process.env.SENDGRID_API_KEY) {
+        this.transporter = nodemailer.createTransport({
+          host: 'smtp.sendgrid.net',
+          port: 587,
+          auth: {
+            user: 'apikey',
+            pass: process.env.SENDGRID_API_KEY
+          }
+        });
+        console.log('✅ Email service initialized with SendGrid');
+      }
+      // Option 3: Gmail with App Password (use App Password, not OAuth token)
+      else {
+        this.transporter = nodemailer.createTransport({
+          service: process.env.EMAIL_SERVICE || 'gmail',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD  // Use App Password for Gmail
+          }
+        });
+        console.log('✅ Email service initialized with', process.env.EMAIL_SERVICE || 'gmail');
+      }
     } catch (error) {
       console.error('❌ Failed to initialize email service:', error.message);
       this.isConfigured = false;
@@ -41,8 +68,11 @@ class EmailService {
     }
 
     try {
+      const fromAddress = process.env.EMAIL_FROM || 
+                          (process.env.RESEND_API_KEY ? 'noreply@yourdomain.com' : process.env.EMAIL_USER);
+      
       const mailOptions = {
-        from: process.env.EMAIL_FROM,
+        from: fromAddress,
         to,
         subject,
         html

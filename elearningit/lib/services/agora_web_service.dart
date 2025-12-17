@@ -17,6 +17,7 @@ class AgoraWebService {
   dynamic _localScreenTrack;
   dynamic _remoteVideoTrack;
   dynamic _remoteUser;
+  final Map<int, dynamic> _remoteVideoTracks = {}; // Store tracks per user
 
   final StreamController<int> _remoteUidController =
       StreamController<int>.broadcast();
@@ -26,17 +27,21 @@ class AgoraWebService {
       StreamController<String>.broadcast();
   final StreamController<bool> _screenShareStateController =
       StreamController<bool>.broadcast();
+  final StreamController<int> _remoteVideoPublishedController =
+      StreamController<int>.broadcast();
 
   Stream<int> get remoteUid => _remoteUidController.stream;
   Stream<int> get remoteUserLeft => _remoteUserLeftController.stream;
   Stream<String> get connectionState => _connectionStateController.stream;
   Stream<bool> get screenShareState => _screenShareStateController.stream;
+  Stream<int> get remoteVideoPublished => _remoteVideoPublishedController.stream;
   int? get localUid => _localUid;
 
   bool _isMuted = false;
   bool _isCameraOff = false;
   bool _isVideoEnabled = true;
   bool _isSharingScreen = false;
+  bool _wasVideoEnabledBeforeScreenShare = false;
   int? _localUid;
 
   bool get isMuted => _isMuted;
@@ -70,15 +75,16 @@ class AgoraWebService {
       js_util.callMethod(_client, 'on', [
         'user-published',
         allowInterop((user, mediaType) async {
+          final uid = js_util.getProperty(user, 'uid') as int;
           print(
-            '👤 Remote user published: ${js_util.getProperty(user, 'uid')}, mediaType: $mediaType',
+            '👤 Remote user published: $uid, mediaType: $mediaType',
           );
 
           await promiseToFuture(
             js_util.callMethod(_client, 'subscribe', [user, mediaType]),
           );
           print(
-            '✅ Subscribed to remote user ${js_util.getProperty(user, 'uid')}',
+            '✅ Subscribed to remote user $uid',
           );
 
           if (mediaType == 'audio') {
@@ -90,20 +96,31 @@ class AgoraWebService {
           }
 
           if (mediaType == 'video') {
-            // Store remote video track for rendering
-            _remoteVideoTrack = js_util.getProperty(user, 'videoTrack');
+            // Store remote video track for rendering (both in single var and map)
+            final videoTrack = js_util.getProperty(user, 'videoTrack');
+            _remoteVideoTrack = videoTrack;
             _remoteUser = user;
-            final uid = js_util.getProperty(user, 'uid') as int;
+            _remoteVideoTracks[uid] = videoTrack; // Store by UID
             print('📹 Remote video track received for UID $uid');
 
+            // Notify that video is published so UI can refresh
+            _remoteVideoPublishedController.add(uid);
+
             // Auto-play the video track in the remote video container
-            if (_remoteVideoTrack != null) {
-              js_util.callMethod(_remoteVideoTrack, 'play', [
-                'remote-video-container-$uid',
-              ]);
-              print(
-                '▶️ Auto-playing remote video in container: remote-video-container-$uid',
-              );
+            if (videoTrack != null) {
+              // Delay slightly to ensure container exists
+              Future.delayed(const Duration(milliseconds: 200), () {
+                try {
+                  js_util.callMethod(videoTrack, 'play', [
+                    'remote-video-container-$uid',
+                  ]);
+                  print(
+                    '▶️ Auto-playing remote video in container: remote-video-container-$uid',
+                  );
+                } catch (e) {
+                  print('⚠️ Could not play video for UID $uid: $e');
+                }
+              });
             }
           }
         }),
@@ -337,12 +354,28 @@ class AgoraWebService {
     }
   }
 
-  // Play remote video in HTML element
-  void playRemoteVideo(String elementId) {
-    if (_remoteVideoTrack != null) {
-      print('▶️ Playing remote video in element: $elementId');
+  // Play remote video in HTML element for a specific user
+  void playRemoteVideo(int uid, String elementId) {
+    final track = _remoteVideoTracks[uid];
+    if (track != null) {
+      try {
+        js_util.callMethod(track, 'play', [elementId]);
+        print('▶️ Playing remote video for UID $uid in element: $elementId');
+      } catch (e) {
+        print('⚠️ Error playing remote video for UID $uid: $e');
+      }
+    } else if (_remoteVideoTrack != null) {
+      // Fallback to single track
+      print('▶️ Playing remote video (fallback) in element: $elementId');
       js_util.callMethod(_remoteVideoTrack, 'play', [elementId]);
+    } else {
+      print('⚠️ No video track found for UID $uid');
     }
+  }
+
+  // Check if we have a video track for a user
+  bool hasRemoteVideoTrack(int uid) {
+    return _remoteVideoTracks.containsKey(uid) && _remoteVideoTracks[uid] != null;
   }
 
   // Toggle screen sharing
@@ -363,15 +396,23 @@ class AgoraWebService {
         '🖥️ Starting screen share (audio: ${includeAudio ? "enabled" : "disabled"})...',
       );
 
-      // STEP 1: Unpublish camera video FIRST if it's currently published
-      if (_localVideoTrack != null && !_isCameraOff) {
+      // Save current camera state before screen share
+      _wasVideoEnabledBeforeScreenShare = !_isCameraOff && _localVideoTrack != null;
+      print('📹 Camera was ${_wasVideoEnabledBeforeScreenShare ? "ON" : "OFF"} before screen share');
+
+      // STEP 1: ALWAYS unpublish camera video FIRST to avoid CAN_NOT_PUBLISH_MULTIPLE_VIDEO_TRACKS error
+      if (_localVideoTrack != null) {
         print('📹 Unpublishing camera video before screen share...');
-        await promiseToFuture(
-          js_util.callMethod(_client, 'unpublish', [
-            js_util.jsify([_localVideoTrack]),
-          ]),
-        );
-        print('✅ Camera video unpublished');
+        try {
+          await promiseToFuture(
+            js_util.callMethod(_client, 'unpublish', [
+              js_util.jsify([_localVideoTrack]),
+            ]),
+          );
+          print('✅ Camera video unpublished');
+        } catch (e) {
+          print('⚠️ Error unpublishing camera (may not be published): $e');
+        }
       }
 
       // STEP 2: Create screen video track
@@ -439,30 +480,61 @@ class AgoraWebService {
 
       if (_localScreenTrack != null) {
         // Unpublish screen track
-        await promiseToFuture(
-          js_util.callMethod(_client, 'unpublish', [
-            js_util.jsify([_localScreenTrack]),
-          ]),
-        );
+        try {
+          await promiseToFuture(
+            js_util.callMethod(_client, 'unpublish', [
+              js_util.jsify([_localScreenTrack]),
+            ]),
+          );
+          print('✅ Screen track unpublished');
+        } catch (e) {
+          print('⚠️ Error unpublishing screen track: $e');
+        }
 
         // Close and clean up screen track
-        await promiseToFuture(
-          js_util.callMethod(_localScreenTrack, 'close', []),
-        );
+        try {
+          await promiseToFuture(
+            js_util.callMethod(_localScreenTrack, 'close', []),
+          );
+          print('✅ Screen track closed');
+        } catch (e) {
+          print('⚠️ Error closing screen track: $e');
+        }
+        
         _localScreenTrack = null;
-      }
-
-      // Re-publish camera video if it was on before screen share
-      if (_localVideoTrack != null && !_isCameraOff) {
-        await promiseToFuture(
-          js_util.callMethod(_client, 'publish', [
-            js_util.jsify([_localVideoTrack]),
-          ]),
-        );
       }
 
       _isSharingScreen = false;
       _screenShareStateController.add(false);
+
+      // Re-publish camera video if camera was on before screen share
+      if (_localVideoTrack != null && _wasVideoEnabledBeforeScreenShare) {
+        print('📹 Re-publishing camera video after screen share (was enabled before)...');
+        
+        // Wait a bit to ensure screen track is fully unpublished
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        try {
+          await promiseToFuture(
+            js_util.callMethod(_client, 'publish', [
+              js_util.jsify([_localVideoTrack]),
+            ]),
+          );
+          
+          // Play the camera video again in local container
+          playLocalVideo('local-video-container');
+          
+          // Reset camera off state since camera is now back on
+          _isCameraOff = false;
+          
+          print('✅ Camera video re-published and playing');
+        } catch (e) {
+          print('⚠️ Error re-publishing camera: $e');
+        }
+      } else {
+        print('📹 Camera was off before screen share, not republishing');
+      }
+
       print('✅ Screen sharing stopped');
     } catch (e) {
       print('❌ Error stopping screen share: $e');

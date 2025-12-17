@@ -239,54 +239,156 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
             )
           : Stack(
               children: [
-                // Main video grid
-                _buildVideoGrid(),
-                
-                // Controls at bottom
+                // Remote users grid
+                if (_remoteUsers.isEmpty)
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.person_outline,
+                          size: 80,
+                          color: Colors.white.withOpacity(0.3),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Waiting for others to join...',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  GridView.builder(
+                    padding: const EdgeInsets.only(
+                      left: 8,
+                      right: 8,
+                      top: 60,
+                      bottom: 120,
+                    ),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: _remoteUsers.length > 4 ? 3 : (_remoteUsers.length > 1 ? 2 : 1),
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                      childAspectRatio: 0.75,
+                    ),
+                    itemCount: _remoteUsers.length,
+                    itemBuilder: (context, index) {
+                      return _buildRemoteVideo(_remoteUsers[index]);
+                    },
+                  ),
+
+                // Local preview (top-right corner)
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: _buildLocalPreviewSmall(),
+                ),
+
+                // Participant badge (top-left corner)
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  child: _buildParticipantBadge(),
+                ),
+
+                // Bottom controls
                 Positioned(
                   left: 0,
                   right: 0,
                   bottom: 0,
                   child: _buildControls(),
                 ),
-                
-                // Participant count badge
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: _buildParticipantBadge(),
-                ),
               ],
             ),
     );
   }
 
-  Widget _buildVideoGrid() {
-    final totalUsers = _remoteUsers.length + 1; // +1 for local user
-    
-    if (_remoteUsers.isEmpty) {
-      // Only local user
-      return Center(
-        child: _buildLocalPreview(),
-      );
-    }
-    
-    // Grid layout for multiple users
-    return GridView.builder(
-      padding: const EdgeInsets.all(8),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: totalUsers > 4 ? 3 : 2,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 0.75,
+  Widget _buildLocalPreviewSmall() {
+    return Container(
+      width: 120,
+      height: 160,
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      itemCount: totalUsers,
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return _buildLocalPreview();
-        }
-        return _buildRemoteVideo(_remoteUsers[index - 1]);
-      },
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: _isVideoEnabled && !_isSharingScreen
+                ? AgoraVideoView(
+                    controller: VideoViewController(
+                      rtcEngine: _engine,
+                      canvas: const VideoCanvas(uid: 0),
+                    ),
+                  )
+                : Center(
+                    child: CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.blue,
+                      child: Text(
+                        (widget.currentUser.firstName?.isNotEmpty ?? false)
+                            ? widget.currentUser.firstName![0].toUpperCase()
+                            : 'Y',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+          ),
+          Positioned(
+            left: 6,
+            bottom: 6,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'You',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          if (_isMuted)
+            Positioned(
+              top: 6,
+              right: 6,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.mic_off,
+                  color: Colors.white,
+                  size: 12,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -428,52 +530,163 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
 
   Widget _buildControls() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 32),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
             Colors.transparent,
-            Colors.black.withOpacity(0.8),
+            Colors.black.withOpacity(0.9),
           ],
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _buildControlButton(
-            icon: _isMuted ? Icons.mic_off : Icons.mic,
-            label: _isMuted ? 'Unmute' : 'Mute',
-            onPressed: _toggleMute,
-            color: _isMuted ? Colors.red : Colors.white,
-          ),
-          _buildControlButton(
-            icon: _isVideoEnabled ? Icons.videocam : Icons.videocam_off,
-            label: _isVideoEnabled ? 'Stop Video' : 'Start Video',
-            onPressed: _toggleVideo,
-            color: _isVideoEnabled ? Colors.white : Colors.red,
-          ),
-          _buildControlButton(
-            icon: _isSharingScreen ? Icons.stop_screen_share : Icons.screen_share,
-            label: _isSharingScreen ? 'Stop Share' : 'Share Screen',
-            onPressed: _toggleScreenShare,
-            color: _isSharingScreen ? Colors.green : Colors.white,
-          ),
-          _buildControlButton(
-            icon: Icons.flip_camera_ios,
-            label: 'Switch',
-            onPressed: _switchCamera,
-            color: Colors.white,
-          ),
-          _buildControlButton(
-            icon: Icons.call_end,
-            label: 'Leave',
-            onPressed: _leaveChannel,
-            color: Colors.red,
-            isEndCall: true,
+          // Note for web users about camera switch
+          if (Theme.of(context).platform == TargetPlatform.windows ||
+              Theme.of(context).platform == TargetPlatform.macOS ||
+              Theme.of(context).platform == TargetPlatform.linux)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 14,
+                      color: Colors.blue[200],
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Camera switch is available on mobile devices',
+                      style: TextStyle(
+                        color: Colors.blue[200],
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildControlButton(
+                icon: _isMuted ? Icons.mic_off : Icons.mic,
+                label: 'Mute',
+                onPressed: _toggleMute,
+                color: Colors.white,
+                backgroundColor: _isMuted ? Colors.red : Colors.grey[800]!,
+              ),
+              _buildControlButton(
+                icon: _isVideoEnabled ? Icons.videocam : Icons.videocam_off,
+                label: 'Stop Video',
+                onPressed: _toggleVideo,
+                color: Colors.white,
+                backgroundColor: _isVideoEnabled ? Colors.grey[800]! : Colors.red,
+              ),
+              // Only show camera switch on mobile platforms
+              if (Theme.of(context).platform == TargetPlatform.android ||
+                  Theme.of(context).platform == TargetPlatform.iOS)
+                _buildControlButton(
+                  icon: Icons.flip_camera_ios,
+                  label: 'Switch Camera',
+                  onPressed: _switchCamera,
+                  color: Colors.white,
+                  backgroundColor: Colors.grey[800]!,
+                ),
+              _buildControlButton(
+                icon: Icons.call_end,
+                label: 'End',
+                onPressed: _leaveChannel,
+                color: Colors.white,
+                backgroundColor: Colors.red,
+                isEndCall: true,
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildVerticalControls() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Mute button
+        _buildCircularButton(
+          icon: _isMuted ? Icons.mic_off : Icons.mic,
+          onPressed: _toggleMute,
+          backgroundColor: _isMuted ? Colors.red : Colors.grey[700]!,
+        ),
+        const SizedBox(height: 20),
+        
+        // Stop video button
+        _buildCircularButton(
+          icon: !_isVideoEnabled ? Icons.videocam_off : Icons.videocam,
+          onPressed: _toggleVideo,
+          backgroundColor: !_isVideoEnabled ? Colors.red : Colors.grey[700]!,
+        ),
+        const SizedBox(height: 20),
+        
+        // Screen share button
+        _buildCircularButton(
+          icon: _isSharingScreen ? Icons.stop_screen_share : Icons.screen_share,
+          onPressed: _toggleScreenShare,
+          backgroundColor: _isSharingScreen ? Colors.green : Colors.grey[700]!,
+        ),
+        const SizedBox(height: 20),
+        
+        // Switch camera (mobile only)
+        if (Theme.of(context).platform == TargetPlatform.android ||
+            Theme.of(context).platform == TargetPlatform.iOS)
+          _buildCircularButton(
+            icon: Icons.switch_camera,
+            onPressed: _switchCamera,
+            backgroundColor: Colors.grey[700]!,
+          ),
+        if (Theme.of(context).platform == TargetPlatform.android ||
+            Theme.of(context).platform == TargetPlatform.iOS)
+          const SizedBox(height: 20),
+        
+        // End call button
+        _buildCircularButton(
+          icon: Icons.call_end,
+          onPressed: _leaveChannel,
+          backgroundColor: Colors.red,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCircularButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required Color backgroundColor,
+  }) {
+    return Material(
+      color: backgroundColor,
+      shape: const CircleBorder(),
+      elevation: 4,
+      child: InkWell(
+        onTap: onPressed,
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 56,
+          height: 56,
+          alignment: Alignment.center,
+          child: Icon(icon, color: Colors.white, size: 28),
+        ),
       ),
     );
   }
@@ -483,29 +696,32 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
     required String label,
     required VoidCallback onPressed,
     required Color color,
+    Color? backgroundColor,
     bool isEndCall = false,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Material(
-          color: isEndCall ? Colors.red : Colors.white24,
+          color: backgroundColor ?? (isEndCall ? Colors.red : Colors.grey[800]),
           borderRadius: BorderRadius.circular(50),
+          elevation: 2,
           child: InkWell(
             onTap: onPressed,
             borderRadius: BorderRadius.circular(50),
             child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Icon(icon, color: color, size: 28),
+              padding: const EdgeInsets.all(16),
+              child: Icon(icon, color: color, size: 26),
             ),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           label,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 10,
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],

@@ -96,7 +96,17 @@ class _ChatScreenState extends State<ChatScreen> {
               print('⚠️ Message already exists, skipping');
             }
           });
-          _scrollToBottom();
+
+          // Smooth scroll to bottom when receiving message
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients) {
+              _scrollController.animateTo(
+                _scrollController.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
+            }
+          });
         }
       } catch (e) {
         print('⚠️ Error parsing real-time message: $e');
@@ -110,27 +120,26 @@ class _ChatScreenState extends State<ChatScreen> {
       final messages = await _messageService.getConversation(
         widget.recipient.id,
       );
-      setState(() {
-        _messages = messages;
-        _filteredMessages = messages;
-        _isLoading = false;
-      });
-      _scrollToBottom();
+      
+      if (mounted) {
+        setState(() {
+          _messages = messages;
+          _filteredMessages = messages;
+          _isLoading = false;
+        });
+        
+        // Jump to bottom instantly without animation on first load
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_scrollController.hasClients && mounted) {
+            _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+          }
+        });
+      }
     } catch (e) {
       print('Error loading messages: $e');
-      setState(() => _isLoading = false);
-    }
-  }
-
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      });
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -138,6 +147,9 @@ class _ChatScreenState extends State<ChatScreen> {
     final content = _messageController.text.trim();
     if (content.isEmpty) return;
 
+    // Clear input immediately for better UX
+    _messageController.clear();
+    
     setState(() => _isSending = true);
 
     try {
@@ -146,24 +158,34 @@ class _ChatScreenState extends State<ChatScreen> {
         content: content,
       );
 
-      if (message != null) {
-        // Clear input
-        _messageController.clear();
+      if (message != null && mounted) {
+        // Add message to list without reloading (like Messenger)
+        setState(() {
+          final exists = _messages.any((m) => m.id == message.id);
+          if (!exists) {
+            _messages.add(message);
+            _filteredMessages = _showSearch
+                ? _messages
+                      .where(
+                        (m) => m.content.toLowerCase().contains(
+                          _searchController.text.toLowerCase(),
+                        ),
+                      )
+                      .toList()
+                : _messages;
+          }
+        });
 
-        // Reload messages to get the latest conversation
-        await _loadMessages();
-
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Message sent')));
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to send message')),
-          );
-        }
+        // Smooth scroll to bottom after adding message
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        });
       }
     } catch (e) {
       print('Error sending message: $e');
@@ -173,7 +195,9 @@ class _ChatScreenState extends State<ChatScreen> {
         ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
       }
     } finally {
-      setState(() => _isSending = false);
+      if (mounted) {
+        setState(() => _isSending = false);
+      }
     }
   }
 
@@ -739,6 +763,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 : ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.all(16),
+                    reverse: false,
                     itemCount: _filteredMessages.length,
                     itemBuilder: (context, index) {
                       final message = _filteredMessages[index];

@@ -1,12 +1,14 @@
 import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
 import '../utils/token_manager.dart';
 
 class ApiConfig {
-  // Development server URL - change this to your actual backend URL
-  // Note: 
-  // - Android emulator: use 10.0.2.2 (emulator's special alias for host)
-  // - Real Android device: use PC's WiFi IP address (e.g., 19  2.168.1.224)
+  // ==========================================
+  // PRODUCTION BACKEND URL (Update this when deploying)
+  // ==========================================
+  static const String _productionBase = 'https://elearningit.onrender.com';
+  
+  // Development URLs
   static const String _localBase = 'http://localhost:5000';
   static const String _androidEmulatorBase = 'http://10.0.2.2:5000';
   static const String _pcLocalIp = 'http://192.168.1.224:5000'; // Your PC's WiFi IP
@@ -54,6 +56,11 @@ class ApiConfig {
 
   // Helper method to get the correct base URL for different environments
   static String getBaseUrl() {
+    // Use production URL for release builds
+    if (kReleaseMode) {
+      return _productionBase;
+    }
+    
     if (kIsWeb) {
       return _localBase;
     }

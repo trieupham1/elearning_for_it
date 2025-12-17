@@ -68,27 +68,57 @@ module.exports = (io) => {
 
     // Broadcast Agora UID mapping
     socket.on('share_agora_uid', (data) => {
-      const { channelName, agoraUid, userId } = data;
+      const { channelName, agoraUid, userId, userName, userProfile } = data;
       console.log(`📡 Received share_agora_uid:`);
       console.log(`   - Channel: ${channelName}`);
       console.log(`   - Agora UID: ${agoraUid} (type: ${typeof agoraUid})`);
       console.log(`   - User ID: ${userId}`);
-      console.log(`   - User Name: ${socket.userName}`);
-      console.log(`   - User Profile: ${socket.userProfile}`);
+      console.log(`   - User Name from data: ${userName}`);
+      console.log(`   - User Name from socket: ${socket.userName}`);
+      console.log(`   - User Profile from data: ${userProfile}`);
       
       socket.agoraUid = agoraUid;
+      
+      // Update socket properties with the data from the event (fallback to existing socket values)
+      if (userName) socket.userName = userName;
+      if (userProfile) socket.userProfile = userProfile;
       
       const mappingData = {
         userId,
         agoraUid,
-        userName: socket.userName,
-        userProfile: socket.userProfile,
+        userName: userName || socket.userName || `User ${userId}`,
+        userProfile: userProfile || socket.userProfile,
       };
       
       // Broadcast to everyone in the channel including sender
       io.to(channelName).emit('agora_uid_mapped', mappingData);
       console.log(`✅ Broadcasted agora_uid_mapped to channel ${channelName}`);
       console.log(`   Mapping data:`, mappingData);
+    });
+    
+    // Request all participants to re-broadcast their Agora UIDs
+    socket.on('request_all_uids', (data) => {
+      const { channelName } = data;
+      console.log(`🔄 Request for all UIDs in channel ${channelName}`);
+      
+      // Get all sockets in this room and broadcast their mapping
+      const socketsInRoom = io.sockets.adapter.rooms.get(channelName);
+      if (socketsInRoom) {
+        socketsInRoom.forEach((socketId) => {
+          const participantSocket = io.sockets.sockets.get(socketId);
+          if (participantSocket && participantSocket.agoraUid) {
+            const mappingData = {
+              userId: participantSocket.userId,
+              agoraUid: participantSocket.agoraUid,
+              userName: participantSocket.userName || `User ${participantSocket.userId}`,
+              userProfile: participantSocket.userProfile,
+            };
+            // Send to the requesting socket
+            socket.emit('agora_uid_mapped', mappingData);
+            console.log(`   Sent mapping for UID ${participantSocket.agoraUid} -> ${participantSocket.userName}`);
+          }
+        });
+      }
     });
 
     socket.on('leave_group_call', (data) => {
@@ -134,6 +164,17 @@ module.exports = (io) => {
         isSharing,
       });
       console.log(`🖥️ User with Agora UID ${agoraUid} ${isSharing ? 'started' : 'stopped'} screen sharing in ${channelName}`);
+    });
+    
+    // Camera republished after screen share (notify others that camera is back on)
+    socket.on('camera_republished', (data) => {
+      const { channelName, agoraUid, userId } = data;
+      // Broadcast to others in the channel (not including sender)
+      socket.to(channelName).emit('camera_republished', {
+        agoraUid,
+        userId,
+      });
+      console.log(`📹 User with Agora UID ${agoraUid} republished camera in ${channelName}`);
     });
 
     // Call initiated - send to callee

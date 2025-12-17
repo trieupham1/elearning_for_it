@@ -146,8 +146,8 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
             });
             // Play remote video when user joins
             Future.delayed(const Duration(milliseconds: 500), () {
-              if (_webService != null) {
-                _webService!.playRemoteVideo('remote-video-container');
+              if (_webService != null && _remoteUid != null) {
+                _webService!.playRemoteVideo(_remoteUid!, 'remote-video-container');
                 print('📹 Remote video started playing');
               }
             });
@@ -288,41 +288,46 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: Stack(
           children: [
-            // Remote video (full screen) - For now, show avatar on web
-            _buildRemoteVideo(),
+            // Remote video (full screen center)
+            Center(
+              child: _buildRemoteVideo(),
+            ),
 
-            // Local video preview (small floating window in top-right corner)
-            _buildLocalVideoPreview(),
+            // Local video preview (top-left corner)
+            Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SizedBox(
+                  width: 120,
+                  height: 160,
+                  child: _buildLocalVideoPreview(),
+                ),
+              ),
+            ),
 
-            // Top bar with timer
+            // Timer badge (top-right corner)
             Positioned(
               top: 16,
-              left: 16,
+              right: 16,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.black45,
-                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.videocam, color: Colors.white, size: 20),
-                    const SizedBox(width: 8),
+                    const Icon(Icons.videocam, color: Colors.white, size: 16),
+                    const SizedBox(width: 4),
                     Text(
                       _formatDuration(_seconds),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ],
                 ),
@@ -330,12 +335,10 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
             ),
 
             // Bottom controls
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
+            Align(
+              alignment: Alignment.bottomCenter,
               child: Container(
-                padding: const EdgeInsets.all(32),
+                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -344,31 +347,22 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
                   ),
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _buildControlButton(
                       icon: _isMuted ? Icons.mic_off : Icons.mic,
-                      label: _isMuted ? 'Unmute' : 'Mute',
+                      label: 'Mute',
                       onPressed: _toggleMicrophone,
                       color: _isMuted ? Colors.red : Colors.white,
                     ),
+                    const SizedBox(width: 24),
                     _buildControlButton(
                       icon: _isCameraOff ? Icons.videocam_off : Icons.videocam,
-                      label: _isCameraOff ? 'Start Video' : 'Stop Video',
+                      label: 'Video',
                       onPressed: _toggleCamera,
                       color: _isCameraOff ? Colors.red : Colors.white,
                     ),
-                    if (!kIsWeb)
-                      _buildControlButton(
-                        icon: Icons.cameraswitch,
-                        label: 'Switch',
-                        onPressed: () async {
-                          if (_nativeService != null) {
-                            await _nativeService!.switchCamera();
-                          }
-                        },
-                        color: Colors.white,
-                      ),
+                    const SizedBox(width: 24),
                     _buildControlButton(
                       icon: Icons.call_end,
                       label: 'End',
@@ -398,22 +392,15 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
       children: [
         Material(
           color: Colors.white24,
-          borderRadius: BorderRadius.circular(size / 2),
+          shape: const CircleBorder(),
           child: InkWell(
             onTap: onPressed,
-            borderRadius: BorderRadius.circular(size / 2),
+            customBorder: const CircleBorder(),
             child: Container(
               width: size,
               height: size,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color == Colors.red ? Colors.red : Colors.transparent,
-              ),
-              child: Icon(
-                icon,
-                color: color == Colors.red ? Colors.white : color,
-                size: size * 0.4,
-              ),
+              alignment: Alignment.center,
+              child: Icon(icon, color: color, size: size * 0.45),
             ),
           ),
         ),
@@ -443,6 +430,39 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
   }
 
   Widget _buildRemoteVideo() {
+    // If remote user hasn't joined yet, show placeholder
+    if (_remoteUid == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 70,
+              backgroundColor: Colors.blue,
+              child: Text(
+                widget.otherUser.fullName[0].toUpperCase(),
+                style: const TextStyle(fontSize: 48, color: Colors.white),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              widget.otherUser.fullName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _isConnected ? 'Connecting video...' : 'Calling...',
+              style: const TextStyle(color: Colors.white70, fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    }
+    
     if (kIsWeb) {
       // On web, use HtmlElementView to render remote video
       return const HtmlElementView(viewType: _remoteVideoViewId);
@@ -480,97 +500,136 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
     }
   }
 
+  Widget _buildVerticalControls() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Mute button
+        _buildCircularButton(
+          icon: _isMuted ? Icons.mic_off : Icons.mic,
+          onPressed: _toggleMicrophone,
+          backgroundColor: _isMuted ? Colors.red : Colors.grey[700]!,
+        ),
+        const SizedBox(height: 20),
+        
+        // Stop video button
+        _buildCircularButton(
+          icon: _isCameraOff ? Icons.videocam_off : Icons.videocam,
+          onPressed: _toggleCamera,
+          backgroundColor: _isCameraOff ? Colors.red : Colors.grey[700]!,
+        ),
+        const SizedBox(height: 20),
+        
+        // End call button
+        _buildCircularButton(
+          icon: Icons.call_end,
+          onPressed: _endCall,
+          backgroundColor: Colors.red,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCircularButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required Color backgroundColor,
+  }) {
+    return Material(
+      color: backgroundColor,
+      shape: const CircleBorder(),
+      elevation: 4,
+      child: InkWell(
+        onTap: onPressed,
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 56,
+          height: 56,
+          alignment: Alignment.center,
+          child: Icon(icon, color: Colors.white, size: 28),
+        ),
+      ),
+    );
+  }
+
   Widget _buildLocalVideoPreview() {
     final bool isCameraOn = kIsWeb
         ? (_webService?.isVideoEnabled ?? false)
         : (_nativeService?.isVideoEnabled ?? false);
 
-    return Positioned(
-      top: 80,
-      right: 16,
-      child: Container(
-        width: 120,
-        height: 160,
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white24, width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: isCameraOn
-              ? Stack(
-                  key: ValueKey('local-video-on-$isCameraOn'),
-                  children: [
-                    // On web, show actual video feed
-                    if (kIsWeb)
-                      const Positioned.fill(
-                        child: HtmlElementView(viewType: _localVideoViewId),
-                      )
-                    else
-                      // On native, show camera icon placeholder
-                      Center(
-                        child: Icon(
-                          Icons.videocam,
-                          color: Colors.white.withOpacity(0.5),
-                          size: 40,
-                        ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: isCameraOn
+            ? Stack(
+                key: ValueKey('local-video-on-$isCameraOn'),
+                children: [
+                  // On web, show actual video feed
+                  if (kIsWeb)
+                    const Positioned.fill(
+                      child: HtmlElementView(viewType: _localVideoViewId),
+                    )
+                  else
+                    // On native, show camera icon placeholder
+                    Center(
+                      child: Icon(
+                        Icons.videocam,
+                        color: Colors.white.withOpacity(0.5),
+                        size: 40,
                       ),
-                    // You label
-                    Positioned(
-                      bottom: 8,
-                      left: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
+                    ),
+                  // You label
+                  Positioned(
+                    bottom: 8,
+                    left: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'You',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          'You',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.videocam_off,
+                      color: Colors.white.withOpacity(0.7),
+                      size: 32,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Camera Off',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 10,
                       ),
                     ),
                   ],
-                )
-              : Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.videocam_off,
-                        color: Colors.white.withOpacity(0.7),
-                        size: 32,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Camera Off',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-        ),
+              ),
       ),
     );
   }
