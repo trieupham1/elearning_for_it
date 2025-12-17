@@ -1,0 +1,6 @@
+# Firebase Hosting Files
+build/web/
+
+# Build artifacts
+.dart_tool/
+build/

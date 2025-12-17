@@ -1,0 +1,313 @@
+# ====================================
+# E-Learning Platform .gitignore
+# ====================================
+
+# ====================================
+# Flutter/Dart Related
+# ====================================
+
+# Build outputs
+**/build/
+**/android/app/build/
+**/ios/build/
+**/web/build/
+**/linux/build/
+**/windows/build/
+**/macos/build/
+
+# Generated files
+**/*.g.dart
+**/*.freezed.dart
+**/*.gr.dart
+**/*.config.dart
+**/*.part.dart
+
+# Flutter/Dart tool files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+pubspec.lock
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ====================================
+# Node.js/Backend Related
+# ====================================
+
+# Dependencies
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# ====================================
+# Environment & Configuration
+# ====================================
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Database files (if using local DBs)
+*.db
+*.sqlite
+*.sqlite3
+
+# ====================================
+# Logs & Temporary files
+# ====================================
+
+# Log files
+*.log
+logs/
+*.log.*
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# ====================================
+# Development & Testing
+# ====================================
+
+# Test coverage
+coverage/
+test_driver/
+
+# Debugging
+*.dSYM/
+
+# ====================================
+# Platform Specific
+# ====================================
+
+# Android
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+**/android/.gradle/
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/android/key.properties
+
+# iOS
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GoogleService-Info.plist
+
+# Web
+**/web/flutter_service_worker.js
+**/web/main.dart.js
+**/web/main.dart.js.map
+
+# Linux
+**/linux/flutter/generated_plugin_registrant.cc
+**/linux/flutter/generated_plugin_registrant.h
+
+# Windows
+**/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugin_registrant.h
+
+# macOS
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# ====================================
+# Firebase & Cloud Services
+# ====================================
+
+# Firebase
+**/android/app/google-services.json
+**/ios/Runner/GoogleService-Info.plist
+**/web/firebase-config.js
+
+# ====================================
+# Documentation & Assets (Optional)
+# ====================================
+
+# Large documentation files (uncomment if you don't want to track them)
+# *.pdf
+# *.docx
+# *.pptx
+
+# Large media files (uncomment if you have many large images/videos)
+# *.mp4
+# *.avi
+# *.mov
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif
+
+# ====================================
+# Custom Project Files
+# ====================================
+
+# Custom build scripts output
+scripts/output/
+
+# Database backups
+*.backup
+backups/
+
+# API keys and secrets (if any local files)
+secrets/
+keys/
+credentials/
+
+# Local development configuration
+local.config.js
+dev.config.js
+
+# ====================================
+# Editor & IDE Specific
+# ====================================
+
+# Visual Studio Code
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+
+# IntelliJ IDEA
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/libraries
+.idea/caches
+.idea/modules.xml
+.idea/.name
+.idea/compiler.xml
+.idea/copyright/profiles_settings.xml
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/scopes/scope_settings.xml
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+.idea/datasources/
+.idea/dataSources.ids
+.idea/dataSources.xml
+.idea/dataSources.local.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+
+# Android Studio
+.idea/gradle.xml
+.idea/libraries
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/.name
+.idea/compiler.xml
+.idea/copyright/profiles_settings.xml
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/scopes/scope_settings.xml
+.idea/vcs.xml
+*.iml
+*.ipr
+*.iws
+
+# ====================================
+# Package Managers
+# ====================================
+
+# Flutter packages
+.pub/
+.packages
+
+# Node.js packages
+package-lock.json
+yarn.lock
+
+# ====================================
+# Miscellaneous
+# ====================================
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+
+# System files
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
