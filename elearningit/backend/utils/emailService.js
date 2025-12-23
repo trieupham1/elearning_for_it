@@ -2,6 +2,7 @@
 // utils/emailService.js
 // ====================
 const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
 class EmailService {
   constructor() {
@@ -19,21 +20,11 @@ class EmailService {
     }
 
     try {
-      // Option 1: Resend (recommended - free 3000 emails/month, never expires)
+      // Option 1: Resend HTTP API (recommended - works on Render free tier)
       if (process.env.RESEND_API_KEY) {
-        this.transporter = nodemailer.createTransport({
-          host: 'smtp.resend.com',
-          port: 465,
-          secure: true,
-          auth: {
-            user: 'resend',
-            pass: process.env.RESEND_API_KEY
-          },
-          connectionTimeout: 10000, // 10 seconds
-          greetingTimeout: 10000,
-          socketTimeout: 15000
-        });
-        console.log('✅ Email service initialized with Resend');
+        this.resend = new Resend(process.env.RESEND_API_KEY);
+        this.useResendAPI = true;
+        console.log('✅ Email service initialized with Resend HTTP API');
       }
       // Option 2: SendGrid (free 100 emails/day)
       else if (process.env.SENDGRID_API_KEY) {
@@ -72,8 +63,27 @@ class EmailService {
 
     try {
       const fromAddress = process.env.EMAIL_FROM || 
-                          (process.env.RESEND_API_KEY ? 'noreply@yourdomain.com' : process.env.EMAIL_USER);
+                          (process.env.RESEND_API_KEY ? 'onboarding@resend.dev' : process.env.EMAIL_USER);
       
+      // Use Resend HTTP API if available (works on Render free tier)
+      if (this.useResendAPI && this.resend) {
+        const { data, error } = await this.resend.emails.send({
+          from: fromAddress,
+          to: [to],
+          subject,
+          html
+        });
+        
+        if (error) {
+          console.error(`❌ Resend API error to ${to}:`, error.message);
+          return false;
+        }
+        
+        console.log(`✅ Email sent to ${to}: ${subject}`);
+        return true;
+      }
+      
+      // Fallback to nodemailer for other providers
       const mailOptions = {
         from: fromAddress,
         to,
