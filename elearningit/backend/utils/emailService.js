@@ -112,7 +112,7 @@ class EmailService {
             <p>A new announcement has been posted in <strong>${courseTitle}</strong>:</p>
             <h2>${announcement.title}</h2>
             <div>${announcement.content.substring(0, 200)}...</div>
-            <a href="${process.env.FRONTEND_URL}/courses/${announcement.courseId}/announcements/${announcement._id}" 
+            <a href="${process.env.FRONTEND_URL}/#/courses/${announcement.courseId}/announcements/${announcement._id}" 
                class="button">View Announcement</a>
           </div>
           <div class="footer">
@@ -159,7 +159,7 @@ class EmailService {
               <strong>📅 Deadline:</strong> ${deadlineDate.toLocaleString()}<br>
               ${assignment.maxScore ? `<strong>📊 Max Score:</strong> ${assignment.maxScore} points<br>` : ''}
             </div>
-            <a href="${process.env.FRONTEND_URL}/courses/${assignment.courseId}/assignments/${assignment._id}" 
+            <a href="${process.env.FRONTEND_URL}/#/courses/${assignment.courseId}/assignments/${assignment._id}" 
                class="button">View Assignment</a>
           </div>
           <div class="footer">
@@ -204,7 +204,7 @@ class EmailService {
               Deadline: ${new Date(assignment.deadline).toLocaleString()}
             </div>
             <p>${assignment.description}</p>
-            <a href="${process.env.FRONTEND_URL}/courses/${assignment.courseId}/assignments/${assignment._id}" 
+            <a href="${process.env.FRONTEND_URL}/#/courses/${assignment.courseId}/assignments/${assignment._id}" 
                class="button">View Assignment</a>
           </div>
           <div class="footer">
@@ -252,7 +252,7 @@ class EmailService {
               Closes: ${new Date(quiz.closeDate).toLocaleString()}
             </div>
             <p>${quiz.description}</p>
-            <a href="${process.env.FRONTEND_URL}/courses/${quiz.courseId}/quizzes/${quiz._id}" 
+            <a href="${process.env.FRONTEND_URL}/#/courses/${quiz.courseId}/quizzes/${quiz._id}" 
                class="button">Take Quiz</a>
           </div>
           <div class="footer">
@@ -299,7 +299,7 @@ class EmailService {
               Files submitted: ${submission.files.length}
             </div>
             ${submission.isLate ? '<p style="color: #ff9800;">⚠️ Note: This was a late submission.</p>' : ''}
-            <a href="${process.env.FRONTEND_URL}/courses/${assignment.courseId}/assignments/${assignment._id}" 
+            <a href="${process.env.FRONTEND_URL}/#/courses/${assignment.courseId}/assignments/${assignment._id}" 
                class="button">View Submission</a>
           </div>
           <div class="footer">
@@ -351,7 +351,7 @@ class EmailService {
                 ${submission.feedback}
               </div>
             ` : ''}
-            <a href="${process.env.FRONTEND_URL}/courses/${assignment.courseId}/assignments/${assignment._id}" 
+            <a href="${process.env.FRONTEND_URL}/#/courses/${assignment.courseId}/assignments/${assignment._id}" 
                class="button">View Details</a>
           </div>
           <div class="footer">

@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../services/socket_service.dart';
 import '../models/user.dart';
 import '../providers/theme_provider.dart';
+import '../utils/token_manager.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,6 +21,8 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   bool _obscurePassword = true;
   bool _isLoading = false;
   String? _errorMessage;
+  bool _rememberMe = false;
+  String? _pendingRedirect;
   
   late AnimationController _fadeController;
   late AnimationController _slideController;
@@ -31,6 +34,8 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   @override
   void initState() {
     super.initState();
+    _loadSavedPreferences();
+    _checkPendingRedirect();
     
     // Fade animation for the card
     _fadeController = AnimationController(
@@ -70,6 +75,20 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     
     _fadeController.forward();
     _slideController.forward();
+  }
+
+  Future<void> _loadSavedPreferences() async {
+    final rememberMe = await TokenManager.getRememberMe();
+    if (mounted) {
+      setState(() => _rememberMe = rememberMe);
+    }
+  }
+
+  Future<void> _checkPendingRedirect() async {
+    final redirect = await TokenManager.getPendingRedirect();
+    if (redirect != null && mounted) {
+      setState(() => _pendingRedirect = redirect);
+    }
   }
 
   @override
@@ -123,6 +142,20 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       } catch (e) {
         print('Could not load theme settings: $e');
         // Continue anyway - theme will use default
+      }
+
+      // Save remember me preference and user data for persistent login
+      await TokenManager.setRememberMe(_rememberMe);
+      if (_rememberMe) {
+        await TokenManager.saveUserData(loginResponse.user.id, loginResponse.user.role);
+      }
+
+      // Check for pending redirect (e.g., from email link deep linking)
+      final pendingRedirect = await TokenManager.getPendingRedirect();
+      if (pendingRedirect != null && pendingRedirect.isNotEmpty) {
+        await TokenManager.clearPendingRedirect();
+        Navigator.pushReplacementNamed(context, pendingRedirect);
+        return;
       }
 
       // Navigate based on user role
@@ -381,7 +414,63 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                                 ),
                               ),
                               
-                              const SizedBox(height: 28),
+                              const SizedBox(height: 16),
+                              
+                              // Remember Me checkbox
+                              Row(
+                                children: [
+                                  Transform.scale(
+                                    scale: 1.1,
+                                    child: Checkbox(
+                                      value: _rememberMe,
+                                      onChanged: (value) {
+                                        setState(() => _rememberMe = value ?? false);
+                                      },
+                                      activeColor: theme.primaryColor,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () => setState(() => _rememberMe = !_rememberMe),
+                                    child: Text(
+                                      'Keep me logged in',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: theme.textTheme.bodyMedium?.color,
+                                      ),
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  if (_rememberMe)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.check_circle, size: 14, color: Colors.green),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Auto-login enabled',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.green,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              
+                              const SizedBox(height: 20),
                               
                               // Login button with gradient and animation
                               SizedBox(

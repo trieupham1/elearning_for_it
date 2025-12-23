@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
+import 'screens/splash_screen.dart';
 import 'screens/student_home_screen.dart';
 import 'screens/instructor_home_screen.dart';
 import 'screens/api_test_screen.dart';
 import 'screens/student/quiz_taking_screen.dart';
 import 'screens/student/quiz_result_screen.dart';
+import 'screens/student/announcement_detail_screen.dart';
 import 'screens/instructor/quiz_settings_screen.dart';
 import 'screens/instructor/create_quiz_screen.dart';
 import 'screens/instructor/create_question_screen.dart';
@@ -16,6 +19,7 @@ import 'screens/chat_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/deep_link_course_screen.dart';
 // Admin screens
 import 'screens/admin/admin_home_screen.dart';
 import 'screens/admin/admin_dashboard_screen.dart';
@@ -35,6 +39,8 @@ import 'models/quiz.dart';
 import 'models/user.dart';
 import 'services/auth_service.dart';
 import 'providers/theme_provider.dart';
+import 'utils/token_manager.dart';
+import 'utils/web_utils.dart';
 // Yellow Priority Features - Video, Attendance, Code Assignment
 import 'screens/student/video_player_screen.dart';
 import 'screens/instructor/upload_video_screen.dart';
@@ -54,17 +60,55 @@ import 'models/course.dart';
 // Global navigator key for showing dialogs/screens from anywhere
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void main() {
+// Get deep link route from URL (for GitHub Pages hash routing)
+String? _getDeepLinkFromUrl() {
+  if (!kIsWeb) return null;
+  
+  try {
+    final href = getWebLocationHref();
+    if (href == null) return null;
+    
+    final uri = Uri.parse(href);
+    // For GitHub Pages hash routing: /#/courses/123/announcements/456
+    if (uri.fragment.isNotEmpty && uri.fragment.startsWith('/')) {
+      return uri.fragment;
+    }
+    // For regular path routing
+    if (uri.path.contains('/courses/')) {
+      return uri.path;
+    }
+  } catch (e) {
+    print('Error parsing deep link: $e');
+  }
+  return null;
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Check for deep link on web startup
+  String? deepLinkRoute;
+  if (kIsWeb) {
+    deepLinkRoute = _getDeepLinkFromUrl();
+    if (deepLinkRoute != null && deepLinkRoute.isNotEmpty) {
+      // Save the deep link for after authentication
+      await TokenManager.setPendingRedirect(deepLinkRoute);
+      print('📌 Saved deep link for redirect: $deepLinkRoute');
+    }
+  }
+  
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeProvider(),
-      child: const ELearningApp(),
+      child: ELearningApp(deepLinkRoute: deepLinkRoute),
     ),
   );
 }
 
 class ELearningApp extends StatefulWidget {
-  const ELearningApp({super.key});
+  final String? deepLinkRoute;
+  
+  const ELearningApp({super.key, this.deepLinkRoute});
 
   @override
   State<ELearningApp> createState() => _ELearningAppState();
@@ -89,7 +133,7 @@ class _ELearningAppState extends State<ELearningApp> {
           debugShowCheckedModeBanner: false,
           initialRoute: '/',
           routes: {
-            '/': (context) => const LoginScreen(),
+            '/': (context) => SplashScreen(deepLinkRoute: widget.deepLinkRoute),
             '/login': (context) => const LoginScreen(),
             '/student-home': (context) => const StudentHomeScreen(),
             '/instructor-home': (context) => const InstructorHomeScreen(),
@@ -115,6 +159,70 @@ class _ELearningAppState extends State<ELearningApp> {
             '/admin/instructor-workload-detail': (context) => const InstructorWorkloadDetailScreen(),
           },
           onGenerateRoute: (settings) {
+            final uri = Uri.tryParse(settings.name ?? '');
+            
+            // ========== DEEP LINKING ROUTES (from email links) ==========
+            // Handle: /courses/:courseId/announcements/:announcementId
+            if (uri != null && uri.pathSegments.length == 4 &&
+                uri.pathSegments[0] == 'courses' &&
+                uri.pathSegments[2] == 'announcements') {
+              final courseId = uri.pathSegments[1];
+              final announcementId = uri.pathSegments[3];
+              return MaterialPageRoute(
+                builder: (context) => FutureBuilder(
+                  future: AuthService().getCurrentUser(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Scaffold(
+                        body: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    return AnnouncementDetailScreen(
+                      announcementId: announcementId,
+                      currentUser: snapshot.data,
+                    );
+                  },
+                ),
+              );
+            }
+
+            // Handle: /courses/:courseId/assignments/:assignmentId
+            if (uri != null && uri.pathSegments.length == 4 &&
+                uri.pathSegments[0] == 'courses' &&
+                uri.pathSegments[2] == 'assignments') {
+              final courseId = uri.pathSegments[1];
+              // Navigate to course detail with classwork tab
+              return MaterialPageRoute(
+                builder: (context) => DeepLinkCourseScreen(
+                  courseId: courseId,
+                  initialTabIndex: 1, // Classwork tab
+                ),
+              );
+            }
+
+            // Handle: /courses/:courseId/quizzes/:quizId
+            if (uri != null && uri.pathSegments.length == 4 &&
+                uri.pathSegments[0] == 'courses' &&
+                uri.pathSegments[2] == 'quizzes') {
+              final courseId = uri.pathSegments[1];
+              // Navigate to course detail with classwork tab
+              return MaterialPageRoute(
+                builder: (context) => DeepLinkCourseScreen(
+                  courseId: courseId,
+                  initialTabIndex: 1, // Classwork tab
+                ),
+              );
+            }
+
+            // Handle: /courses/:courseId (just course detail)
+            if (uri != null && uri.pathSegments.length == 2 &&
+                uri.pathSegments[0] == 'courses') {
+              final courseId = uri.pathSegments[1];
+              return MaterialPageRoute(
+                builder: (context) => DeepLinkCourseScreen(courseId: courseId),
+              );
+            }
+
             // Handle dynamic routes
             if (settings.name == '/quiz-taking') {
               final args = settings.arguments as Map<String, dynamic>?;

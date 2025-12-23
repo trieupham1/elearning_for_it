@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import '../models/user.dart';
 import '../config/api_config.dart';
+import '../utils/token_manager.dart';
 import 'api_service.dart';
 
 class AuthService extends ApiService {
@@ -72,8 +73,9 @@ class AuthService extends ApiService {
     } catch (e) {
       // Continue with local logout even if server call fails
     } finally {
-      // Clear local data
+      // Clear local data and token manager
       await clearToken();
+      await TokenManager.clearAll(keepRememberMe: false);
       _currentUser = null;
     }
   }
