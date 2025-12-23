@@ -33,7 +33,7 @@ jobs:
       
       - name: Build web
         working-directory: ./elearningit
-        run: flutter build web --release --web-renderer html --base-href "/elearning_for_it/"
+        run: flutter build web --release --base-href "/elearning_for_it/"
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
