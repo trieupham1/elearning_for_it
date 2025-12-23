@@ -18,7 +18,7 @@ call flutter pub get
 
 REM Build web with release mode and proper base href for GitHub Pages
 echo 🔨 Building web release...
-call flutter build web --release --web-renderer html --base-href "/elearning_for_it/"
+call flutter build web --release --base-href "/elearning_for_it/"
 
 REM Check if build was successful
 if exist "build\web" (
