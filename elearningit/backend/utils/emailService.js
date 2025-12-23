@@ -10,23 +10,37 @@ class EmailService {
     this.isConfigured = !!(
       (process.env.EMAIL_SERVICE && process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) ||
       process.env.RESEND_API_KEY ||
-      process.env.SENDGRID_API_KEY
+      process.env.SENDGRID_API_KEY ||
+      process.env.BREVO_SMTP_KEY
     );
 
     if (!this.isConfigured) {
-      console.warn('⚠️ Email service not configured. Set EMAIL credentials, RESEND_API_KEY, or SENDGRID_API_KEY in .env file');
+      console.warn('⚠️ Email service not configured. Set EMAIL credentials, RESEND_API_KEY, BREVO_SMTP_KEY, or SENDGRID_API_KEY in .env file');
       console.warn('⚠️ Email notifications will be skipped until configuration is complete');
       return;
     }
 
     try {
-      // Option 1: Resend HTTP API (recommended - works on Render free tier)
+      // Option 1: Resend HTTP API (works on Render free tier)
       if (process.env.RESEND_API_KEY) {
         this.resend = new Resend(process.env.RESEND_API_KEY);
         this.useResendAPI = true;
         console.log('✅ Email service initialized with Resend HTTP API');
       }
-      // Option 2: SendGrid (free 100 emails/day)
+      // Option 2: Brevo/Sendinblue (free 300 emails/day, no domain needed)
+      else if (process.env.BREVO_SMTP_KEY) {
+        this.transporter = nodemailer.createTransport({
+          host: 'smtp-relay.brevo.com',
+          port: 587,
+          secure: false,
+          auth: {
+            user: process.env.BREVO_SMTP_USER || process.env.EMAIL_USER,
+            pass: process.env.BREVO_SMTP_KEY
+          }
+        });
+        console.log('✅ Email service initialized with Brevo');
+      }
+      // Option 3: SendGrid (free 100 emails/day)
       else if (process.env.SENDGRID_API_KEY) {
         this.transporter = nodemailer.createTransport({
           host: 'smtp.sendgrid.net',
@@ -38,13 +52,13 @@ class EmailService {
         });
         console.log('✅ Email service initialized with SendGrid');
       }
-      // Option 3: Gmail with App Password (use App Password, not OAuth token)
+      // Option 4: Gmail with App Password
       else {
         this.transporter = nodemailer.createTransport({
           service: process.env.EMAIL_SERVICE || 'gmail',
           auth: {
             user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASSWORD  // Use App Password for Gmail
+            pass: process.env.EMAIL_PASSWORD
           }
         });
         console.log('✅ Email service initialized with', process.env.EMAIL_SERVICE || 'gmail');
@@ -62,8 +76,7 @@ class EmailService {
     }
 
     try {
-      const fromAddress = process.env.EMAIL_FROM || 
-                          (process.env.RESEND_API_KEY ? 'onboarding@resend.dev' : process.env.EMAIL_USER);
+      const fromAddress = process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@example.com';
       
       // Use Resend HTTP API if available (works on Render free tier)
       if (this.useResendAPI && this.resend) {
@@ -83,7 +96,7 @@ class EmailService {
         return true;
       }
       
-      // Fallback to nodemailer for other providers
+      // Use nodemailer for Brevo, SendGrid, Gmail
       const mailOptions = {
         from: fromAddress,
         to,
