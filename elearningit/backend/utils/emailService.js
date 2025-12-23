@@ -28,7 +28,10 @@ class EmailService {
           auth: {
             user: 'resend',
             pass: process.env.RESEND_API_KEY
-          }
+          },
+          connectionTimeout: 10000, // 10 seconds
+          greetingTimeout: 10000,
+          socketTimeout: 15000
         });
         console.log('✅ Email service initialized with Resend');
       }
