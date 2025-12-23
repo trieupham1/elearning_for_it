@@ -3,6 +3,7 @@
 // ====================
 const nodemailer = require('nodemailer');
 const { Resend } = require('resend');
+const brevo = require('@getbrevo/brevo');
 
 class EmailService {
   constructor() {
@@ -11,23 +12,33 @@ class EmailService {
       (process.env.EMAIL_SERVICE && process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) ||
       process.env.RESEND_API_KEY ||
       process.env.SENDGRID_API_KEY ||
+      process.env.BREVO_API_KEY ||
       process.env.BREVO_SMTP_KEY
     );
 
     if (!this.isConfigured) {
-      console.warn('⚠️ Email service not configured. Set EMAIL credentials, RESEND_API_KEY, BREVO_SMTP_KEY, or SENDGRID_API_KEY in .env file');
+      console.warn('⚠️ Email service not configured. Set EMAIL credentials, RESEND_API_KEY, BREVO_API_KEY, or SENDGRID_API_KEY in .env file');
       console.warn('⚠️ Email notifications will be skipped until configuration is complete');
       return;
     }
 
     try {
-      // Option 1: Resend HTTP API (works on Render free tier)
-      if (process.env.RESEND_API_KEY) {
+      // Option 1: Brevo HTTP API (works on Render free tier - recommended)
+      // Can use BREVO_API_KEY (preferred) or fallback to BREVO_SMTP_KEY
+      const brevoApiKey = process.env.BREVO_API_KEY || process.env.BREVO_SMTP_KEY;
+      if (brevoApiKey && (process.env.BREVO_API_KEY || process.env.USE_BREVO_HTTP === 'true')) {
+        // Use the Brevo HTTP API directly with fetch
+        this.brevoApiKey = brevoApiKey;
+        this.useBrevoAPI = true;
+        console.log('✅ Email service initialized with Brevo HTTP API');
+      }
+      // Option 2: Resend HTTP API (requires verified domain)
+      else if (process.env.RESEND_API_KEY) {
         this.resend = new Resend(process.env.RESEND_API_KEY);
         this.useResendAPI = true;
         console.log('✅ Email service initialized with Resend HTTP API');
       }
-      // Option 2: Brevo/Sendinblue (free 300 emails/day, no domain needed)
+      // Option 3: Brevo SMTP (may not work on Render free tier)
       else if (process.env.BREVO_SMTP_KEY) {
         this.transporter = nodemailer.createTransport({
           host: 'smtp-relay.brevo.com',
@@ -38,9 +49,9 @@ class EmailService {
             pass: process.env.BREVO_SMTP_KEY
           }
         });
-        console.log('✅ Email service initialized with Brevo');
+        console.log('✅ Email service initialized with Brevo SMTP');
       }
-      // Option 3: SendGrid (free 100 emails/day)
+      // Option 4: SendGrid (free 100 emails/day)
       else if (process.env.SENDGRID_API_KEY) {
         this.transporter = nodemailer.createTransport({
           host: 'smtp.sendgrid.net',
@@ -52,7 +63,7 @@ class EmailService {
         });
         console.log('✅ Email service initialized with SendGrid');
       }
-      // Option 4: Gmail with App Password
+      // Option 5: Gmail with App Password
       else {
         this.transporter = nodemailer.createTransport({
           service: process.env.EMAIL_SERVICE || 'gmail',
@@ -76,12 +87,39 @@ class EmailService {
     }
 
     try {
-      const fromAddress = process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@example.com';
+      const fromEmail = process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@example.com';
+      const fromName = 'E-Learning System';
       
-      // Use Resend HTTP API if available (works on Render free tier)
+      // Option 1: Use Brevo HTTP API (works on Render free tier - bypasses SMTP port blocking)
+      if (this.useBrevoAPI && this.brevoApiKey) {
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'api-key': this.brevoApiKey
+          },
+          body: JSON.stringify({
+            sender: { name: fromName, email: fromEmail },
+            to: [{ email: to }],
+            subject: subject,
+            htmlContent: html
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+        
+        console.log(`✅ Email sent via Brevo API to ${to}: ${subject}`);
+        return true;
+      }
+      
+      // Option 2: Use Resend HTTP API
       if (this.useResendAPI && this.resend) {
         const { data, error } = await this.resend.emails.send({
-          from: fromAddress,
+          from: `${fromName} <${fromEmail}>`,
           to: [to],
           subject,
           html
@@ -96,9 +134,9 @@ class EmailService {
         return true;
       }
       
-      // Use nodemailer for Brevo, SendGrid, Gmail
+      // Option 3: Use nodemailer for SMTP (Brevo SMTP, SendGrid, Gmail)
       const mailOptions = {
-        from: fromAddress,
+        from: `${fromName} <${fromEmail}>`,
         to,
         subject,
         html
