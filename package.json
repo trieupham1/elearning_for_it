@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "agora-access-token": "^2.0.4",
-    "cloudinary": "^2.7.0"
-  }
-}
