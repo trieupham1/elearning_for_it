@@ -5,6 +5,15 @@ const nodemailer = require('nodemailer');
 const { Resend } = require('resend');
 const brevo = require('@getbrevo/brevo');
 
+// Helper function to extract ObjectId string from either a string or populated object
+function getIdString(idOrObject) {
+  if (!idOrObject) return '';
+  if (typeof idOrObject === 'string') return idOrObject;
+  if (idOrObject._id) return idOrObject._id.toString();
+  if (idOrObject.toString) return idOrObject.toString();
+  return '';
+}
+
 class EmailService {
   constructor() {
     // Check if email is configured
@@ -152,6 +161,8 @@ class EmailService {
   }
 
   async sendNewAnnouncementEmail(user, announcement, courseTitle) {
+    const courseId = getIdString(announcement.courseId);
+    const announcementId = getIdString(announcement._id);
     const subject = `New Announcement: ${announcement.title}`;
     const html = `
       <!DOCTYPE html>
@@ -173,10 +184,10 @@ class EmailService {
             <h1>📢 New Announcement</h1>
           </div>
           <div class="content">
-            <p>A new announcement has been posted in <strong>${courseTitle}</strong>:</p>
+            <p>A new announcement has been posted in <strong>${courseTitle || 'your course'}</strong>:</p>
             <h2>${announcement.title}</h2>
-            <div>${announcement.content.substring(0, 200)}...</div>
-            <a href="${process.env.FRONTEND_URL}/#/courses/${announcement.courseId}/announcements/${announcement._id}" 
+            <div>${announcement.content ? announcement.content.substring(0, 200) + '...' : ''}</div>
+            <a href="${process.env.FRONTEND_URL}/#/courses/${courseId}/announcements/${announcementId}" 
                class="button">View Announcement</a>
           </div>
           <div class="footer">
@@ -223,7 +234,7 @@ class EmailService {
               <strong>📅 Deadline:</strong> ${deadlineDate.toLocaleString()}<br>
               ${assignment.maxScore ? `<strong>📊 Max Score:</strong> ${assignment.maxScore} points<br>` : ''}
             </div>
-            <a href="${process.env.FRONTEND_URL}/#/courses/${assignment.courseId}/assignments/${assignment._id}" 
+            <a href="${process.env.FRONTEND_URL}/#/courses/${getIdString(assignment.courseId)}/assignments/${getIdString(assignment._id)}" 
                class="button">View Assignment</a>
           </div>
           <div class="footer">
@@ -261,14 +272,14 @@ class EmailService {
             <h1>⏰ Assignment Deadline Reminder</h1>
           </div>
           <div class="content">
-            <p>This is a reminder about an upcoming assignment deadline in <strong>${courseTitle}</strong>:</p>
+            <p>This is a reminder about an upcoming assignment deadline in <strong>${courseTitle || 'your course'}</strong>:</p>
             <h2>${assignment.title}</h2>
             <div class="deadline">
               <strong>⚠️ Due in ${daysRemaining} days</strong><br>
               Deadline: ${new Date(assignment.deadline).toLocaleString()}
             </div>
-            <p>${assignment.description}</p>
-            <a href="${process.env.FRONTEND_URL}/#/courses/${assignment.courseId}/assignments/${assignment._id}" 
+            <p>${assignment.description || ''}</p>
+            <a href="${process.env.FRONTEND_URL}/#/courses/${getIdString(assignment.courseId)}/assignments/${getIdString(assignment._id)}" 
                class="button">View Assignment</a>
           </div>
           <div class="footer">
@@ -315,8 +326,8 @@ class EmailService {
               Opens: ${new Date(quiz.openDate).toLocaleString()}<br>
               Closes: ${new Date(quiz.closeDate).toLocaleString()}
             </div>
-            <p>${quiz.description}</p>
-            <a href="${process.env.FRONTEND_URL}/#/courses/${quiz.courseId}/quizzes/${quiz._id}" 
+            <p>${quiz.description || ''}</p>
+            <a href="${process.env.FRONTEND_URL}/#/courses/${getIdString(quiz.courseId)}/quizzes/${getIdString(quiz._id)}" 
                class="button">Take Quiz</a>
           </div>
           <div class="footer">
@@ -354,16 +365,16 @@ class EmailService {
             <h1>✅ Submission Confirmed</h1>
           </div>
           <div class="content">
-            <p>Your submission for <strong>${assignment.title}</strong> in ${courseTitle} has been received.</p>
+            <p>Your submission for <strong>${assignment.title}</strong> in ${courseTitle || 'your course'} has been received.</p>
             <div class="confirmation">
               <strong>Submission Details:</strong><br>
               Attempt: ${submission.attemptNumber} of ${assignment.maxAttempts}<br>
               Submitted: ${new Date(submission.submittedAt).toLocaleString()}<br>
               Status: ${submission.isLate ? '⚠️ Late Submission' : '✓ On Time'}<br>
-              Files submitted: ${submission.files.length}
+              Files submitted: ${submission.files ? submission.files.length : 0}
             </div>
             ${submission.isLate ? '<p style="color: #ff9800;">⚠️ Note: This was a late submission.</p>' : ''}
-            <a href="${process.env.FRONTEND_URL}/#/courses/${assignment.courseId}/assignments/${assignment._id}" 
+            <a href="${process.env.FRONTEND_URL}/#/courses/${getIdString(assignment.courseId)}/assignments/${getIdString(assignment._id)}" 
                class="button">View Submission</a>
           </div>
           <div class="footer">
@@ -404,7 +415,7 @@ class EmailService {
             <h1>📊 Assignment Graded</h1>
           </div>
           <div class="content">
-            <p>Your assignment <strong>${assignment.title}</strong> in ${courseTitle} has been graded.</p>
+            <p>Your assignment <strong>${assignment.title}</strong> in ${courseTitle || 'your course'} has been graded.</p>
             <div class="grade">
               <p style="margin: 0; color: #666;">Your Grade</p>
               <div class="grade-score">${submission.grade}</div>
@@ -415,7 +426,7 @@ class EmailService {
                 ${submission.feedback}
               </div>
             ` : ''}
-            <a href="${process.env.FRONTEND_URL}/#/courses/${assignment.courseId}/assignments/${assignment._id}" 
+            <a href="${process.env.FRONTEND_URL}/#/courses/${getIdString(assignment.courseId)}/assignments/${getIdString(assignment._id)}" 
                class="button">View Details</a>
           </div>
           <div class="footer">
