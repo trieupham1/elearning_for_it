@@ -289,93 +289,100 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Use Column layout to avoid HtmlElementView z-index issues on web
+    // Video area and controls are in separate non-overlapping regions
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            // Remote video (full screen center) - wrapped in IgnorePointer so it doesn't block controls
-            Positioned.fill(
-              child: IgnorePointer(
-                child: _buildRemoteVideo(),
-              ),
-            ),
-
-            // Local video preview (top-left corner)
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SizedBox(
-                  width: 120,
-                  height: 160,
-                  child: _buildLocalVideoPreview(),
-                ),
-              ),
-            ),
-
-            // Timer badge (top-right corner)
-            Positioned(
-              top: 16,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.videocam, color: Colors.white, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatDuration(_seconds),
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
+            // Top bar with local video preview and timer
+            Container(
+              height: 100,
+              color: Colors.black,
+              child: Stack(
+                children: [
+                  // Local video preview (top-left corner)
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white, width: 2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: _buildLocalVideoPreview(),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Bottom controls
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
                   ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildControlButton(
-                      icon: _isMuted ? Icons.mic_off : Icons.mic,
-                      label: 'Mute',
-                      onPressed: _toggleMicrophone,
-                      color: _isMuted ? Colors.red : Colors.white,
+
+                  // Timer badge (top-right corner)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.videocam, color: Colors.white, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatDuration(_seconds),
+                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 24),
-                    _buildControlButton(
-                      icon: _isCameraOff ? Icons.videocam_off : Icons.videocam,
-                      label: 'Video',
-                      onPressed: _toggleCamera,
-                      color: _isCameraOff ? Colors.red : Colors.white,
-                    ),
-                    const SizedBox(width: 24),
-                    _buildControlButton(
-                      icon: Icons.call_end,
-                      label: 'End',
-                      onPressed: _endCall,
-                      color: Colors.red,
-                      size: 64,
-                    ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Remote video area (takes remaining space minus controls)
+            Expanded(
+              child: _buildRemoteVideo(),
+            ),
+
+            // Bottom controls - separate from video so no overlap
+            Container(
+              color: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildControlButton(
+                    icon: _isMuted ? Icons.mic_off : Icons.mic,
+                    label: 'Mute',
+                    onPressed: _toggleMicrophone,
+                    color: _isMuted ? Colors.red : Colors.white,
+                  ),
+                  const SizedBox(width: 24),
+                  _buildControlButton(
+                    icon: _isCameraOff ? Icons.videocam_off : Icons.videocam,
+                    label: 'Video',
+                    onPressed: _toggleCamera,
+                    color: _isCameraOff ? Colors.red : Colors.white,
+                  ),
+                  const SizedBox(width: 24),
+                  _buildControlButton(
+                    icon: Icons.call_end,
+                    label: 'End',
+                    onPressed: _endCall,
+                    color: Colors.red,
+                    size: 64,
+                  ),
+                ],
               ),
             ),
           ],
