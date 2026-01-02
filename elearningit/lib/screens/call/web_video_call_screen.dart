@@ -9,7 +9,7 @@ import '../../services/socket_service.dart';
 import '../../models/user.dart';
 import 'dart:async';
 // Conditional imports for web
-import 'dart:html' as html show DivElement;
+import 'dart:html' as html show DivElement, StyleElement;
 import 'dart:ui_web' as ui_web;
 import 'package:flutter/widgets.dart' show HtmlElementView;
 
@@ -67,7 +67,7 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
     _initializeCall();
   }
 
-  // Register local video view - same as course_video_call
+  // Register local video view with proper CSS constraints
   void _registerLocalVideoView() {
     if (_localVideoRegistered) return;
 
@@ -76,7 +76,27 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
         ..id = 'local-video-container'
         ..style.width = '100%'
         ..style.height = '100%'
-        ..style.objectFit = 'cover';
+        ..style.position = 'relative'
+        ..style.overflow = 'hidden'
+        ..style.backgroundColor = '#1a1a1a';
+      
+      // Add style to constrain any video child elements
+      final style = html.StyleElement()
+        ..text = '''
+          #local-video-container video,
+          #local-video-container div {
+            position: absolute !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            object-fit: cover !important;
+            top: 0 !important;
+            left: 0 !important;
+          }
+        ''';
+      element.append(style);
+      
       return element;
     });
 
@@ -84,7 +104,7 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
     print('✅ Local video view registered');
   }
 
-  // Register remote video view dynamically when remote user joins
+  // Register remote video view with proper CSS constraints
   void _registerRemoteVideoView(int uid) {
     final viewId = 'one-on-one-remote-video-$uid';
     if (_remoteVideoViewId == viewId) return;
@@ -94,7 +114,27 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
         ..id = 'remote-video-container-$uid'
         ..style.width = '100%'
         ..style.height = '100%'
-        ..style.objectFit = 'cover';
+        ..style.position = 'relative'
+        ..style.overflow = 'hidden'
+        ..style.backgroundColor = '#1a1a1a';
+      
+      // Add style to constrain any video child elements
+      final style = html.StyleElement()
+        ..text = '''
+          #remote-video-container-$uid video,
+          #remote-video-container-$uid div {
+            position: absolute !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            object-fit: cover !important;
+            top: 0 !important;
+            left: 0 !important;
+          }
+        ''';
+      element.append(style);
+      
       return element;
     });
 
