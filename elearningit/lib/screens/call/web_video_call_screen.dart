@@ -78,7 +78,8 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
         ..id = 'remote-video-container'
         ..style.width = '100%'
         ..style.height = '100%'
-        ..style.objectFit = 'cover';
+        ..style.objectFit = 'cover'
+        ..style.pointerEvents = 'none'; // Don't block clicks
       return element;
     });
 
@@ -90,7 +91,8 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
         ..id = 'local-video-container'
         ..style.width = '100%'
         ..style.height = '100%'
-        ..style.objectFit = 'cover';
+        ..style.objectFit = 'cover'
+        ..style.pointerEvents = 'none'; // Don't block clicks
       return element;
     });
 
@@ -292,9 +294,11 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // Remote video (full screen center)
-            Center(
-              child: _buildRemoteVideo(),
+            // Remote video (full screen center) - wrapped in IgnorePointer so it doesn't block controls
+            Positioned.fill(
+              child: IgnorePointer(
+                child: _buildRemoteVideo(),
+              ),
             ),
 
             // Local video preview (top-left corner)

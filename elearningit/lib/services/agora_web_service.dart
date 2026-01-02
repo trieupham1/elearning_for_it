@@ -3,6 +3,7 @@
 library agora_web;
 
 import 'dart:async';
+import 'dart:html' as html;
 import 'package:js/js.dart';
 import 'package:js/js_util.dart' as js_util;
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -111,12 +112,11 @@ class AgoraWebService {
               // Delay slightly to ensure container exists
               Future.delayed(const Duration(milliseconds: 200), () {
                 try {
-                  js_util.callMethod(videoTrack, 'play', [
-                    'remote-video-container-$uid',
-                  ]);
-                  print(
-                    '▶️ Auto-playing remote video in container: remote-video-container-$uid',
-                  );
+                  final containerId = 'remote-video-container-$uid';
+                  js_util.callMethod(videoTrack, 'play', [containerId]);
+                  print('▶️ Auto-playing remote video in container: $containerId');
+                  // Disable pointer events so Flutter controls remain clickable
+                  _disablePointerEventsOnContainer(containerId);
                 } catch (e) {
                   print('⚠️ Could not play video for UID $uid: $e');
                 }
@@ -351,6 +351,8 @@ class AgoraWebService {
     if (_localVideoTrack != null) {
       print('▶️ Playing local video in element: $elementId');
       js_util.callMethod(_localVideoTrack, 'play', [elementId]);
+      // Disable pointer events on the video container so controls remain clickable
+      _disablePointerEventsOnContainer(elementId);
     }
   }
 
@@ -361,6 +363,7 @@ class AgoraWebService {
       try {
         js_util.callMethod(track, 'play', [elementId]);
         print('▶️ Playing remote video for UID $uid in element: $elementId');
+        _disablePointerEventsOnContainer(elementId);
       } catch (e) {
         print('⚠️ Error playing remote video for UID $uid: $e');
       }
@@ -368,8 +371,27 @@ class AgoraWebService {
       // Fallback to single track
       print('▶️ Playing remote video (fallback) in element: $elementId');
       js_util.callMethod(_remoteVideoTrack, 'play', [elementId]);
+      _disablePointerEventsOnContainer(elementId);
     } else {
       print('⚠️ No video track found for UID $uid');
+    }
+  }
+
+  // Disable pointer events on video container so Flutter controls remain clickable
+  void _disablePointerEventsOnContainer(String elementId) {
+    try {
+      final element = html.document.getElementById(elementId);
+      if (element != null) {
+        element.style.pointerEvents = 'none';
+        // Also disable pointer events on all child elements (video tags)
+        final videos = element.querySelectorAll('video');
+        for (final video in videos) {
+          (video as html.Element).style.pointerEvents = 'none';
+        }
+        print('✅ Disabled pointer events on $elementId and its children');
+      }
+    } catch (e) {
+      print('⚠️ Could not disable pointer events: $e');
     }
   }
 
