@@ -364,6 +364,10 @@ class AgoraWebService {
         js_util.callMethod(track, 'play', [elementId]);
         print('▶️ Playing remote video for UID $uid in element: $elementId');
         _disablePointerEventsOnContainer(elementId);
+        // Re-apply constraints after Agora fully renders (it creates elements async)
+        Future.delayed(const Duration(milliseconds: 300), () {
+          _disablePointerEventsOnContainer(elementId);
+        });
       } catch (e) {
         print('⚠️ Error playing remote video for UID $uid: $e');
       }
@@ -372,26 +376,48 @@ class AgoraWebService {
       print('▶️ Playing remote video (fallback) in element: $elementId');
       js_util.callMethod(_remoteVideoTrack, 'play', [elementId]);
       _disablePointerEventsOnContainer(elementId);
+      Future.delayed(const Duration(milliseconds: 300), () {
+        _disablePointerEventsOnContainer(elementId);
+      });
     } else {
       print('⚠️ No video track found for UID $uid');
     }
   }
 
-  // Disable pointer events on video container so Flutter controls remain clickable
+  // Disable pointer events and constrain video size in container
   void _disablePointerEventsOnContainer(String elementId) {
     try {
       final element = html.document.getElementById(elementId);
       if (element != null) {
+        // Make container constrain its children
         element.style.pointerEvents = 'none';
-        // Also disable pointer events on all child elements (video tags)
+        element.style.position = 'relative';
+        element.style.overflow = 'hidden';
+        
+        // Constrain all child divs (Agora creates wrapper divs)
+        final divs = element.querySelectorAll('div');
+        for (final div in divs) {
+          (div as html.Element).style
+            ..position = 'relative'
+            ..width = '100%'
+            ..height = '100%'
+            ..pointerEvents = 'none';
+        }
+        
+        // Constrain all video elements
         final videos = element.querySelectorAll('video');
         for (final video in videos) {
-          (video as html.Element).style.pointerEvents = 'none';
+          (video as html.Element).style
+            ..position = 'relative'
+            ..width = '100%'
+            ..height = '100%'
+            ..objectFit = 'cover'
+            ..pointerEvents = 'none';
         }
-        print('✅ Disabled pointer events on $elementId and its children');
+        print('✅ Constrained video in $elementId');
       }
     } catch (e) {
-      print('⚠️ Could not disable pointer events: $e');
+      print('⚠️ Could not constrain video: $e');
     }
   }
 
