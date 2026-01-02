@@ -33,8 +33,13 @@ class SocketService {
       _socket = IO.io(
         ApiConfig.baseUrl,
         IO.OptionBuilder()
-            .setTransports(['websocket'])
+            // Use both polling and websocket - polling as fallback for mobile browsers
+            .setTransports(['websocket', 'polling'])
             .disableAutoConnect()
+            .enableReconnection()
+            .setReconnectionAttempts(10)
+            .setReconnectionDelay(1000)
+            .setReconnectionDelayMax(5000)
             .setExtraHeaders({'userId': userId})
             .build(),
       );
@@ -46,6 +51,13 @@ class SocketService {
         // Register user with their socket
         _socket!.emit('register', userId);
         print('📝 Registered user: $userId');
+      });
+
+      _socket!.onReconnect((_) {
+        print('🔄 Socket reconnected - re-registering user');
+        // Re-register user after reconnection
+        _socket!.emit('register', userId);
+        print('📝 Re-registered user: $userId');
       });
 
       _socket!.onDisconnect((_) {
@@ -268,6 +280,47 @@ class SocketService {
       print('🔌 Socket disconnected');
     }
     _currentUserId = null;
+  }
+
+  /// Ensure socket is connected, reconnect if needed
+  /// Call this when app comes back to foreground on mobile
+  Future<void> ensureConnected() async {
+    if (_currentUserId == null) {
+      print('⚠️ Cannot reconnect - no user ID stored');
+      return;
+    }
+    
+    if (_socket == null) {
+      print('⚠️ Socket not initialized - cannot reconnect');
+      return;
+    }
+    
+    if (!_socket!.connected) {
+      print('🔄 Socket disconnected - attempting to reconnect...');
+      _socket!.connect();
+      
+      // Wait a bit for connection
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      if (_socket!.connected) {
+        print('✅ Socket reconnected successfully');
+        _socket!.emit('register', _currentUserId);
+        print('📝 Re-registered user: $_currentUserId');
+      } else {
+        print('⚠️ Socket reconnection still pending...');
+      }
+    } else {
+      print('✅ Socket already connected');
+    }
+  }
+
+  /// Force reconnect the socket
+  void forceReconnect() {
+    if (_currentUserId != null && _socket != null) {
+      print('🔄 Force reconnecting socket...');
+      _socket!.disconnect();
+      _socket!.connect();
+    }
   }
 
   /// Get current socket connection status

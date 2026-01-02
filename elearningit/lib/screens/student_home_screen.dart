@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/notification_service.dart';
+import '../services/socket_service.dart';
 import '../models/user.dart';
 import '../screens/student_dashboard.dart';
 import '../screens/profile_screen.dart';
@@ -14,17 +15,34 @@ class StudentHomeScreen extends StatefulWidget {
   State<StudentHomeScreen> createState() => _StudentHomeScreenState();
 }
 
-class _StudentHomeScreenState extends State<StudentHomeScreen> {
+class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindingObserver {
   final _authService = AuthService();
   final _notificationService = NotificationService();
+  final _socketService = SocketService();
   User? _currentUser;
   int _unreadCount = 0;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadData();
     _loadUnreadCount();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Reconnect socket when app comes back to foreground
+    if (state == AppLifecycleState.resumed) {
+      print('📱 App resumed - ensuring socket connection');
+      _socketService.ensureConnected();
+    }
   }
 
   Future<void> _loadData() async {

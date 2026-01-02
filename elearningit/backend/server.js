@@ -118,7 +118,12 @@ mongoose.connect(process.env.MONGODB_URI)
       cors: {
         origin: "*",
         methods: ["GET", "POST"]
-      }
+      },
+      // Enable both websocket and polling for mobile browser compatibility
+      transports: ['websocket', 'polling'],
+      // Ping timeout/interval for connection keep-alive
+      pingTimeout: 60000,
+      pingInterval: 25000
     });
     
     // Initialize WebRTC signaling
