@@ -1,4 +1,5 @@
 // screens/call/web_video_call_screen.dart
+// Based on course_video_call pattern for proper video containment
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../services/agora_web_service.dart';
@@ -31,78 +32,78 @@ class WebVideoCallScreen extends StatefulWidget {
 }
 
 class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
-  // Use different service based on platform
   AgoraWebService? _webService;
   UnifiedAgoraService? _nativeService;
 
   Timer? _callTimer;
   int _seconds = 0;
   bool _isConnected = false;
+  bool _isLoading = true;
   int? _remoteUid;
 
   // Stream subscriptions for cleanup
   StreamSubscription? _remoteUidSubscription;
   StreamSubscription? _connectionStateSubscription;
 
-  // HTML element view IDs for web video rendering
-  static const String _remoteVideoViewId = 'remote-video-view';
-  static const String _localVideoViewId = 'local-video-view';
-  bool _videoElementsRegistered = false;
+  // HTML element view IDs - same pattern as course_video_call
+  static const String _localVideoViewId = 'one-on-one-local-video-view';
+  String? _remoteVideoViewId;
+  bool _localVideoRegistered = false;
 
   bool get _isMuted => kIsWeb
       ? (_webService?.isMuted ?? false)
       : (_nativeService?.isMuted ?? false);
 
-  bool get _isCameraOff => kIsWeb
-      ? !(_webService?.isVideoEnabled ?? true)
-      : !(_nativeService?.isVideoEnabled ?? true);
+  bool get _isVideoEnabled => kIsWeb
+      ? (_webService?.isVideoEnabled ?? true)
+      : (_nativeService?.isVideoEnabled ?? true);
 
   @override
   void initState() {
     super.initState();
     if (kIsWeb) {
-      _registerVideoViews();
+      _registerLocalVideoView();
     }
     _initializeCall();
   }
 
-  // Register HTML elements for video rendering on web
-  void _registerVideoViews() {
-    if (_videoElementsRegistered || !kIsWeb) return;
+  // Register local video view - same as course_video_call
+  void _registerLocalVideoView() {
+    if (_localVideoRegistered) return;
 
-    // Register remote video view
-    ui_web.platformViewRegistry.registerViewFactory(_remoteVideoViewId, (
-      int viewId,
-    ) {
-      final element = html.DivElement()
-        ..id = 'remote-video-container'
-        ..style.width = '100%'
-        ..style.height = '100%'
-        ..style.objectFit = 'cover'
-        ..style.pointerEvents = 'none'; // Don't block clicks
-      return element;
-    });
-
-    // Register local video view
-    ui_web.platformViewRegistry.registerViewFactory(_localVideoViewId, (
-      int viewId,
-    ) {
+    ui_web.platformViewRegistry.registerViewFactory(_localVideoViewId, (int viewId) {
       final element = html.DivElement()
         ..id = 'local-video-container'
         ..style.width = '100%'
         ..style.height = '100%'
-        ..style.objectFit = 'cover'
-        ..style.pointerEvents = 'none'; // Don't block clicks
+        ..style.objectFit = 'cover';
       return element;
     });
 
-    _videoElementsRegistered = true;
-    print('✅ Video view elements registered');
+    _localVideoRegistered = true;
+    print('✅ Local video view registered');
+  }
+
+  // Register remote video view dynamically when remote user joins
+  void _registerRemoteVideoView(int uid) {
+    final viewId = 'one-on-one-remote-video-$uid';
+    if (_remoteVideoViewId == viewId) return;
+
+    ui_web.platformViewRegistry.registerViewFactory(viewId, (int viewId) {
+      final element = html.DivElement()
+        ..id = 'remote-video-container-$uid'
+        ..style.width = '100%'
+        ..style.height = '100%'
+        ..style.objectFit = 'cover';
+      return element;
+    });
+
+    _remoteVideoViewId = viewId;
+    print('✅ Remote video view registered for UID $uid');
   }
 
   Future<void> _initializeCall() async {
     try {
-      // Step 1: Generate Agora token from backend
       print('🎫 Requesting Agora token for channel: ${widget.channelName}');
       final callService = CallService();
       final tokenData = await callService.generateAgoraToken(
@@ -113,7 +114,6 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
       final agoraToken = tokenData['token'] as String;
       print('✅ Received Agora token');
 
-      // Step 2: Join channel with token
       if (kIsWeb) {
         print('WEB: Initializing Agora Web SDK for video call...');
         _webService = AgoraWebService();
@@ -123,15 +123,15 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
           token: agoraToken,
         );
 
-        // Set connected immediately after joining (we're in the call)
         if (mounted) {
           setState(() {
             _isConnected = true;
+            _isLoading = false;
           });
           _startTimer();
         }
 
-        // Play local video immediately
+        // Play local video
         Future.delayed(const Duration(milliseconds: 500), () {
           if (_webService != null) {
             _webService!.playLocalVideo('local-video-container');
@@ -143,22 +143,21 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
         _remoteUidSubscription = _webService!.remoteUid.listen((uid) {
           print('👥 Remote user joined with uid: $uid');
           if (mounted) {
+            _registerRemoteVideoView(uid);
             setState(() {
               _remoteUid = uid;
             });
             // Play remote video when user joins
             Future.delayed(const Duration(milliseconds: 500), () {
               if (_webService != null && _remoteUid != null) {
-                _webService!.playRemoteVideo(_remoteUid!, 'remote-video-container');
+                _webService!.playRemoteVideo(_remoteUid!, 'remote-video-container-$_remoteUid');
                 print('📹 Remote video started playing');
               }
             });
           }
         });
 
-        _connectionStateSubscription = _webService!.connectionState.listen((
-          state,
-        ) {
+        _connectionStateSubscription = _webService!.connectionState.listen((state) {
           if (state == 'ended' && mounted) {
             _endCall();
           }
@@ -172,15 +171,14 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
           token: agoraToken,
         );
 
-        // Set connected immediately after joining (we're in the call)
         if (mounted) {
           setState(() {
             _isConnected = true;
+            _isLoading = false;
           });
           _startTimer();
         }
 
-        // Listen for remote user joining
         _remoteUidSubscription = _nativeService!.remoteUid.listen((uid) {
           print('👥 Remote user joined with uid: $uid');
           if (mounted) {
@@ -190,9 +188,7 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
           }
         });
 
-        _connectionStateSubscription = _nativeService!.connectionState.listen((
-          state,
-        ) {
+        _connectionStateSubscription = _nativeService!.connectionState.listen((state) {
           if (state == 'ended' && mounted) {
             _endCall();
           }
@@ -200,7 +196,14 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
       }
     } catch (e) {
       print('❌ Error initializing video call: $e');
-      _showError('Failed to start video call: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to start video call: $e')),
+        );
+      }
     }
   }
 
@@ -220,31 +223,14 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
     return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
-  void _showError(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
-    }
-  }
-
   Future<void> _endCall() async {
     final socketService = SocketService();
     final callService = CallService();
 
-    // Notify other user via socket
     if (widget.callId != null) {
       socketService.notifyCallEnded(widget.callId!, widget.otherUser.id);
-      print('📤 Socket event sent: call_ended');
-    }
-
-    // Update backend with call duration
-    if (widget.callId != null) {
       try {
         await callService.endCall(widget.callId!, duration: _seconds);
-        print(
-          '✅ Backend notified: Call ${widget.callId} ended (duration: $_seconds seconds)',
-        );
       } catch (e) {
         print('⚠️ Error notifying backend: $e');
       }
@@ -267,163 +253,112 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
     } else {
       await _nativeService?.toggleMicrophone();
     }
-    if (mounted) {
-      setState(() {});
-    }
+    if (mounted) setState(() {});
   }
 
   Future<void> _toggleCamera() async {
     if (kIsWeb) {
       await _webService?.toggleCamera();
-      // Force UI rebuild to reflect camera state change
-      if (mounted) {
-        setState(() {});
-      }
     } else {
       await _nativeService?.toggleCamera();
-      if (mounted) {
-        setState(() {});
-      }
     }
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Top bar with caller name and timer
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: Colors.grey[900],
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Caller name
-                  Text(
-                    widget.otherUser.fullName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  // Timer badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.videocam, color: Colors.white, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          _formatDuration(_seconds),
-                          style: const TextStyle(color: Colors.white, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+      appBar: AppBar(
+        title: Text('Call with ${widget.otherUser.fullName}'),
+        backgroundColor: Colors.black87,
+        actions: [
+          // Timer
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(16),
             ),
-
-            // Video cards in a grid - like course_video_call
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2, // 2 columns for 1-on-1 call
-                padding: const EdgeInsets.all(16),
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.3, // Rectangular cards like Google Meet
-                children: [
-                  // Remote user video card
-                  _buildVideoCard(
-                    isLocal: false,
-                    userName: widget.otherUser.fullName,
-                  ),
-                  // Local user video card  
-                  _buildVideoCard(
-                    isLocal: true,
-                    userName: 'You',
-                  ),
-                ],
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.videocam, color: Colors.white, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  _formatDuration(_seconds),
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              ],
             ),
-
-            // Bottom controls
-            Container(
-              color: Colors.grey[900],
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildControlButton(
-                    icon: _isMuted ? Icons.mic_off : Icons.mic,
-                    label: 'Mute',
-                    onPressed: _toggleMicrophone,
-                    color: _isMuted ? Colors.red : Colors.white,
-                  ),
-                  const SizedBox(width: 32),
-                  _buildControlButton(
-                    icon: _isCameraOff ? Icons.videocam_off : Icons.videocam,
-                    label: 'Video',
-                    onPressed: _toggleCamera,
-                    color: _isCameraOff ? Colors.red : Colors.white,
-                  ),
-                  const SizedBox(width: 32),
-                  _buildControlButton(
-                    icon: Icons.call_end,
-                    label: 'End',
-                    onPressed: _endCall,
-                    color: Colors.red,
-                    size: 64,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
+      backgroundColor: Colors.black,
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            )
+          : Stack(
+              children: [
+                // Video grid - same pattern as course_video_call
+                _buildVideoGrid(),
+                
+                // Controls at bottom
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: _buildControls(),
+                ),
+              ],
+            ),
     );
   }
 
-  // Build a video card like course_video_call does
-  Widget _buildVideoCard({required bool isLocal, required String userName}) {
-    final bool showVideo = isLocal 
-        ? !_isCameraOff && kIsWeb
-        : _remoteUid != null && kIsWeb;
-    
-    final String viewType = isLocal ? _localVideoViewId : _remoteVideoViewId;
-    final Color borderColor = isLocal ? Colors.blue : Colors.grey[700]!;
+  Widget _buildVideoGrid() {
+    return GridView.builder(
+      padding: const EdgeInsets.only(top: 16, left: 8, right: 8, bottom: 120),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        childAspectRatio: 1.3,
+      ),
+      itemCount: 2, // Always 2 for 1-on-1 call
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return _buildLocalVideoCard();
+        } else {
+          return _buildRemoteVideoCard();
+        }
+      },
+    );
+  }
 
+  // Local video card - exactly like course_video_call
+  Widget _buildLocalVideoCard() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor, width: 2),
+        border: Border.all(color: Colors.blue.withOpacity(0.5), width: 2),
       ),
       child: Stack(
         children: [
-          // Video or avatar
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: showVideo
-                ? HtmlElementView(viewType: viewType)
+            child: _isVideoEnabled
+                ? const HtmlElementView(viewType: _localVideoViewId)
                 : Container(
                     color: Colors.grey[850],
-                    child: Center(
+                    child: const Center(
                       child: CircleAvatar(
                         radius: 40,
-                        backgroundColor: isLocal ? Colors.blue : Colors.green,
+                        backgroundColor: Colors.blue,
                         child: Text(
-                          userName.isNotEmpty ? userName[0].toUpperCase() : '?',
-                          style: const TextStyle(
+                          'Y',
+                          style: TextStyle(
                             fontSize: 32,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -443,9 +378,9 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
                 color: Colors.black.withOpacity(0.7),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                userName,
-                style: const TextStyle(
+              child: const Text(
+                'You',
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -453,8 +388,8 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
               ),
             ),
           ),
-          // Mute indicator for local user
-          if (isLocal && _isMuted)
+          // Mute indicator
+          if (_isMuted)
             Positioned(
               top: 8,
               right: 8,
@@ -471,40 +406,112 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
                 ),
               ),
             ),
-          // Status text when not connected
-          if (!isLocal && _remoteUid == null)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundColor: Colors.green,
-                        child: Text(
-                          widget.otherUser.fullName[0].toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 32,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+        ],
+      ),
+    );
+  }
+
+  // Remote video card - exactly like course_video_call
+  Widget _buildRemoteVideoCard() {
+    final userName = widget.otherUser.fullName;
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: _remoteVideoViewId != null && _remoteUid != null
+                ? HtmlElementView(viewType: _remoteVideoViewId!)
+                : Container(
+                    color: Colors.grey[850],
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircleAvatar(
+                            radius: 40,
+                            backgroundColor: Colors.green,
+                            child: Text(
+                              userName.isNotEmpty ? userName[0].toUpperCase() : '?',
+                              style: const TextStyle(
+                                fontSize: 32,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _isConnected ? 'Connecting video...' : 'Calling...',
+                            style: const TextStyle(color: Colors.white70, fontSize: 14),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _isConnected ? 'Connecting video...' : 'Calling...',
-                        style: const TextStyle(color: Colors.white70, fontSize: 14),
-                      ),
-                    ],
+                    ),
                   ),
+          ),
+          Positioned(
+            left: 8,
+            bottom: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                userName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildControls() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            Colors.black.withOpacity(0.8),
+          ],
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Mute button
+          _buildControlButton(
+            icon: _isMuted ? Icons.mic_off : Icons.mic,
+            label: _isMuted ? 'Unmute' : 'Mute',
+            onPressed: _toggleMicrophone,
+            isActive: !_isMuted,
+          ),
+          const SizedBox(width: 24),
+          // Video button
+          _buildControlButton(
+            icon: _isVideoEnabled ? Icons.videocam : Icons.videocam_off,
+            label: _isVideoEnabled ? 'Stop Video' : 'Start Video',
+            onPressed: _toggleCamera,
+            isActive: _isVideoEnabled,
+          ),
+          const SizedBox(width: 24),
+          // End call button
+          _buildEndCallButton(),
         ],
       ),
     );
@@ -514,42 +521,67 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
     required IconData icon,
     required String label,
     required VoidCallback onPressed,
-    required Color color,
-    double size = 56,
+    required bool isActive,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Material(
-          color: Colors.white24,
+          color: isActive ? Colors.grey[700] : Colors.red,
           shape: const CircleBorder(),
           child: InkWell(
             onTap: onPressed,
             customBorder: const CircleBorder(),
             child: Container(
-              width: size,
-              height: size,
+              width: 56,
+              height: 56,
               alignment: Alignment.center,
-              child: Icon(icon, color: color, size: size * 0.45),
+              child: Icon(icon, color: Colors.white, size: 24),
             ),
           ),
         ),
         const SizedBox(height: 8),
-        Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white, fontSize: 11),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEndCallButton() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Material(
+          color: Colors.red,
+          shape: const CircleBorder(),
+          child: InkWell(
+            onTap: _endCall,
+            customBorder: const CircleBorder(),
+            child: Container(
+              width: 64,
+              height: 64,
+              alignment: Alignment.center,
+              child: const Icon(Icons.call_end, color: Colors.white, size: 28),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'End',
+          style: TextStyle(color: Colors.white, fontSize: 11),
+        ),
       ],
     );
   }
 
   @override
   void dispose() {
-    // Cancel timer
     _callTimer?.cancel();
-
-    // Cancel stream subscriptions to prevent memory leaks
     _remoteUidSubscription?.cancel();
     _connectionStateSubscription?.cancel();
 
-    // Dispose services
     if (kIsWeb) {
       _webService?.dispose();
     } else {
