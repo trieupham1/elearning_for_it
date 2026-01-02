@@ -289,75 +289,119 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Use Column layout to avoid HtmlElementView z-index issues on web
-    // Video area and controls are in separate non-overlapping regions
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
+    // Calculate video box size - fixed size that won't cover controls
+    final videoBoxWidth = screenWidth * 0.55;
+    final videoBoxHeight = screenHeight * 0.55;
+    
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
         child: Column(
           children: [
-            // Top bar with local video preview and timer
+            // Top bar with timer
             Container(
-              height: 100,
-              color: Colors.black,
-              child: Stack(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Local video preview (top-left corner)
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white, width: 2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: _buildLocalVideoPreview(),
-                        ),
-                      ),
+                  // Caller name
+                  Text(
+                    widget.otherUser.fullName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-
-                  // Timer badge (top-right corner)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.videocam, color: Colors.white, size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            _formatDuration(_seconds),
-                            style: const TextStyle(color: Colors.white, fontSize: 12),
-                          ),
-                        ],
-                      ),
+                  // Timer badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.videocam, color: Colors.white, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatDuration(_seconds),
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
 
-            // Remote video area (takes remaining space minus controls)
+            // Main video area - Remote video (center) + Local preview (right)
             Expanded(
-              child: _buildRemoteVideo(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    // Remote video in fixed box (left/center)
+                    Expanded(
+                      flex: 3,
+                      child: Container(
+                        margin: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[900],
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey[700]!, width: 2),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: _buildRemoteVideo(),
+                        ),
+                      ),
+                    ),
+                    
+                    // Local preview (right side)
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        margin: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[900],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.blue, width: 2),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: _buildLocalVideoPreview(),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                color: Colors.black54,
+                                child: const Text(
+                                  'You',
+                                  style: TextStyle(color: Colors.white, fontSize: 12),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
 
-            // Bottom controls - separate from video so no overlap
+            // Bottom controls - completely separate from video
             Container(
               color: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32),
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -367,14 +411,14 @@ class _WebVideoCallScreenState extends State<WebVideoCallScreen> {
                     onPressed: _toggleMicrophone,
                     color: _isMuted ? Colors.red : Colors.white,
                   ),
-                  const SizedBox(width: 24),
+                  const SizedBox(width: 32),
                   _buildControlButton(
                     icon: _isCameraOff ? Icons.videocam_off : Icons.videocam,
                     label: 'Video',
                     onPressed: _toggleCamera,
                     color: _isCameraOff ? Colors.red : Colors.white,
                   ),
-                  const SizedBox(width: 24),
+                  const SizedBox(width: 32),
                   _buildControlButton(
                     icon: Icons.call_end,
                     label: 'End',
