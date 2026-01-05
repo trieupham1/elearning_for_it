@@ -1,5 +1,27 @@
 // models/announcement.dart
 
+/// Helper function to parse DateTime from JSON and convert to local timezone
+DateTime _parseDateTime(String dateString) {
+  return DateTime.parse(dateString).toLocal();
+}
+
+/// Helper function to parse nullable DateTime from JSON and convert to local timezone
+DateTime? _parseDateTimeNullable(String? dateString) {
+  if (dateString == null) return null;
+  return DateTime.parse(dateString).toLocal();
+}
+
+/// Helper function to convert DateTime to UTC ISO8601 string for sending to backend
+String _toUtcString(DateTime dateTime) {
+  return dateTime.toUtc().toIso8601String();
+}
+
+/// Helper function to convert nullable DateTime to UTC ISO8601 string
+String? _toUtcStringNullable(DateTime? dateTime) {
+  if (dateTime == null) return null;
+  return dateTime.toUtc().toIso8601String();
+}
+
 /// Main Announcement model with full tracking support
 class Announcement {
   final String id;
@@ -93,10 +115,10 @@ class Announcement {
             )
           : [],
       createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
+          ? _parseDateTime(json['createdAt'])
           : DateTime.now(),
       updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'])
+          ? _parseDateTime(json['updatedAt'])
           : DateTime.now(),
       groups: json['groupIds'] != null && json['groupIds'].isNotEmpty
           ? List<GroupInfo>.from(
@@ -258,7 +280,7 @@ class AnnouncementComment {
           (json['userId'] is Map ? json['userId']['avatar'] : null),
       text: json['text'] ?? '',
       createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
+          ? _parseDateTime(json['createdAt'])
           : DateTime.now(),
     );
   }
@@ -269,7 +291,7 @@ class AnnouncementComment {
       'userName': userName,
       'userAvatar': userAvatar,
       'text': text,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': _toUtcString(createdAt),
     };
   }
 }
@@ -287,13 +309,13 @@ class AnnouncementView {
           ? json['userId']
           : (json['userId']?['_id']?.toString() ?? ''),
       viewedAt: json['viewedAt'] != null
-          ? DateTime.parse(json['viewedAt'])
+          ? _parseDateTime(json['viewedAt'])
           : DateTime.now(),
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'userId': userId, 'viewedAt': viewedAt.toIso8601String()};
+    return {'userId': userId, 'viewedAt': _toUtcString(viewedAt)};
   }
 }
 
@@ -316,7 +338,7 @@ class AnnouncementDownload {
           : (json['userId']?['_id']?.toString() ?? ''),
       fileName: json['fileName'] ?? '',
       downloadedAt: json['downloadedAt'] != null
-          ? DateTime.parse(json['downloadedAt'])
+          ? _parseDateTime(json['downloadedAt'])
           : DateTime.now(),
     );
   }
@@ -325,7 +347,7 @@ class AnnouncementDownload {
     return {
       'userId': userId,
       'fileName': fileName,
-      'downloadedAt': downloadedAt.toIso8601String(),
+      'downloadedAt': _toUtcString(downloadedAt),
     };
   }
 }

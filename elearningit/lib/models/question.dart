@@ -1,3 +1,13 @@
+/// Helper function to parse DateTime from JSON and convert to local timezone
+DateTime _parseDateTime(String dateString) {
+  return DateTime.parse(dateString).toLocal();
+}
+
+/// Helper function to convert DateTime to UTC ISO8601 string for sending to backend
+String _toUtcString(DateTime dateTime) {
+  return dateTime.toUtc().toIso8601String();
+}
+
 class Question {
   final String id;
   
@@ -58,8 +68,8 @@ class Question {
       category: json['category']?.toString(),
       tags: List<String>.from(json['tags'] ?? []),
       createdBy: createdById,
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: _parseDateTime(json['createdAt'] ?? DateTime.now().toUtc().toIso8601String()),
+      updatedAt: _parseDateTime(json['updatedAt'] ?? DateTime.now().toUtc().toIso8601String()),
     );
   }
 
@@ -74,8 +84,8 @@ class Question {
       'category': category,
       'tags': tags,
       'createdBy': createdBy,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'createdAt': _toUtcString(createdAt),
+      'updatedAt': _toUtcString(updatedAt),
     };
   }
 

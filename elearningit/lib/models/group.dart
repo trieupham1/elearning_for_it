@@ -1,3 +1,15 @@
+/// Helper function to parse nullable DateTime from JSON and convert to local timezone
+DateTime? _parseDateTimeNullable(String? dateString) {
+  if (dateString == null) return null;
+  return DateTime.parse(dateString).toLocal();
+}
+
+/// Helper function to convert nullable DateTime to UTC ISO8601 string
+String? _toUtcStringNullable(DateTime? dateTime) {
+  if (dateTime == null) return null;
+  return dateTime.toUtc().toIso8601String();
+}
+
 class Group {
   final String id;
   final String name;
@@ -35,12 +47,8 @@ class Group {
           [],
       createdBy: json['createdBy'] ?? '',
       description: json['description'],
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
-          : null,
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'])
-          : null,
+      createdAt: _parseDateTimeNullable(json['createdAt']),
+      updatedAt: _parseDateTimeNullable(json['updatedAt']),
     );
   }
 
@@ -52,8 +60,8 @@ class Group {
       'members': members.map((m) => m.id).toList(),
       'createdBy': createdBy,
       'description': description,
-      'createdAt': createdAt?.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
+      'createdAt': _toUtcStringNullable(createdAt),
+      'updatedAt': _toUtcStringNullable(updatedAt),
     };
   }
 }

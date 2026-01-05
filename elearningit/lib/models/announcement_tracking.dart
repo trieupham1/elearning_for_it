@@ -1,5 +1,16 @@
 /// Model for announcement tracking analytics
 /// Used by instructor tracking dashboard
+
+/// Helper function to parse DateTime from JSON and convert to local timezone
+DateTime _parseDateTime(String dateString) {
+  return DateTime.parse(dateString).toLocal();
+}
+
+/// Helper function to convert DateTime to UTC ISO8601 string for sending to backend
+String _toUtcString(DateTime dateTime) {
+  return dateTime.toUtc().toIso8601String();
+}
+
 class AnnouncementTracking {
   final String announcementId;
   final String title;
@@ -22,7 +33,7 @@ class AnnouncementTracking {
       announcementId: json['announcementId']?.toString() ?? '',
       title: json['title'] ?? '',
       createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
+          ? _parseDateTime(json['createdAt'])
           : DateTime.now(),
       viewStats: ViewStatistics.fromJson(json['viewStats'] ?? {}),
       downloadStats: DownloadStatistics.fromJson(json['downloadStats'] ?? {}),
@@ -38,7 +49,7 @@ class AnnouncementTracking {
     return {
       'announcementId': announcementId,
       'title': title,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': _toUtcString(createdAt),
       'viewStats': viewStats.toJson(),
       'downloadStats': downloadStats.toJson(),
       'fileStats': fileStats.map((key, value) => MapEntry(key, value.toJson())),
@@ -145,7 +156,7 @@ class ViewerInfo {
       email: json['email'],
       studentId: json['studentId'],
       viewedAt: json['viewedAt'] != null
-          ? DateTime.parse(json['viewedAt'])
+          ? _parseDateTime(json['viewedAt'])
           : DateTime.now(),
     );
   }
@@ -156,7 +167,7 @@ class ViewerInfo {
       'fullName': fullName,
       'email': email,
       'studentId': studentId,
-      'viewedAt': viewedAt.toIso8601String(),
+      'viewedAt': _toUtcString(viewedAt),
     };
   }
 
@@ -190,7 +201,7 @@ class DownloadInfo {
       studentId: json['studentId'],
       fileName: json['fileName'] ?? '',
       downloadedAt: json['downloadedAt'] != null
-          ? DateTime.parse(json['downloadedAt'])
+          ? _parseDateTime(json['downloadedAt'])
           : DateTime.now(),
     );
   }
@@ -202,7 +213,7 @@ class DownloadInfo {
       'email': email,
       'studentId': studentId,
       'fileName': fileName,
-      'downloadedAt': downloadedAt.toIso8601String(),
+      'downloadedAt': _toUtcString(downloadedAt),
     };
   }
 

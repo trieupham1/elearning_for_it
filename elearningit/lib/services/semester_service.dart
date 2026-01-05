@@ -103,8 +103,8 @@ class SemesterService extends ApiService {
               'code': code,
               'name': name,
               'year': year,
-              'startDate': startDate.toIso8601String(),
-              'endDate': endDate.toIso8601String(),
+              'startDate': startDate.toUtc().toIso8601String(),
+              'endDate': endDate.toUtc().toIso8601String(),
               'isActive': isActive,
             }),
           )

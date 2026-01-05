@@ -369,10 +369,10 @@ class AdminService {
       if (action != null) queryParams['action'] = action;
       if (userId != null) queryParams['userId'] = userId;
       if (startDate != null) {
-        queryParams['startDate'] = startDate.toIso8601String();
+        queryParams['startDate'] = startDate.toUtc().toIso8601String();
       }
       if (endDate != null) {
-        queryParams['endDate'] = endDate.toIso8601String();
+        queryParams['endDate'] = endDate.toUtc().toIso8601String();
       }
 
       final uri = Uri.parse(

@@ -300,22 +300,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           // Filter chips
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                _buildFilterChip('All', 'all', _notifications.length),
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                  'Unread',
-                  'unread',
-                  _notifications.where((n) => !n.isRead).length,
-                ),
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                  'Read',
-                  'read',
-                  _notifications.where((n) => n.isRead).length,
-                ),
-              ],
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildFilterChip('All', 'all', _notifications.length),
+                  const SizedBox(width: 8),
+                  _buildFilterChip(
+                    'Unread',
+                    'unread',
+                    _notifications.where((n) => !n.isRead).length,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildFilterChip(
+                    'Read',
+                    'read',
+                    _notifications.where((n) => n.isRead).length,
+                  ),
+                ],
+              ),
             ),
           ),
           const Divider(height: 1),
@@ -577,7 +580,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                 const SizedBox(height: 4),
-                Text(notification.message),
+                Text(
+                  notification.message,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 4),
                 Text(
                   timeago.format(notification.createdAt),

@@ -214,3 +214,171 @@ class ScreenBreakpoints {
     return mobile;
   }
 }
+
+/// A Row that automatically wraps to prevent overflow on small screens
+/// Use this instead of Row when content might overflow
+class SafeRow extends StatelessWidget {
+  final List<Widget> children;
+  final MainAxisAlignment mainAxisAlignment;
+  final CrossAxisAlignment crossAxisAlignment;
+  final MainAxisSize mainAxisSize;
+  final double spacing;
+  final bool wrapOnSmallScreens;
+
+  const SafeRow({
+    super.key,
+    required this.children,
+    this.mainAxisAlignment = MainAxisAlignment.start,
+    this.crossAxisAlignment = CrossAxisAlignment.center,
+    this.mainAxisSize = MainAxisSize.max,
+    this.spacing = 8.0,
+    this.wrapOnSmallScreens = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    
+    // On small screens, use Wrap instead of Row to prevent overflow
+    if (wrapOnSmallScreens && screenWidth < 600) {
+      return Wrap(
+        spacing: spacing,
+        runSpacing: spacing,
+        alignment: _mapMainAxisToWrap(mainAxisAlignment),
+        crossAxisAlignment: _mapCrossAxisToWrap(crossAxisAlignment),
+        children: children,
+      );
+    }
+    
+    return Row(
+      mainAxisAlignment: mainAxisAlignment,
+      crossAxisAlignment: crossAxisAlignment,
+      mainAxisSize: mainAxisSize,
+      children: children,
+    );
+  }
+
+  WrapAlignment _mapMainAxisToWrap(MainAxisAlignment alignment) {
+    switch (alignment) {
+      case MainAxisAlignment.start:
+        return WrapAlignment.start;
+      case MainAxisAlignment.end:
+        return WrapAlignment.end;
+      case MainAxisAlignment.center:
+        return WrapAlignment.center;
+      case MainAxisAlignment.spaceBetween:
+        return WrapAlignment.spaceBetween;
+      case MainAxisAlignment.spaceAround:
+        return WrapAlignment.spaceAround;
+      case MainAxisAlignment.spaceEvenly:
+        return WrapAlignment.spaceEvenly;
+    }
+  }
+
+  WrapCrossAlignment _mapCrossAxisToWrap(CrossAxisAlignment alignment) {
+    switch (alignment) {
+      case CrossAxisAlignment.start:
+        return WrapCrossAlignment.start;
+      case CrossAxisAlignment.end:
+        return WrapCrossAlignment.end;
+      case CrossAxisAlignment.center:
+        return WrapCrossAlignment.center;
+      default:
+        return WrapCrossAlignment.center;
+    }
+  }
+}
+
+/// A widget that constrains text to prevent overflow
+class SafeText extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final int maxLines;
+  final TextAlign? textAlign;
+  final TextOverflow overflow;
+
+  const SafeText(
+    this.text, {
+    super.key,
+    this.style,
+    this.maxLines = 1,
+    this.textAlign,
+    this.overflow = TextOverflow.ellipsis,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: style,
+      maxLines: maxLines,
+      overflow: overflow,
+      textAlign: textAlign,
+    );
+  }
+}
+
+/// A flexible widget that expands text and prevents overflow
+class FlexibleText extends StatelessWidget {
+  final String text;
+  final TextStyle? style;
+  final int maxLines;
+  final TextAlign? textAlign;
+  final int flex;
+
+  const FlexibleText(
+    this.text, {
+    super.key,
+    this.style,
+    this.maxLines = 1,
+    this.textAlign,
+    this.flex = 1,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Flexible(
+      flex: flex,
+      child: Text(
+        text,
+        style: style,
+        maxLines: maxLines,
+        overflow: TextOverflow.ellipsis,
+        textAlign: textAlign,
+      ),
+    );
+  }
+}
+
+/// A container that adapts its layout based on available width
+class AdaptiveLayout extends StatelessWidget {
+  final Widget mobileLayout;
+  final Widget? tabletLayout;
+  final Widget? desktopLayout;
+  final double tabletBreakpoint;
+  final double desktopBreakpoint;
+
+  const AdaptiveLayout({
+    super.key,
+    required this.mobileLayout,
+    this.tabletLayout,
+    this.desktopLayout,
+    this.tabletBreakpoint = 768,
+    this.desktopBreakpoint = 1200,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= desktopBreakpoint && desktopLayout != null) {
+          return desktopLayout!;
+        }
+        if (constraints.maxWidth >= tabletBreakpoint && tabletLayout != null) {
+          return tabletLayout!;
+        }
+        return mobileLayout;
+      },
+    );
+  }
+}

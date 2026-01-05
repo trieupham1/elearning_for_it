@@ -1,4 +1,16 @@
 // models/message.dart
+
+/// Helper function to parse DateTime from JSON and convert to local timezone
+DateTime _parseDateTime(String dateString) {
+  return DateTime.parse(dateString).toLocal();
+}
+
+/// Helper function to parse nullable DateTime from JSON and convert to local timezone
+DateTime? _parseDateTimeNullable(String? dateString) {
+  if (dateString == null) return null;
+  return DateTime.parse(dateString).toLocal();
+}
+
 class ChatMessage {
   final String id;
   final String senderId;
@@ -44,8 +56,8 @@ class ChatMessage {
           '',
       content: json['content'] ?? '',
       fileId: json['fileId'], // Add this field
-      createdAt: DateTime.parse(
-        json['createdAt'] ?? DateTime.now().toIso8601String(),
+      createdAt: _parseDateTime(
+        json['createdAt'] ?? DateTime.now().toUtc().toIso8601String(),
       ),
       senderName:
           json['senderId']?['fullName'] ??
@@ -88,9 +100,7 @@ class Conversation {
           : 'User',
       userAvatar: json['userAvatar'],
       lastMessage: json['lastMessage'],
-      lastMessageTime: json['lastMessageTime'] != null
-          ? DateTime.parse(json['lastMessageTime'])
-          : null,
+      lastMessageTime: _parseDateTimeNullable(json['lastMessageTime']),
       unreadCount: json['unreadCount'] ?? 0,
     );
   }

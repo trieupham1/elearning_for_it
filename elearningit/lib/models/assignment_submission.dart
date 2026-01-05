@@ -1,4 +1,27 @@
 // models/assignment_submission.dart
+
+/// Helper function to parse DateTime from JSON and convert to local timezone
+DateTime _parseDateTime(String dateString) {
+  return DateTime.parse(dateString).toLocal();
+}
+
+/// Helper function to parse nullable DateTime from JSON and convert to local timezone
+DateTime? _parseDateTimeNullable(String? dateString) {
+  if (dateString == null) return null;
+  return DateTime.parse(dateString).toLocal();
+}
+
+/// Helper function to convert DateTime to UTC ISO8601 string for sending to backend
+String _toUtcString(DateTime dateTime) {
+  return dateTime.toUtc().toIso8601String();
+}
+
+/// Helper function to convert nullable DateTime to UTC ISO8601 string
+String? _toUtcStringNullable(DateTime? dateTime) {
+  if (dateTime == null) return null;
+  return dateTime.toUtc().toIso8601String();
+}
+
 class AssignmentSubmission {
   final String id;
   final String assignmentId;
@@ -57,18 +80,16 @@ class AssignmentSubmission {
               ?.map((f) => SubmissionFile.fromJson(f))
               .toList() ??
           [],
-      submittedAt: DateTime.parse(json['submittedAt']),
+      submittedAt: _parseDateTime(json['submittedAt']),
       isLate: json['isLate'] ?? false,
       grade: json['grade']?.toDouble(),
       feedback: json['feedback'],
-      gradedAt: json['gradedAt'] != null
-          ? DateTime.parse(json['gradedAt'])
-          : null,
+      gradedAt: _parseDateTimeNullable(json['gradedAt']),
       gradedBy: json['gradedBy'],
       gradedByName: json['gradedByName'],
       status: json['status'] ?? 'submitted',
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      createdAt: _parseDateTime(json['createdAt']),
+      updatedAt: _parseDateTime(json['updatedAt']),
     );
   }
 
@@ -83,16 +104,16 @@ class AssignmentSubmission {
       'groupName': groupName,
       'attemptNumber': attemptNumber,
       'files': files.map((f) => f.toJson()).toList(),
-      'submittedAt': submittedAt.toIso8601String(),
+      'submittedAt': _toUtcString(submittedAt),
       'isLate': isLate,
       'grade': grade,
       'feedback': feedback,
-      'gradedAt': gradedAt?.toIso8601String(),
+      'gradedAt': _toUtcStringNullable(gradedAt),
       'gradedBy': gradedBy,
       'gradedByName': gradedByName,
       'status': status,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'createdAt': _toUtcString(createdAt),
+      'updatedAt': _toUtcString(updatedAt),
     };
   }
 

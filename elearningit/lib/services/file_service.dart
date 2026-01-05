@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:html' as html;
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'api_service.dart';
 import '../config/api_config.dart';
+import '../utils/web_download.dart';
 
 class FileService {
   final ApiService _apiService = ApiService();
@@ -150,16 +150,8 @@ class FileService {
       
       // For web platform, create a download link
       if (kIsWeb) {
-        // Create anchor element with auth token in header
-        final anchor = html.AnchorElement()
-          ..href = url
-          ..download = fileName
-          ..target = '_blank';
-        
-        // Add to DOM, click, and remove
-        html.document.body?.append(anchor);
-        anchor.click();
-        anchor.remove();
+        // Use web download helper
+        openUrlInNewTab(url, fileName);
         
         print('✅ File download initiated: $fileName');
       } else {

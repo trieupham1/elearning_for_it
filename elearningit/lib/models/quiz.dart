@@ -1,3 +1,25 @@
+/// Helper function to parse DateTime from JSON and convert to local timezone
+DateTime _parseDateTime(String dateString) {
+  return DateTime.parse(dateString).toLocal();
+}
+
+/// Helper function to parse nullable DateTime from JSON and convert to local timezone
+DateTime? _parseDateTimeNullable(String? dateString) {
+  if (dateString == null) return null;
+  return DateTime.parse(dateString).toLocal();
+}
+
+/// Helper function to convert DateTime to UTC ISO8601 string for sending to backend
+String _toUtcString(DateTime dateTime) {
+  return dateTime.toUtc().toIso8601String();
+}
+
+/// Helper function to convert nullable DateTime to UTC ISO8601 string
+String? _toUtcStringNullable(DateTime? dateTime) {
+  if (dateTime == null) return null;
+  return dateTime.toUtc().toIso8601String();
+}
+
 class Quiz {
   final String id;
   final String courseId;
@@ -55,8 +77,8 @@ class Quiz {
       description: json['description'] ?? '',
       duration: json['duration'] ?? 60,
       maxAttempts: json['maxAttempts'] ?? 1,
-      openDate: json['openDate'] != null ? DateTime.parse(json['openDate']) : null,
-      closeDate: json['closeDate'] != null ? DateTime.parse(json['closeDate']) : null,
+      openDate: _parseDateTimeNullable(json['openDate']),
+      closeDate: _parseDateTimeNullable(json['closeDate']),
       allowRetakes: json['allowRetakes'] ?? false,
       shuffleQuestions: json['shuffleQuestions'] ?? false,
       showResultsImmediately: json['showResultsImmediately'] ?? false,
@@ -65,8 +87,8 @@ class Quiz {
       categories: List<String>.from(json['categories'] ?? []),
       status: json['status'] ?? 'draft',
       createdBy: _extractStringFromObjectOrString(json['createdBy']) ?? '',
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: _parseDateTime(json['createdAt'] ?? DateTime.now().toUtc().toIso8601String()),
+      updatedAt: _parseDateTime(json['updatedAt'] ?? DateTime.now().toUtc().toIso8601String()),
     );
   }
 
@@ -78,8 +100,8 @@ class Quiz {
       'description': description,
       'duration': duration,
       'maxAttempts': maxAttempts,
-      'openDate': openDate?.toIso8601String(),
-      'closeDate': closeDate?.toIso8601String(),
+      'openDate': _toUtcStringNullable(openDate),
+      'closeDate': _toUtcStringNullable(closeDate),
       'allowRetakes': allowRetakes,
       'shuffleQuestions': shuffleQuestions,
       'showResultsImmediately': showResultsImmediately,
@@ -88,8 +110,8 @@ class Quiz {
       'categories': categories,
       'status': status,
       'createdBy': createdBy,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'createdAt': _toUtcString(createdAt),
+      'updatedAt': _toUtcString(updatedAt),
     };
   }
 
@@ -194,9 +216,9 @@ class QuizAttempt {
       quizId: json['quizId'] ?? '',
       studentId: json['studentId'] ?? '',
       attemptNumber: json['attemptNumber'] ?? 1,
-      startTime: DateTime.parse(json['startTime'] ?? DateTime.now().toIso8601String()),
-      endTime: json['endTime'] != null ? DateTime.parse(json['endTime']) : null,
-      submissionTime: json['submissionTime'] != null ? DateTime.parse(json['submissionTime']) : null,
+      startTime: _parseDateTime(json['startTime'] ?? DateTime.now().toUtc().toIso8601String()),
+      endTime: _parseDateTimeNullable(json['endTime']),
+      submissionTime: _parseDateTimeNullable(json['submissionTime']),
       timeSpent: json['timeSpent'] ?? 0,
       duration: json['duration'] ?? 60,
       questions: List<Map<String, dynamic>>.from(json['questions'] ?? []),
@@ -217,9 +239,9 @@ class QuizAttempt {
       'quizId': quizId,
       'studentId': studentId,
       'attemptNumber': attemptNumber,
-      'startTime': startTime.toIso8601String(),
-      'endTime': endTime?.toIso8601String(),
-      'submissionTime': submissionTime?.toIso8601String(),
+      'startTime': _toUtcString(startTime),
+      'endTime': _toUtcStringNullable(endTime),
+      'submissionTime': _toUtcStringNullable(submissionTime),
       'timeSpent': timeSpent,
       'duration': duration,
       'questions': questions,

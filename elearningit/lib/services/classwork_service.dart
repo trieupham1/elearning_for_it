@@ -40,17 +40,17 @@ class ClassworkItem {
       title: json['title'] ?? '',
       description: json['description'],
       deadline: json['deadline'] != null
-          ? DateTime.parse(json['deadline'])
+          ? DateTime.parse(json['deadline']).toLocal()
           : (json['dueDate'] !=
                     null // for code assignments
-                ? DateTime.parse(json['dueDate'])
+                ? DateTime.parse(json['dueDate']).toLocal()
                 : null),
       closeDate: json['closeDate'] != null
-          ? DateTime.parse(json['closeDate'])
+          ? DateTime.parse(json['closeDate']).toLocal()
           : null,
       createdAt: DateTime.parse(
-        json['createdAt'] ?? DateTime.now().toIso8601String(),
-      ),
+        json['createdAt'] ?? DateTime.now().toUtc().toIso8601String(),
+      ).toLocal(),
       maxAttempts: json['maxAttempts'],
       allowLateSubmission: json['allowLateSubmission'],
       duration: json['duration'],
@@ -114,8 +114,8 @@ class ClassworkService {
           'title': title,
           'description': description,
           'groupIds': [],
-          'startDate': startDate.toIso8601String(),
-          'deadline': deadline.toIso8601String(),
+          'startDate': startDate.toUtc().toIso8601String(),
+          'deadline': deadline.toUtc().toIso8601String(),
           'allowLateSubmission': allowLateSubmission,
           'maxAttempts': maxAttempts,
           'allowedFileTypes': allowedFileTypes ?? [],
@@ -151,8 +151,8 @@ class ClassworkService {
           'title': title,
           'description': description,
           'groupIds': [],
-          'openDate': openDate.toIso8601String(),
-          'closeDate': closeDate.toIso8601String(),
+          'openDate': openDate.toUtc().toIso8601String(),
+          'closeDate': closeDate.toUtc().toIso8601String(),
           'duration': duration,
           'maxAttempts': maxAttempts,
         },

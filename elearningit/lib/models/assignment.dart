@@ -1,4 +1,27 @@
 // models/assignment.dart
+
+/// Helper function to parse DateTime from JSON and convert to local timezone
+DateTime _parseDateTime(String dateString) {
+  return DateTime.parse(dateString).toLocal();
+}
+
+/// Helper function to parse nullable DateTime from JSON and convert to local timezone
+DateTime? _parseDateTimeNullable(String? dateString) {
+  if (dateString == null) return null;
+  return DateTime.parse(dateString).toLocal();
+}
+
+/// Helper function to convert DateTime to UTC ISO8601 string for sending to backend
+String _toUtcString(DateTime dateTime) {
+  return dateTime.toUtc().toIso8601String();
+}
+
+/// Helper function to convert nullable DateTime to UTC ISO8601 string
+String? _toUtcStringNullable(DateTime? dateTime) {
+  if (dateTime == null) return null;
+  return dateTime.toUtc().toIso8601String();
+}
+
 class Assignment {
   final String id;
   final String courseId;
@@ -51,12 +74,10 @@ class Assignment {
       title: json['title'] ?? '',
       description: json['description'],
       groupIds: List<String>.from(json['groupIds'] ?? []),
-      startDate: DateTime.parse(json['startDate']),
-      deadline: DateTime.parse(json['deadline']),
+      startDate: _parseDateTime(json['startDate']),
+      deadline: _parseDateTime(json['deadline']),
       allowLateSubmission: json['allowLateSubmission'] ?? false,
-      lateDeadline: json['lateDeadline'] != null
-          ? DateTime.parse(json['lateDeadline'])
-          : null,
+      lateDeadline: _parseDateTimeNullable(json['lateDeadline']),
       maxAttempts: json['maxAttempts'] ?? 1,
       allowedFileTypes: List<String>.from(json['allowedFileTypes'] ?? []),
       maxFileSize: json['maxFileSize'] ?? 10485760,
@@ -71,8 +92,8 @@ class Assignment {
               ?.map((v) => ViewRecord.fromJson(v))
               .toList() ??
           [],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      createdAt: _parseDateTime(json['createdAt']),
+      updatedAt: _parseDateTime(json['updatedAt']),
     );
   }
 
@@ -85,18 +106,18 @@ class Assignment {
       'title': title,
       'description': description,
       'groupIds': groupIds,
-      'startDate': startDate.toIso8601String(),
-      'deadline': deadline.toIso8601String(),
+      'startDate': _toUtcString(startDate),
+      'deadline': _toUtcString(deadline),
       'allowLateSubmission': allowLateSubmission,
-      'lateDeadline': lateDeadline?.toIso8601String(),
+      'lateDeadline': _toUtcStringNullable(lateDeadline),
       'maxAttempts': maxAttempts,
       'allowedFileTypes': allowedFileTypes,
       'maxFileSize': maxFileSize,
       'attachments': attachments.map((a) => a.toJson()).toList(),
       'points': points,
       'viewedBy': viewedBy.map((v) => v.toJson()).toList(),
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'createdAt': _toUtcString(createdAt),
+      'updatedAt': _toUtcString(updatedAt),
     };
   }
 
@@ -170,11 +191,11 @@ class ViewRecord {
   factory ViewRecord.fromJson(Map<String, dynamic> json) {
     return ViewRecord(
       userId: json['userId'] ?? '',
-      viewedAt: DateTime.parse(json['viewedAt']),
+      viewedAt: _parseDateTime(json['viewedAt']),
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'userId': userId, 'viewedAt': viewedAt.toIso8601String()};
+    return {'userId': userId, 'viewedAt': _toUtcString(viewedAt)};
   }
 }
