@@ -604,21 +604,19 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
   }
 
   Widget _buildPeopleTab() {
-    final allParticipants = [
+    final allParticipants = <Map<String, dynamic>>[
       {
         'uid': 0,
         'name': '${widget.currentUser.firstName ?? ''} ${widget.currentUser.lastName ?? ''}'.trim(),
         'isYou': true,
         'profilePicture': widget.currentUser.profilePicture,
       },
-      ..._remoteUsers.map((uid) => {
-        return {
+      ..._remoteUsers.map((uid) => <String, dynamic>{
           'uid': uid,
           'name': _userNames[uid] ?? 'User $uid',
           'isYou': false,
           'profilePicture': _userProfilePictures[uid],
-        };
-      }),
+        }),
     ];
 
     return ListView.builder(
