@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
-import 'dart:html' as html;
 import 'package:csv/csv.dart';
 import '../models/import_models.dart';
+import '../utils/web_download.dart';
 
 class CsvImportDialog<T> extends StatefulWidget {
   final String title;
@@ -129,15 +129,7 @@ class _CsvImportDialogState<T> extends State<CsvImportDialog<T>> {
       
       // Create blob and download
       final bytes = utf8.encode(csvString);
-      final blob = html.Blob([bytes], 'text/csv');
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      
-      final anchor = html.AnchorElement()
-        ..href = url
-        ..download = '${widget.entityName.toLowerCase()}_import_template.csv'
-        ..click();
-      
-      html.Url.revokeObjectUrl(url);
+      downloadFileWeb(bytes, '${widget.entityName.toLowerCase()}_import_template.csv');
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

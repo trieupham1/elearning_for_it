@@ -2,7 +2,7 @@
 // Copied exact pattern from course_video_call for proper video containment
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import '../../services/agora_web_service.dart';
+import '../../services/agora_web_service_export.dart';
 import '../../services/unified_agora_service.dart';
 import '../../services/call_service.dart';
 import '../../services/socket_service.dart';

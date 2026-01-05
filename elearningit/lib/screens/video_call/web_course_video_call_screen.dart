@@ -1,6 +1,6 @@
 // screens/video_call/web_course_video_call_screen.dart
 import 'package:flutter/material.dart';
-import '../../services/agora_web_service.dart';
+import '../../services/agora_web_service_export.dart';
 import '../../models/course.dart';
 import '../../models/user.dart';
 import '../../services/video_call_service.dart';

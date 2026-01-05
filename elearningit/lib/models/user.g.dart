@@ -7,45 +7,45 @@ part of 'user.dart';
 // **************************************************************************
 
 User _$UserFromJson(Map<String, dynamic> json) => User(
-  id: json['id'] as String,
-  username: json['username'] as String,
-  email: json['email'] as String,
-  role: json['role'] as String,
-  firstName: json['firstName'] as String?,
-  lastName: json['lastName'] as String?,
-  profilePicture: json['profilePicture'] as String?,
-  studentId: json['studentId'] as String?,
-  department: json['department'] as String?,
-  phoneNumber: json['phoneNumber'] as String?,
-  isActive: json['isActive'] as bool? ?? true,
-  createdAt: json['createdAt'] == null
-      ? null
-      : DateTime.parse(json['createdAt'] as String),
-  updatedAt: json['updatedAt'] == null
-      ? null
-      : DateTime.parse(json['updatedAt'] as String),
-);
+      id: json['id'] as String,
+      username: json['username'] as String,
+      email: json['email'] as String,
+      role: json['role'] as String,
+      firstName: json['firstName'] as String?,
+      lastName: json['lastName'] as String?,
+      profilePicture: json['profilePicture'] as String?,
+      studentId: json['studentId'] as String?,
+      department: json['department'] as String?,
+      phoneNumber: json['phoneNumber'] as String?,
+      isActive: json['isActive'] as bool? ?? true,
+      createdAt: json['createdAt'] == null
+          ? null
+          : DateTime.parse(json['createdAt'] as String),
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
+    );
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
-  'id': instance.id,
-  'username': instance.username,
-  'email': instance.email,
-  'firstName': instance.firstName,
-  'lastName': instance.lastName,
-  'role': instance.role,
-  'profilePicture': instance.profilePicture,
-  'studentId': instance.studentId,
-  'department': instance.department,
-  'phoneNumber': instance.phoneNumber,
-  'isActive': instance.isActive,
-  'createdAt': instance.createdAt?.toIso8601String(),
-  'updatedAt': instance.updatedAt?.toIso8601String(),
-};
+      'id': instance.id,
+      'username': instance.username,
+      'email': instance.email,
+      'firstName': instance.firstName,
+      'lastName': instance.lastName,
+      'role': instance.role,
+      'profilePicture': instance.profilePicture,
+      'studentId': instance.studentId,
+      'department': instance.department,
+      'phoneNumber': instance.phoneNumber,
+      'isActive': instance.isActive,
+      'createdAt': instance.createdAt?.toIso8601String(),
+      'updatedAt': instance.updatedAt?.toIso8601String(),
+    };
 
 LoginRequest _$LoginRequestFromJson(Map<String, dynamic> json) => LoginRequest(
-  username: json['username'] as String,
-  password: json['password'] as String,
-);
+      username: json['username'] as String,
+      password: json['password'] as String,
+    );
 
 Map<String, dynamic> _$LoginRequestToJson(LoginRequest instance) =>
     <String, dynamic>{
@@ -60,7 +60,10 @@ LoginResponse _$LoginResponseFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$LoginResponseToJson(LoginResponse instance) =>
-    <String, dynamic>{'token': instance.token, 'user': instance.user};
+    <String, dynamic>{
+      'token': instance.token,
+      'user': instance.user,
+    };
 
 RegisterRequest _$RegisterRequestFromJson(Map<String, dynamic> json) =>
     RegisterRequest(

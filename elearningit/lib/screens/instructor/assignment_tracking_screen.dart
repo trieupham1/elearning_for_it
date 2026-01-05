@@ -4,12 +4,12 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:intl/intl.dart';
 import 'dart:io';
 import 'dart:convert';
-import 'dart:html' as html;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/assignment_tracking.dart';
 import '../../services/assignment_service.dart';
+import '../../utils/web_download.dart';
 
 class AssignmentTrackingScreen extends StatefulWidget {
   final String assignmentId;
@@ -202,14 +202,8 @@ class _AssignmentTrackingScreenState extends State<AssignmentTrackingScreen> {
   }
 
   void _downloadCsvWeb(String csvContent, String filename) {
-    // Web-specific download using data URL
-    final bytes = utf8.encode(csvContent);
-    final blob = html.Blob([bytes]);
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    final anchor = html.AnchorElement(href: url)
-      ..setAttribute('download', filename)
-      ..click();
-    html.Url.revokeObjectUrl(url);
+    // Web-specific download using helper
+    downloadCsvWeb(csvContent, filename);
   }
 
   Future<void> _showGradeDialog(StudentTrackingData student) async {

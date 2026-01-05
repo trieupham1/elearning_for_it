@@ -4,7 +4,7 @@ import '../utils/token_manager.dart';
 
 class ApiConfig {
   // ==========================================
-  // PRODUCTION BACKEND URL (Update this when deploying)
+  // PRODUCTION BACKEND URL (Render deployment)
   // ==========================================
   static const String _productionBase = 'https://elearningit.onrender.com';
   
@@ -12,6 +12,11 @@ class ApiConfig {
   static const String _localBase = 'http://localhost:5000';
   static const String _androidEmulatorBase = 'http://10.0.2.2:5000';
   static const String _pcLocalIp = 'http://192.168.1.224:5000'; // Your PC's WiFi IP
+
+  // ==========================================
+  // SET THIS TO TRUE TO USE RENDER BACKEND
+  // ==========================================
+  static const bool useProductionBackend = true;
 
   // Set this to true if using Android emulator, false if using real device
   static const bool _useEmulator = false;
@@ -56,8 +61,8 @@ class ApiConfig {
 
   // Helper method to get the correct base URL for different environments
   static String getBaseUrl() {
-    // Use production URL for release builds
-    if (kReleaseMode) {
+    // Always use production if flag is set (for testing with Render backend)
+    if (useProductionBackend || kReleaseMode) {
       return _productionBase;
     }
     

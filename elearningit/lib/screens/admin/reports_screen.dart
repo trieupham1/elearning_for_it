@@ -8,7 +8,7 @@ import '../../services/department_service.dart';
 import '../../services/admin_service.dart';
 import '../../services/notification_service.dart';
 import '../../widgets/admin_drawer.dart';
-import 'dart:html' as html;
+import '../../utils/web_download.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({Key? key}) : super(key: key);
@@ -277,13 +277,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     try {
       if (kIsWeb) {
         // Web platform: trigger browser download
-        final blob = html.Blob([bytes]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        // ignore: unused_local_variable
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', filename)
-          ..click();
-        html.Url.revokeObjectUrl(url);
+        downloadFileWeb(bytes, filename);
         
         setState(() => _isLoading = false);
         
