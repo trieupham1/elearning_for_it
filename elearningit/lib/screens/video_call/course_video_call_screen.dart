@@ -1,9 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/course.dart';
 import '../../models/user.dart';
 import '../../services/video_call_service.dart';
+import '../../config/api_config.dart';
+import 'dart:async';
+
+// Chat message model for video call
+class ChatMessage {
+  final String senderName;
+  final String message;
+  final DateTime timestamp;
+
+  ChatMessage({
+    required this.senderName,
+    required this.message,
+    required this.timestamp,
+  });
+}
 
 class CourseVideoCallScreen extends StatefulWidget {
   final Course course;
@@ -27,12 +44,21 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
   bool _isVideoEnabled = true;
   bool _isSharingScreen = false;
   bool _isLoading = true;
+  bool _showSidebar = false;
+  bool _isWaitingForOthers = true;
   
   List<int> _remoteUsers = [];
   Map<int, String> _userNames = {};
+  Map<int, String?> _userProfilePictures = {};
+  Map<int, Map<String, bool>> _userStatuses = {};
+  List<ChatMessage> _chatMessages = [];
   
+  IO.Socket? _socket;
   String? _channelName;
   String? _token;
+  Timer? _aloneTimer;
+
+  final TextEditingController _chatController = TextEditingController();
 
   @override
   void initState() {
@@ -57,12 +83,15 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
       RtcEngineEventHandler(
         onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
           debugPrint('Local user ${connection.localUid} joined');
+          _checkIfAlone();
         },
         onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
           debugPrint('Remote user $remoteUid joined');
           setState(() {
             _remoteUsers.add(remoteUid);
+            _isWaitingForOthers = false;
           });
+          _cancelAloneTimer();
           _fetchUserName(remoteUid);
         },
         onUserOffline: (RtcConnection connection, int remoteUid,
@@ -71,13 +100,18 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
           setState(() {
             _remoteUsers.remove(remoteUid);
             _userNames.remove(remoteUid);
+            _userProfilePictures.remove(remoteUid);
+            _userStatuses.remove(remoteUid);
           });
+          _checkIfAlone();
         },
         onLeaveChannel: (RtcConnection connection, RtcStats stats) {
           debugPrint('Left channel');
           setState(() {
             _remoteUsers.clear();
             _userNames.clear();
+            _userProfilePictures.clear();
+            _userStatuses.clear();
           });
         },
       ),
@@ -89,6 +123,115 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
 
     // Join channel
     await _joinChannel();
+    
+    // Initialize socket for chat
+    _initializeSocket();
+  }
+
+  void _initializeSocket() {
+    try {
+      final socketUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+      _socket = IO.io(socketUrl, <String, dynamic>{
+        'transports': ['websocket'],
+        'autoConnect': true,
+      });
+
+      _socket?.connect();
+
+      _socket?.on('connect', (_) {
+        debugPrint('✅ Socket connected: ${_socket?.id}');
+        
+        _socket?.emit('join_group_call', {
+          'channelName': _channelName,
+          'userId': widget.currentUser.id,
+          'userName': '${widget.currentUser.firstName ?? ''} ${widget.currentUser.lastName ?? ''}'.trim(),
+          'userProfile': widget.currentUser.profilePicture,
+        });
+      });
+
+      // Listen for existing participants
+      _socket?.on('existing_participants', (data) {
+        if (mounted && data['participants'] != null) {
+          for (var participant in data['participants']) {
+            final rawAgoraUid = participant['agoraUid'];
+            if (rawAgoraUid != null) {
+              final agoraUid = rawAgoraUid is int ? rawAgoraUid : int.tryParse(rawAgoraUid.toString());
+              if (agoraUid != null) {
+                setState(() {
+                  _userNames[agoraUid] = participant['userName'] ?? 'Unknown User';
+                  _userProfilePictures[agoraUid] = participant['userProfile'];
+                  _userStatuses[agoraUid] = {'isMuted': true, 'isCameraOff': true};
+                });
+              }
+            }
+          }
+        }
+      });
+
+      // Listen for Agora UID mapping
+      _socket?.on('agora_uid_mapped', (data) {
+        final rawAgoraUid = data['agoraUid'];
+        final userName = data['userName'];
+        final userProfile = data['userProfile'];
+        
+        if (mounted && rawAgoraUid != null) {
+          final agoraUid = rawAgoraUid is int ? rawAgoraUid : int.tryParse(rawAgoraUid.toString());
+          if (agoraUid != null) {
+            setState(() {
+              _userNames[agoraUid] = userName ?? 'Unknown User';
+              _userProfilePictures[agoraUid] = userProfile;
+              if (!_userStatuses.containsKey(agoraUid)) {
+                _userStatuses[agoraUid] = {'isMuted': true, 'isCameraOff': true};
+              }
+            });
+          }
+        }
+      });
+
+      // Listen for chat messages
+      _socket?.on('new_group_message', (data) {
+        if (mounted) {
+          setState(() {
+            _chatMessages.add(ChatMessage(
+              senderName: data['senderName'],
+              message: data['message'],
+              timestamp: DateTime.parse(data['timestamp']),
+            ));
+          });
+        }
+      });
+
+      // Listen for user status updates
+      _socket?.on('user_status_update', (data) {
+        final rawAgoraUid = data['agoraUid'];
+        if (mounted && rawAgoraUid != null) {
+          final agoraUid = rawAgoraUid is int ? rawAgoraUid : int.tryParse(rawAgoraUid.toString());
+          if (agoraUid != null) {
+            setState(() {
+              _userStatuses[agoraUid] = {
+                'isMuted': data['isMuted'] ?? true,
+                'isCameraOff': data['isCameraOff'] ?? true,
+              };
+            });
+          }
+        }
+      });
+    } catch (e) {
+      debugPrint('Error initializing socket: $e');
+    }
+  }
+
+  void _checkIfAlone() {
+    if (_remoteUsers.isEmpty) {
+      setState(() {
+        _isWaitingForOthers = true;
+      });
+    }
+  }
+
+  void _cancelAloneTimer() {
+    _aloneTimer?.cancel();
+    _aloneTimer = null;
   }
 
   Future<void> _joinChannel() async {
@@ -148,6 +291,14 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
       _isMuted = !_isMuted;
     });
     await _engine.muteLocalAudioStream(_isMuted);
+    
+    // Notify others of status change
+    _socket?.emit('user_status_update', {
+      'channelName': _channelName,
+      'agoraUid': widget.currentUser.id.hashCode,
+      'isMuted': _isMuted,
+      'isCameraOff': !_isVideoEnabled,
+    });
   }
 
   Future<void> _toggleVideo() async {
@@ -155,6 +306,14 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
       _isVideoEnabled = !_isVideoEnabled;
     });
     await _engine.muteLocalVideoStream(!_isVideoEnabled);
+    
+    // Notify others of status change
+    _socket?.emit('user_status_update', {
+      'channelName': _channelName,
+      'agoraUid': widget.currentUser.id.hashCode,
+      'isMuted': _isMuted,
+      'isCameraOff': !_isVideoEnabled,
+    });
   }
 
   Future<void> _toggleScreenShare() async {
@@ -182,12 +341,48 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
     await _engine.switchCamera();
   }
 
+  void _sendChatMessage(String message) {
+    if (message.trim().isEmpty) return;
+    
+    final timestamp = DateTime.now();
+    final senderName = '${widget.currentUser.firstName ?? ''} ${widget.currentUser.lastName ?? ''}'.trim();
+    
+    // Add to local messages immediately
+    setState(() {
+      _chatMessages.add(ChatMessage(
+        senderName: senderName,
+        message: message.trim(),
+        timestamp: timestamp,
+      ));
+    });
+    
+    // Send via socket
+    _socket?.emit('send_group_message', {
+      'channelName': _channelName,
+      'message': message.trim(),
+      'senderName': senderName,
+      'senderId': widget.currentUser.id,
+      'timestamp': timestamp.toIso8601String(),
+    });
+    
+    _chatController.clear();
+  }
+
   Future<void> _leaveChannel() async {
     try {
+      _socket?.emit('leave_group_call', {
+        'channelName': _channelName,
+        'userId': widget.currentUser.id,
+      });
+      
       await _callService.leaveCall(
         courseId: widget.course.id,
         channelName: _channelName!,
       );
+      
+      _socket?.disconnect();
+      _socket?.dispose();
+      
       await _engine.leaveChannel();
       await _engine.release();
       if (mounted) {
@@ -200,6 +395,10 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
 
   @override
   void dispose() {
+    _chatController.dispose();
+    _cancelAloneTimer();
+    _socket?.disconnect();
+    _socket?.dispose();
     _dispose();
     super.dispose();
   }
@@ -227,8 +426,13 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
         backgroundColor: Colors.black87,
         actions: [
           IconButton(
-            icon: const Icon(Icons.people),
-            onPressed: _showParticipantsList,
+            icon: Icon(_showSidebar ? Icons.close_fullscreen : Icons.people),
+            onPressed: () {
+              setState(() {
+                _showSidebar = !_showSidebar;
+              });
+            },
+            tooltip: _showSidebar ? 'Hide sidebar' : 'Show people & chat',
           ),
         ],
       ),
@@ -237,27 +441,355 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
           ? const Center(
               child: CircularProgressIndicator(color: Colors.white),
             )
-          : Stack(
-              children: [
-                // All participants grid (including local user)
-                _buildVideoGrid(),
-
-                // Participant badge (top-left corner)
-                Positioned(
-                  top: 16,
-                  left: 16,
-                  child: _buildParticipantBadge(),
-                ),
-
-                // Bottom controls
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: _buildControls(),
-                ),
-              ],
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                final isLargeScreen = constraints.maxWidth > 600;
+                
+                if (isLargeScreen) {
+                  // Tablet/Desktop: Side by side layout
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: _buildMainContent(),
+                      ),
+                      if (_showSidebar) _buildSidebar(),
+                    ],
+                  );
+                } else {
+                  // Phone: Stack with overlay sidebar
+                  return Stack(
+                    children: [
+                      _buildMainContent(),
+                      if (_showSidebar)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: _buildSidebar(),
+                        ),
+                    ],
+                  );
+                }
+              },
             ),
+    );
+  }
+
+  Widget _buildMainContent() {
+    return Stack(
+      children: [
+        // Video grid or waiting message
+        _isWaitingForOthers && _remoteUsers.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.person_outline,
+                      size: 80,
+                      color: Colors.white.withOpacity(0.3),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Waiting for others to join...',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : _buildVideoGrid(),
+        
+        // Participant badge (top-left corner)
+        if (!_showSidebar)
+          Positioned(
+            top: 16,
+            left: 16,
+            child: _buildParticipantBadge(),
+          ),
+        
+        // Camera switch note
+        Positioned(
+          bottom: 110,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.info_outline, size: 14, color: Colors.blue[200]),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Camera switching is available on mobile app',
+                    style: TextStyle(color: Colors.blue[200], fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        
+        // Bottom controls
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: _buildControls(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSidebar() {
+    return Container(
+      width: 280,
+      color: Colors.grey[900],
+      child: DefaultTabController(
+        length: 2,
+        child: Column(
+          children: [
+            // Tab header
+            Container(
+              color: Colors.grey[850],
+              child: TabBar(
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white54,
+                indicatorColor: Colors.blue,
+                tabs: [
+                  Tab(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.people, size: 18),
+                        const SizedBox(width: 4),
+                        Text('People (${_remoteUsers.length + 1})'),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.chat, size: 18),
+                        const SizedBox(width: 4),
+                        Text('Chat (${_chatMessages.length})'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Tab content
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _buildPeopleTab(),
+                  _buildChatTab(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPeopleTab() {
+    final allParticipants = [
+      {
+        'uid': 0,
+        'name': '${widget.currentUser.firstName ?? ''} ${widget.currentUser.lastName ?? ''}'.trim(),
+        'isYou': true,
+        'profilePicture': widget.currentUser.profilePicture,
+      },
+      ..._remoteUsers.map((uid) => {
+        return {
+          'uid': uid,
+          'name': _userNames[uid] ?? 'User $uid',
+          'isYou': false,
+          'profilePicture': _userProfilePictures[uid],
+        };
+      }),
+    ];
+
+    return ListView.builder(
+      itemCount: allParticipants.length,
+      itemBuilder: (context, index) {
+        final participant = allParticipants[index];
+        final name = participant['name'] as String;
+        final isYou = participant['isYou'] as bool;
+        final uid = participant['uid'] as int;
+        final profilePicture = participant['profilePicture'] as String?;
+        
+        final isMuted = isYou ? _isMuted : (_userStatuses[uid]?['isMuted'] ?? true);
+        final isCameraOff = isYou ? !_isVideoEnabled : (_userStatuses[uid]?['isCameraOff'] ?? true);
+
+        return ListTile(
+          leading: profilePicture != null && profilePicture.isNotEmpty
+              ? CircleAvatar(
+                  backgroundImage: CachedNetworkImageProvider(profilePicture),
+                  backgroundColor: Colors.grey[700],
+                )
+              : CircleAvatar(
+                  backgroundColor: isYou ? Colors.blue : Colors.grey[700],
+                  child: Text(
+                    name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  name,
+                  style: const TextStyle(color: Colors.white),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (isYou)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'You',
+                    style: TextStyle(color: Colors.white, fontSize: 10),
+                  ),
+                ),
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isMuted)
+                Icon(Icons.mic_off, color: Colors.red[400], size: 16),
+              const SizedBox(width: 4),
+              if (isCameraOff)
+                Icon(Icons.videocam_off, color: Colors.red[400], size: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChatTab() {
+    return Column(
+      children: [
+        // Messages list
+        Expanded(
+          child: _chatMessages.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.chat_bubble_outline, 
+                           size: 48, color: Colors.white.withOpacity(0.3)),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No messages yet',
+                        style: TextStyle(color: Colors.white.withOpacity(0.5)),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: _chatMessages.length,
+                  itemBuilder: (context, index) {
+                    final message = _chatMessages[index];
+                    final isMe = message.senderName == 
+                        '${widget.currentUser.firstName ?? ''} ${widget.currentUser.lastName ?? ''}'.trim();
+                    
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Column(
+                        crossAxisAlignment: isMe 
+                            ? CrossAxisAlignment.end 
+                            : CrossAxisAlignment.start,
+                        children: [
+                          if (!isMe)
+                            Text(
+                              message.senderName,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.6),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isMe ? Colors.blue : Colors.grey[800],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              message.message,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          Text(
+                            '${message.timestamp.hour}:${message.timestamp.minute.toString().padLeft(2, '0')}',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.4),
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+        ),
+        // Chat input
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.grey[850],
+            border: Border(top: BorderSide(color: Colors.grey[700]!)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _chatController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Type a message...',
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                    filled: true,
+                    fillColor: Colors.grey[800],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 10),
+                  ),
+                  onSubmitted: _sendChatMessage,
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.send, color: Colors.blue),
+                onPressed: () => _sendChatMessage(_chatController.text),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -417,98 +949,6 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
     );
   }
 
-  Widget _buildLocalPreview() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue, width: 2),
-      ),
-      child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: _isVideoEnabled && !_isSharingScreen
-                ? AgoraVideoView(
-                    controller: VideoViewController(
-                      rtcEngine: _engine,
-                      canvas: const VideoCanvas(uid: 0),
-                    ),
-                  )
-                : Center(
-                    child: CircleAvatar(
-                      radius: 40,
-                      backgroundColor: Colors.blue,
-                      child: Text(
-                        (widget.currentUser.firstName?.isNotEmpty ?? false)
-                            ? widget.currentUser.firstName![0].toUpperCase()
-                            : 'Y',
-                        style: const TextStyle(
-                          fontSize: 32,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-          ),
-          Positioned(
-            left: 8,
-            bottom: 8,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'You',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (_isMuted) ...[
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.mic_off,
-                      color: Colors.red,
-                      size: 12,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-          if (_isSharingScreen)
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'Sharing Screen',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildRemoteVideo(int uid) {
     final userName = _userNames[uid] ?? 'User $uid';
     
@@ -567,152 +1007,42 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
           ],
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Note for web users about camera switch
-          if (Theme.of(context).platform == TargetPlatform.windows ||
-              Theme.of(context).platform == TargetPlatform.macOS ||
-              Theme.of(context).platform == TargetPlatform.linux)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      size: 14,
-                      color: Colors.blue[200],
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Camera switch is available on mobile devices',
-                      style: TextStyle(
-                        color: Colors.blue[200],
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildControlButton(
-                icon: _isMuted ? Icons.mic_off : Icons.mic,
-                label: 'Mute',
-                onPressed: _toggleMute,
-                color: Colors.white,
-                backgroundColor: _isMuted ? Colors.red : Colors.grey[800]!,
-              ),
-              _buildControlButton(
-                icon: _isVideoEnabled ? Icons.videocam : Icons.videocam_off,
-                label: 'Stop Video',
-                onPressed: _toggleVideo,
-                color: Colors.white,
-                backgroundColor: _isVideoEnabled ? Colors.grey[800]! : Colors.red,
-              ),
-              // Only show camera switch on mobile platforms
-              if (Theme.of(context).platform == TargetPlatform.android ||
-                  Theme.of(context).platform == TargetPlatform.iOS)
-                _buildControlButton(
-                  icon: Icons.flip_camera_ios,
-                  label: 'Switch Camera',
-                  onPressed: _switchCamera,
-                  color: Colors.white,
-                  backgroundColor: Colors.grey[800]!,
-                ),
-              _buildControlButton(
-                icon: Icons.call_end,
-                label: 'End',
-                onPressed: _leaveChannel,
-                color: Colors.white,
-                backgroundColor: Colors.red,
-                isEndCall: true,
-              ),
-            ],
+          _buildControlButton(
+            icon: _isMuted ? Icons.mic_off : Icons.mic,
+            label: 'Mute',
+            onPressed: _toggleMute,
+            isActive: !_isMuted,
+            activeColor: Colors.grey[800]!,
+            inactiveColor: Colors.red,
+          ),
+          _buildControlButton(
+            icon: _isVideoEnabled ? Icons.videocam : Icons.videocam_off,
+            label: _isVideoEnabled ? 'Stop Video' : 'No camera',
+            onPressed: _toggleVideo,
+            isActive: _isVideoEnabled,
+            activeColor: Colors.grey[800]!,
+            inactiveColor: Colors.amber,
+          ),
+          _buildControlButton(
+            icon: _isSharingScreen ? Icons.stop_screen_share : Icons.screen_share,
+            label: 'Share screen',
+            onPressed: _toggleScreenShare,
+            isActive: !_isSharingScreen,
+            activeColor: Colors.grey[800]!,
+            inactiveColor: Colors.green,
+          ),
+          _buildControlButton(
+            icon: Icons.call_end,
+            label: 'End',
+            onPressed: _leaveChannel,
+            isActive: false,
+            activeColor: Colors.red,
+            inactiveColor: Colors.red,
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildVerticalControls() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Mute button
-        _buildCircularButton(
-          icon: _isMuted ? Icons.mic_off : Icons.mic,
-          onPressed: _toggleMute,
-          backgroundColor: _isMuted ? Colors.red : Colors.grey[700]!,
-        ),
-        const SizedBox(height: 20),
-        
-        // Stop video button
-        _buildCircularButton(
-          icon: !_isVideoEnabled ? Icons.videocam_off : Icons.videocam,
-          onPressed: _toggleVideo,
-          backgroundColor: !_isVideoEnabled ? Colors.red : Colors.grey[700]!,
-        ),
-        const SizedBox(height: 20),
-        
-        // Screen share button
-        _buildCircularButton(
-          icon: _isSharingScreen ? Icons.stop_screen_share : Icons.screen_share,
-          onPressed: _toggleScreenShare,
-          backgroundColor: _isSharingScreen ? Colors.green : Colors.grey[700]!,
-        ),
-        const SizedBox(height: 20),
-        
-        // Switch camera (mobile only)
-        if (Theme.of(context).platform == TargetPlatform.android ||
-            Theme.of(context).platform == TargetPlatform.iOS)
-          _buildCircularButton(
-            icon: Icons.switch_camera,
-            onPressed: _switchCamera,
-            backgroundColor: Colors.grey[700]!,
-          ),
-        if (Theme.of(context).platform == TargetPlatform.android ||
-            Theme.of(context).platform == TargetPlatform.iOS)
-          const SizedBox(height: 20),
-        
-        // End call button
-        _buildCircularButton(
-          icon: Icons.call_end,
-          onPressed: _leaveChannel,
-          backgroundColor: Colors.red,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCircularButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-    required Color backgroundColor,
-  }) {
-    return Material(
-      color: backgroundColor,
-      shape: const CircleBorder(),
-      elevation: 4,
-      child: InkWell(
-        onTap: onPressed,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 56,
-          height: 56,
-          alignment: Alignment.center,
-          child: Icon(icon, color: Colors.white, size: 28),
-        ),
       ),
     );
   }
@@ -721,23 +1051,23 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
     required IconData icon,
     required String label,
     required VoidCallback onPressed,
-    required Color color,
-    Color? backgroundColor,
-    bool isEndCall = false,
+    required bool isActive,
+    required Color activeColor,
+    required Color inactiveColor,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Material(
-          color: backgroundColor ?? (isEndCall ? Colors.red : Colors.grey[800]),
+          color: isActive ? activeColor : inactiveColor,
           borderRadius: BorderRadius.circular(50),
           elevation: 2,
           child: InkWell(
             onTap: onPressed,
             borderRadius: BorderRadius.circular(50),
             child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Icon(icon, color: color, size: 26),
+              padding: const EdgeInsets.all(14),
+              child: Icon(icon, color: Colors.white, size: 24),
             ),
           ),
         ),
@@ -746,7 +1076,7 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
           label,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 11,
+            fontSize: 10,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -778,77 +1108,6 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showParticipantsList() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.grey[900],
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Participants (${_remoteUsers.length + 1})',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.blue,
-                  child: Text(
-                    (widget.currentUser.firstName?.isNotEmpty ?? false)
-                        ? widget.currentUser.firstName![0].toUpperCase()
-                        : 'Y',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-                title: Text(
-                  '${widget.currentUser.firstName ?? ''} ${widget.currentUser.lastName ?? ''} (You)',
-                  style: const TextStyle(color: Colors.white),
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_isMuted)
-                      const Icon(Icons.mic_off, color: Colors.red, size: 18),
-                    const SizedBox(width: 8),
-                    if (!_isVideoEnabled)
-                      const Icon(Icons.videocam_off, color: Colors.red, size: 18),
-                  ],
-                ),
-              ),
-              ..._remoteUsers.map((uid) {
-                final userName = _userNames[uid] ?? 'User $uid';
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.grey[700],
-                    child: Text(
-                      userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  title: Text(
-                    userName,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                );
-              }),
-            ],
-          ),
-        );
-      },
     );
   }
 }
