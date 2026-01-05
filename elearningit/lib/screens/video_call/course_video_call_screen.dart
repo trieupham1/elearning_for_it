@@ -239,54 +239,8 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
             )
           : Stack(
               children: [
-                // Remote users grid
-                if (_remoteUsers.isEmpty)
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.person_outline,
-                          size: 80,
-                          color: Colors.white.withOpacity(0.3),
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          'Waiting for others to join...',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 18,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  GridView.builder(
-                    padding: const EdgeInsets.only(
-                      left: 8,
-                      right: 8,
-                      top: 60,
-                      bottom: 120,
-                    ),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: _remoteUsers.length > 4 ? 3 : (_remoteUsers.length > 1 ? 2 : 1),
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
-                      childAspectRatio: 0.75,
-                    ),
-                    itemCount: _remoteUsers.length,
-                    itemBuilder: (context, index) {
-                      return _buildRemoteVideo(_remoteUsers[index]);
-                    },
-                  ),
-
-                // Local preview (top-right corner)
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: _buildLocalPreviewSmall(),
-                ),
+                // All participants grid (including local user)
+                _buildVideoGrid(),
 
                 // Participant badge (top-left corner)
                 Positioned(
@@ -307,26 +261,63 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
     );
   }
 
-  Widget _buildLocalPreviewSmall() {
+  Widget _buildVideoGrid() {
+    // Calculate total participants (local user + remote users)
+    final totalParticipants = _remoteUsers.length + 1;
+    
+    // Determine grid layout based on participant count
+    int crossAxisCount;
+    double childAspectRatio;
+    
+    if (totalParticipants == 1) {
+      crossAxisCount = 1;
+      childAspectRatio = 0.75;
+    } else if (totalParticipants == 2) {
+      crossAxisCount = 2;
+      childAspectRatio = 0.75;
+    } else if (totalParticipants <= 4) {
+      crossAxisCount = 2;
+      childAspectRatio = 0.75;
+    } else if (totalParticipants <= 9) {
+      crossAxisCount = 3;
+      childAspectRatio = 0.75;
+    } else {
+      crossAxisCount = 3;
+      childAspectRatio = 0.75;
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.only(top: 60, left: 8, right: 8, bottom: 120),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        childAspectRatio: childAspectRatio,
+      ),
+      itemCount: totalParticipants,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          // First card is local user
+          return _buildLocalVideoCard();
+        } else {
+          // Other cards are remote users
+          return _buildRemoteVideo(_remoteUsers[index - 1]);
+        }
+      },
+    );
+  }
+
+  Widget _buildLocalVideoCard() {
     return Container(
-      width: 120,
-      height: 160,
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.5),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: Colors.blue.withOpacity(0.5), width: 2),
       ),
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             child: _isVideoEnabled && !_isSharingScreen
                 ? AgoraVideoView(
                     controller: VideoViewController(
@@ -336,14 +327,14 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
                   )
                 : Center(
                     child: CircleAvatar(
-                      radius: 30,
+                      radius: 40,
                       backgroundColor: Colors.blue,
                       child: Text(
                         (widget.currentUser.firstName?.isNotEmpty ?? false)
                             ? widget.currentUser.firstName![0].toUpperCase()
                             : 'Y',
                         style: const TextStyle(
-                          fontSize: 24,
+                          fontSize: 32,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
@@ -351,11 +342,12 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
                     ),
                   ),
           ),
+          // Name label at bottom
           Positioned(
-            left: 6,
-            bottom: 6,
+            left: 8,
+            bottom: 8,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.7),
                 borderRadius: BorderRadius.circular(8),
@@ -364,16 +356,17 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
                 'You',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
+          // Mute indicator
           if (_isMuted)
             Positioned(
-              top: 6,
-              right: 6,
+              top: 8,
+              right: 8,
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
@@ -383,7 +376,39 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
                 child: const Icon(
                   Icons.mic_off,
                   color: Colors.white,
-                  size: 12,
+                  size: 16,
+                ),
+              ),
+            ),
+          // Screen sharing indicator
+          if (_isSharingScreen)
+            Positioned(
+              top: 8,
+              left: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.screen_share,
+                      color: Colors.white,
+                      size: 12,
+                    ),
+                    SizedBox(width: 3),
+                    Text(
+                      'Sharing',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -495,7 +520,7 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             child: AgoraVideoView(
               controller: VideoViewController.remote(
                 rtcEngine: _engine,
@@ -504,14 +529,15 @@ class _CourseVideoCallScreenState extends State<CourseVideoCallScreen> {
               ),
             ),
           ),
+          // Name label at bottom
           Positioned(
             left: 8,
             bottom: 8,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 userName,
