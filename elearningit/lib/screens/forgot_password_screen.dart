@@ -128,11 +128,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
         child: SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               children: [
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
                 // Header
                 Card(
                   elevation: 8,
@@ -140,7 +140,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(24),
                     child: Column(
                       children: [
                         Icon(
@@ -385,7 +385,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 
                 // Additional Help Text
                 if (_successMessage == null) ...[
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -420,6 +420,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ),
                 ],
+                const SizedBox(height: 16), // Bottom padding
               ],
             ),
           ),
