@@ -33,7 +33,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       final video = await VideoService.getVideo(widget.videoId);
 
       print('✅ Video details loaded: ${video.title}');
-      print('📁 File ID: ${video.fileId}');
+      print('📁 Storage type: ${video.storageType ?? "gridfs"}');
+      print('☁️ Cloudinary URL: ${video.cloudinaryUrl ?? "none"}');
       print('📏 Duration: ${video.duration} seconds');
 
       if (!mounted) return;
@@ -118,7 +119,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   }
 
   Widget _buildVideoContent() {
-    final streamUrl = '${ApiConfig.baseUrl}/api/videos/${widget.videoId}/stream';
+    // Use cloudinaryUrl if available, otherwise use the stream endpoint
+    String streamUrl;
+    if (_video!.cloudinaryUrl != null && _video!.cloudinaryUrl!.isNotEmpty) {
+      streamUrl = _video!.cloudinaryUrl!;
+      print('📹 Using Cloudinary URL: $streamUrl');
+    } else {
+      streamUrl = '${ApiConfig.baseUrl}/api/videos/${widget.videoId}/stream';
+      print('📹 Using stream endpoint: $streamUrl');
+    }
     
     // Get initial position from progress
     Duration? startPosition;

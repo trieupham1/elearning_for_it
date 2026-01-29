@@ -18,7 +18,10 @@ class Video {
   final String courseId;
   @JsonKey(fromJson: _extractId)
   final String uploadedBy;
-  final String fileId;
+  final String? fileId; // GridFS file ID (null for Cloudinary)
+  final String? cloudinaryUrl; // Cloudinary URL (null for GridFS)
+  final String? cloudinaryPublicId;
+  final String? storageType; // 'cloudinary' or 'gridfs'
   final String filename;
   final String mimeType;
   final int size;
@@ -33,6 +36,7 @@ class Video {
   final DateTime createdAt;
   final DateTime updatedAt;
   final VideoProgress? progress;
+  final String? streamUrl; // Pre-computed stream URL from backend
 
   Video({
     required this.id,
@@ -40,7 +44,10 @@ class Video {
     this.description,
     required this.courseId,
     required this.uploadedBy,
-    required this.fileId,
+    this.fileId,
+    this.cloudinaryUrl,
+    this.cloudinaryPublicId,
+    this.storageType,
     required this.filename,
     required this.mimeType,
     required this.size,
@@ -55,12 +62,22 @@ class Video {
     required this.createdAt,
     required this.updatedAt,
     this.progress,
+    this.streamUrl,
   });
 
   factory Video.fromJson(Map<String, dynamic> json) => _$VideoFromJson(json);
   Map<String, dynamic> toJson() => _$VideoToJson(this);
 
-  String get streamUrl => '/api/videos/$id/stream';
+  // Get the actual video URL (Cloudinary or stream endpoint)
+  String get videoUrl {
+    if (cloudinaryUrl != null && cloudinaryUrl!.isNotEmpty) {
+      return cloudinaryUrl!;
+    }
+    if (streamUrl != null && streamUrl!.isNotEmpty) {
+      return streamUrl!;
+    }
+    return '/api/videos/$id/stream';
+  }
 
   String get formattedDuration {
     final hours = duration ~/ 3600;
