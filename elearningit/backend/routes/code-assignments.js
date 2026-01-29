@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const Assignment = require('../models/Assignment');
+const CodeAssignment = require('../models/CodeAssignment');
 const CodeSubmission = require('../models/CodeSubmission');
 const TestCase = require('../models/TestCase');
 const Course = require('../models/Course');
@@ -128,8 +129,102 @@ router.post('/assignments', auth, async (req, res) => {
   }
 });
 
-// Get assignment with test cases
+// Get CodeAssignment with test cases
 router.get('/assignments/:id', auth, async (req, res) => {
+  try {
+    // First try CodeAssignment model
+    let assignment = await CodeAssignment.findById(req.params.id)
+      .populate('createdBy', 'fullName email');
+
+    let testCases = [];
+    let isCodeAssignmentModel = true;
+
+    if (assignment) {
+      // Get test cases for CodeAssignment
+      testCases = await TestCase.find({ assignmentId: assignment._id }).sort({ order: 1 });
+    } else {
+      // Fall back to regular Assignment model
+      assignment = await Assignment.findById(req.params.id)
+        .populate('courseId', 'title')
+        .populate('createdBy', 'fullName email');
+
+      if (!assignment || assignment.type !== 'code') {
+        return res.status(404).json({ message: 'Assignment not found' });
+      }
+
+      isCodeAssignmentModel = false;
+      testCases = await TestCase.find({ assignmentId: assignment._id }).sort({ order: 1 });
+    }
+
+    if (!assignment) {
+      return res.status(404).json({ message: 'Assignment not found' });
+    }
+
+    // Check if user is instructor or enrolled student
+    const courseId = isCodeAssignmentModel ? assignment.courseId : (assignment.courseId._id || assignment.courseId);
+    const course = await Course.findById(courseId).populate('instructor', 'fullName email');
+    
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+    
+    const isInstructor = course.instructor._id.toString() === req.user.userId;
+    const isStudent = course.students && course.students.some(s => s.toString() === req.user.userId);
+
+    if (!isInstructor && !isStudent) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    // Get user's submission status if student
+    let mySubmission = null;
+    if (!isInstructor) {
+      mySubmission = await CodeSubmission.findOne({
+        assignmentId: assignment._id,
+        studentId: req.user.userId,
+        status: 'completed'
+      }).sort({ submittedAt: -1 });
+    }
+
+    // Filter test cases based on user role
+    const visibleTestCases = isInstructor 
+      ? testCases 
+      : testCases.filter(tc => !tc.isHidden);
+
+    // Format response to match both models
+    const response = {
+      assignment: {
+        _id: assignment._id,
+        title: assignment.title,
+        description: assignment.description,
+        courseId: isCodeAssignmentModel ? assignment.courseId : assignment.courseId._id,
+        courseName: isCodeAssignmentModel ? course.name : assignment.courseId.title,
+        createdBy: assignment.createdBy,
+        deadline: isCodeAssignmentModel ? assignment.dueDate : assignment.deadline,
+        points: assignment.points,
+        maxAttempts: isCodeAssignmentModel ? assignment.allowedAttempts : assignment.maxAttempts,
+        language: isCodeAssignmentModel ? assignment.language : assignment.codeConfig?.language,
+        languageId: isCodeAssignmentModel ? assignment.languageId : assignment.codeConfig?.languageId,
+        starterCode: isCodeAssignmentModel ? assignment.starterCode : assignment.codeConfig?.starterCode,
+        timeLimit: isCodeAssignmentModel ? assignment.timeLimit : assignment.codeConfig?.timeLimit,
+        memoryLimit: isCodeAssignmentModel ? assignment.memoryLimit : assignment.codeConfig?.memoryLimit,
+        difficulty: assignment.difficulty || 'medium',
+        isActive: isCodeAssignmentModel ? assignment.isActive : true,
+        createdAt: assignment.createdAt
+      },
+      testCases: visibleTestCases,
+      mySubmission
+    };
+
+    res.json(response);
+    
+  } catch (error) {
+    console.error('Get assignment error:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// LEGACY: Get assignment with test cases (Assignment model only)
+router.get('/legacy-assignments/:id', auth, async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id)
       .populate('courseId', 'title')
