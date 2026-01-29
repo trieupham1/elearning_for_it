@@ -454,12 +454,26 @@ router.get('/assignments/:id/my-submissions', auth, async (req, res) => {
 // Get all submissions for an assignment (instructor only)
 router.get('/assignments/:id/submissions', auth, async (req, res) => {
   try {
-    const assignment = await Assignment.findById(req.params.id);
+    // First try CodeAssignment model
+    let assignment = await CodeAssignment.findById(req.params.id);
+    let isCodeAssignmentModel = true;
+
     if (!assignment) {
-      return res.status(404).json({ message: 'Assignment not found' });
+      // Fall back to regular Assignment model
+      assignment = await Assignment.findById(req.params.id);
+      if (!assignment || assignment.type !== 'code') {
+        return res.status(404).json({ message: 'Assignment not found' });
+      }
+      isCodeAssignmentModel = false;
     }
 
-    const course = await Course.findById(assignment.courseId);
+    const courseId = isCodeAssignmentModel ? assignment.courseId : assignment.courseId;
+    const course = await Course.findById(courseId);
+    
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+    
     if (course.instructor.toString() !== req.user.userId) {
       return res.status(403).json({ message: 'Only instructor can view all submissions' });
     }
