@@ -84,18 +84,27 @@ class _ClassworkTabState extends State<ClassworkTab> {
           filterType = null;
       }
 
+      print('🎯 ClassworkTab: Loading classwork for course ${widget.course.id} (${widget.course.name})');
+      print('🎯 ClassworkTab: Filter type: $filterType');
+      
       final items = await _classworkService.getClasswork(
         courseId: widget.course.id,
         search: _searchQuery.isNotEmpty ? _searchQuery : null,
         filter: filterType,
       );
 
+      print('🎯 ClassworkTab: Received ${items.length} items');
+      for (var item in items) {
+        print('🎯 ClassworkTab: Item: ${item.type} - ${item.title}');
+      }
+
       setState(() {
         _items = items;
         _isLoading = false;
       });
-    } catch (e) {
-      print('Error loading classwork: $e');
+    } catch (e, stackTrace) {
+      print('❌ Error loading classwork: $e');
+      print('❌ Stack trace: $stackTrace');
       setState(() => _isLoading = false);
     }
   }
