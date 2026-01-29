@@ -33,10 +33,24 @@ const upload = multer({
     fileSize: 100 * 1024 * 1024 // 100MB max (Cloudinary free tier limit)
   },
   fileFilter: (req, file, cb) => {
-    // Accept video files only
-    if (file.mimetype.startsWith('video/')) {
+    // Accept video files - check both mimetype and file extension
+    const allowedMimeTypes = [
+      'video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo',
+      'video/x-matroska', 'video/webm', 'video/ogg', 'video/3gpp',
+      'application/octet-stream' // Some devices send this for videos
+    ];
+    const allowedExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.ogg', '.3gp'];
+    
+    const fileExtension = '.' + file.originalname.split('.').pop().toLowerCase();
+    const isValidMime = file.mimetype.startsWith('video/') || allowedMimeTypes.includes(file.mimetype);
+    const isValidExtension = allowedExtensions.includes(fileExtension);
+    
+    console.log(`📹 File upload check: ${file.originalname}, MIME: ${file.mimetype}, Ext: ${fileExtension}`);
+    
+    if (isValidMime || isValidExtension) {
       cb(null, true);
     } else {
+      console.error(`❌ Rejected file: ${file.originalname}, MIME: ${file.mimetype}`);
       cb(new Error('Only video files are allowed!'), false);
     }
   }

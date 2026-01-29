@@ -81,8 +81,21 @@ class VideoService {
       if (tags != null) request.fields['tags'] = json.encode(tags);
       if (duration != null) request.fields['duration'] = duration.toString();
 
+      // Determine content type based on file extension
+      final fileName = videoFile.path.split('/').last.split('\\').last;
+      final extension = fileName.split('.').last.toLowerCase();
+      String mimeSubtype = 'mp4';
+      if (extension == 'mov') mimeSubtype = 'quicktime';
+      else if (extension == 'avi') mimeSubtype = 'x-msvideo';
+      else if (extension == 'mkv') mimeSubtype = 'x-matroska';
+      else if (extension == 'webm') mimeSubtype = 'webm';
+
       request.files.add(
-        await http.MultipartFile.fromPath('video', videoFile.path),
+        await http.MultipartFile.fromPath(
+          'video',
+          videoFile.path,
+          contentType: http_parser.MediaType('video', mimeSubtype),
+        ),
       );
 
       final streamedResponse = await request.send();
