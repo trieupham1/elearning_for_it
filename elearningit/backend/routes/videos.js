@@ -39,6 +39,12 @@ const upload = multer({
 // @access  Private (Instructor only)
 router.post('/upload', auth, instructorOnly, upload.single('video'), async (req, res) => {
   try {
+    // Check if GridFS is initialized
+    if (!gfsBucket) {
+      console.error('❌ GridFS bucket not initialized!');
+      return res.status(500).json({ message: 'Video storage not ready. Please try again in a moment.' });
+    }
+
     if (!req.file) {
       return res.status(400).json({ message: 'No video file uploaded' });
     }
@@ -48,6 +54,8 @@ router.post('/upload', auth, instructorOnly, upload.single('video'), async (req,
     if (!title || !courseId) {
       return res.status(400).json({ message: 'Title and courseId are required' });
     }
+
+    console.log(`📹 Uploading video: ${title} (${req.file.size} bytes) for course ${courseId}`);
 
     // Create upload stream to GridFS
     const uploadStream = gfsBucket.openUploadStream(req.file.originalname, {
