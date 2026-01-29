@@ -3,12 +3,20 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const multer = require('multer');
 const { GridFSBucket } = require('mongodb');
+const cloudinary = require('cloudinary').v2;
 const { auth, instructorOnly } = require('../middleware/auth');
 const Video = require('../models/Video');
 const VideoProgress = require('../models/VideoProgress');
 const Playlist = require('../models/Playlist');
 
-// Initialize GridFS with 'uploads' bucket (consistent with server.js)
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Initialize GridFS with 'uploads' bucket (for backward compatibility)
 let gfsBucket;
 mongoose.connection.once('open', () => {
   gfsBucket = new GridFSBucket(mongoose.connection.db, {
@@ -17,12 +25,12 @@ mongoose.connection.once('open', () => {
   console.log('✅ Video routes: GridFS initialized with "uploads" bucket');
 });
 
-// Configure multer for memory storage (for chunked uploads)
+// Configure multer for memory storage
 const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 500 * 1024 * 1024 // 500MB max file size
+    fileSize: 100 * 1024 * 1024 // 100MB max (Cloudinary free tier limit)
   },
   fileFilter: (req, file, cb) => {
     // Accept video files only
@@ -35,16 +43,10 @@ const upload = multer({
 });
 
 // @route   POST /api/videos/upload
-// @desc    Upload a video (chunked upload support)
+// @desc    Upload a video to Cloudinary
 // @access  Private (Instructor only)
 router.post('/upload', auth, instructorOnly, upload.single('video'), async (req, res) => {
   try {
-    // Check if GridFS is initialized
-    if (!gfsBucket) {
-      console.error('❌ GridFS bucket not initialized!');
-      return res.status(500).json({ message: 'Video storage not ready. Please try again in a moment.' });
-    }
-
     if (!req.file) {
       return res.status(400).json({ message: 'No video file uploaded' });
     }
@@ -55,81 +57,78 @@ router.post('/upload', auth, instructorOnly, upload.single('video'), async (req,
       return res.status(400).json({ message: 'Title and courseId are required' });
     }
 
-    console.log(`📹 Uploading video: ${title} (${req.file.size} bytes) for course ${courseId}`);
+    console.log(`📹 Uploading video to Cloudinary: ${title} (${(req.file.size / 1024 / 1024).toFixed(2)} MB)`);
 
-    // Create upload stream to GridFS
-    const uploadStream = gfsBucket.openUploadStream(req.file.originalname, {
-      contentType: req.file.mimetype,
-      metadata: {
-        uploadedBy: req.user.userId,
-        courseId: courseId,
-        uploadDate: new Date()
-      }
-    });
-
-    // Write file buffer to GridFS
-    uploadStream.end(req.file.buffer);
-
-    uploadStream.on('finish', async () => {
-      try {
-        // Create video document
-        const video = new Video({
-          title,
-          description,
-          courseId,
-          uploadedBy: req.user.userId,
-          fileId: uploadStream.id,
-          filename: req.file.originalname,
-          mimeType: req.file.mimetype,
-          size: req.file.size,
-          duration: duration || 0,
-          tags: tags ? JSON.parse(tags) : [],
-          isPublished: false
-        });
-
-        await video.save();
-
-        res.status(201).json({
-          message: 'Video uploaded successfully',
-          video: {
-            id: video._id,
-            title: video.title,
-            fileId: video.fileId,
-            streamUrl: `/api/videos/${video._id}/stream`
+    // Upload to Cloudinary
+    const uploadPromise = new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'video',
+          folder: `elearning/videos/${courseId}`,
+          public_id: `video_${Date.now()}`,
+          eager: [
+            { streaming_profile: 'full_hd', format: 'm3u8' } // HLS streaming
+          ],
+          eager_async: true
+        },
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            reject(error);
+          } else {
+            resolve(result);
           }
-        });
-      } catch (error) {
-        console.error('Error saving video document:', error);
-        res.status(500).json({ message: 'Error saving video metadata' });
-      }
+        }
+      );
+      uploadStream.end(req.file.buffer);
     });
 
-    uploadStream.on('error', (error) => {
-      console.error('Upload stream error:', error);
-      res.status(500).json({ message: 'Error uploading video file' });
+    const cloudinaryResult = await uploadPromise;
+    console.log('✅ Video uploaded to Cloudinary:', cloudinaryResult.secure_url);
+
+    // Create video document
+    const video = new Video({
+      title,
+      description,
+      courseId,
+      uploadedBy: req.user.userId,
+      cloudinaryUrl: cloudinaryResult.secure_url,
+      cloudinaryPublicId: cloudinaryResult.public_id,
+      filename: req.file.originalname,
+      mimeType: req.file.mimetype,
+      size: req.file.size,
+      duration: cloudinaryResult.duration || duration || 0,
+      tags: tags ? JSON.parse(tags) : [],
+      isPublished: false,
+      storageType: 'cloudinary'
+    });
+
+    await video.save();
+
+    res.status(201).json({
+      message: 'Video uploaded successfully',
+      video: {
+        id: video._id,
+        title: video.title,
+        streamUrl: cloudinaryResult.secure_url,
+        duration: video.duration
+      }
     });
 
   } catch (error) {
     console.error('Upload error:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message || 'Error uploading video' });
   }
 });
 
 // @route   GET /api/videos/:id/stream
-// @desc    Stream a video (simplified for better browser compatibility)
+// @desc    Stream a video (supports both Cloudinary and GridFS)
 // @access  Public (no auth for better compatibility with video players)
 router.get('/:id/stream', async (req, res) => {
   console.log(`\n🎬 ========== VIDEO STREAM REQUEST ==========`);
   console.log(`📍 Video ID: ${req.params.id}`);
-  console.log(`📍 Headers:`, req.headers);
   
   try {
-    // Check if gfsBucket is initialized
-    if (!gfsBucket) {
-      console.error('❌ GridFS bucket not initialized!');
-      return res.status(500).json({ message: 'GridFS not initialized' });
-    }
-
     const video = await Video.findById(req.params.id);
     
     if (!video) {
@@ -138,37 +137,38 @@ router.get('/:id/stream', async (req, res) => {
     }
 
     console.log(`✅ Video found: ${video.title}`);
-    console.log(`📁 File ID: ${video.fileId}`);
-    console.log(`📦 MIME Type: ${video.mimeType}`);
+    console.log(`📦 Storage type: ${video.storageType || 'gridfs'}`);
 
     // Increment view count (async, don't wait)
     video.incrementViewCount().catch(err => console.error('Error incrementing view count:', err));
 
+    // If Cloudinary video, redirect to Cloudinary URL
+    if (video.storageType === 'cloudinary' && video.cloudinaryUrl) {
+      console.log(`☁️ Redirecting to Cloudinary: ${video.cloudinaryUrl}`);
+      return res.redirect(video.cloudinaryUrl);
+    }
+
+    // Otherwise, stream from GridFS (backward compatibility)
+    if (!gfsBucket) {
+      console.error('❌ GridFS bucket not initialized!');
+      return res.status(500).json({ message: 'GridFS not initialized' });
+    }
+
+    console.log(`📁 Streaming from GridFS, File ID: ${video.fileId}`);
+
     // Get file from GridFS
-    console.log(`🔍 Looking for file in GridFS...`);
     const files = await gfsBucket.find({ _id: video.fileId }).toArray();
     
     if (files.length === 0) {
       console.error(`❌ Video file not found in GridFS: ${video.fileId}`);
-      console.log(`🔍 Trying to list all files in bucket...`);
-      try {
-        const allFiles = await gfsBucket.find({}).limit(10).toArray();
-        console.log(`📋 Found ${allFiles.length} files in GridFS`);
-        allFiles.forEach(f => console.log(`  - ${f._id}: ${f.filename}`));
-      } catch (e) {
-        console.error(`❌ Error listing GridFS files:`, e.message);
-      }
       return res.status(404).json({ message: 'Video file not found in storage' });
     }
 
     const file = files[0];
     const videoSize = file.length;
-    const contentType = 'video/mp4'; // Force MP4 content type
+    const contentType = 'video/mp4';
     
-    console.log(`✅ File found in GridFS!`);
-    console.log(`📦 Filename: ${file.filename}`);
-    console.log(`📊 Size: ${videoSize} bytes (${(videoSize / 1024 / 1024).toFixed(2)} MB)`);
-    console.log(`📅 Upload date: ${file.uploadDate}`);
+    console.log(`✅ File found in GridFS: ${file.filename} (${(videoSize / 1024 / 1024).toFixed(2)} MB)`);
 
     // Set CORS headers for video streaming
     res.set({
@@ -396,8 +396,16 @@ router.get('/:id', auth, async (req, res) => {
       userId: req.user.userId
     });
 
+    // Build response with appropriate stream URL
+    const videoData = video.toObject();
+    if (video.storageType === 'cloudinary' && video.cloudinaryUrl) {
+      videoData.streamUrl = video.cloudinaryUrl;
+    } else {
+      videoData.streamUrl = `/api/videos/${video._id}/stream`;
+    }
+
     res.json({
-      ...video.toObject(),
+      ...videoData,
       progress: progress ? {
         lastWatchedPosition: progress.lastWatchedPosition,
         completionPercentage: progress.completionPercentage,

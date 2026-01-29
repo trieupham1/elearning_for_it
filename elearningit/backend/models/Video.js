@@ -20,9 +20,22 @@ const videoSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  // Storage type: 'cloudinary' or 'gridfs'
+  storageType: {
+    type: String,
+    enum: ['cloudinary', 'gridfs'],
+    default: 'cloudinary'
+  },
+  // Cloudinary fields
+  cloudinaryUrl: {
+    type: String
+  },
+  cloudinaryPublicId: {
+    type: String
+  },
+  // GridFS fields (for backward compatibility)
   fileId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true // GridFS file ID
+    type: mongoose.Schema.Types.ObjectId
   },
   filename: {
     type: String,
