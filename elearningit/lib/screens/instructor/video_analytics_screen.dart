@@ -22,6 +22,7 @@ class _VideoAnalyticsScreenState extends State<VideoAnalyticsScreen> {
   Map<String, dynamic>? _analyticsData;
   String _filter = 'all'; // all, completed, not-watched
   String _sortBy = 'name'; // name, completion
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -30,19 +31,28 @@ class _VideoAnalyticsScreenState extends State<VideoAnalyticsScreen> {
   }
 
   Future<void> _loadAnalytics() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
     try {
+      print('📊 VideoAnalytics: Loading analytics for video ${widget.videoId}');
       final data = await VideoService.getVideoAnalytics(widget.videoId);
+      print('📊 VideoAnalytics: Received data: $data');
       setState(() {
         _analyticsData = data;
         _isLoading = false;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
+      print('📊 VideoAnalytics: Error loading analytics: $e');
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+      });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to load analytics: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load analytics: $e')),
+        );
       }
     }
   }
@@ -85,32 +95,78 @@ class _VideoAnalyticsScreenState extends State<VideoAnalyticsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Video Analytics'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadAnalytics,
-            tooltip: 'Refresh',
+    try {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('Analytics: ${widget.videoTitle}'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _loadAnalytics,
+              tooltip: 'Refresh',
+            ),
+          ],
+        ),
+        body: _buildBody(),
+      );
+    } catch (e) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Error')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text('Build error: $e', style: const TextStyle(color: Colors.red)),
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
+    if (_analyticsData == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.analytics_outlined, size: 64, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              Text(
+                _errorMessage ?? 'No analytics data available',
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _loadAnalytics,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildHeader(),
+          _buildStatsCards(),
+          _buildFiltersAndSort(),
+          _buildStudentList(),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _analyticsData == null
-          ? const Center(child: Text('No analytics data available'))
-          : SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildHeader(),
-                  _buildStatsCards(),
-                  _buildFiltersAndSort(),
-                  _buildStudentList(),
-                ],
-              ),
-            ),
     );
   }
 
@@ -149,16 +205,16 @@ class _VideoAnalyticsScreenState extends State<VideoAnalyticsScreen> {
           ),
           const SizedBox(height: 12),
           LinearProgressIndicator(
-            value: (_analyticsData!['completionRate'] ?? 0) / 100,
+            value: ((_analyticsData!['completionRate'] ?? 0) as num).toDouble() / 100,
             backgroundColor: Colors.grey[300],
             valueColor: AlwaysStoppedAnimation<Color>(
-              _getCompletionColor(_analyticsData!['completionRate'] ?? 0),
+              _getCompletionColor(((_analyticsData!['completionRate'] ?? 0) as num).toDouble()),
             ),
             minHeight: 8,
           ),
           const SizedBox(height: 8),
           Text(
-            '${_analyticsData!['completionRate']?.toStringAsFixed(1) ?? '0'}% completion rate',
+            '${((_analyticsData!['completionRate'] ?? 0) as num).toStringAsFixed(1)}% completion rate',
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -468,10 +524,11 @@ class _VideoAnalyticsScreenState extends State<VideoAnalyticsScreen> {
     );
   }
 
-  Color _getCompletionColor(double percentage) {
-    if (percentage >= 75) return Colors.green;
-    if (percentage >= 50) return Colors.orange;
-    if (percentage >= 25) return Colors.amber;
+  Color _getCompletionColor(num percentage) {
+    final pct = percentage.toDouble();
+    if (pct >= 75) return Colors.green;
+    if (pct >= 50) return Colors.orange;
+    if (pct >= 25) return Colors.amber;
     return Colors.red;
   }
 }

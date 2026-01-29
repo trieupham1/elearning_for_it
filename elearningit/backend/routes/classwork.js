@@ -6,6 +6,7 @@ const QuizAttempt = require('../models/QuizAttempt');
 const Course = require('../models/Course');
 const Video = require('../models/Video');
 const AttendanceSession = require('../models/AttendanceSession');
+const CodeAssignment = require('../models/CodeAssignment');
 const CodeSubmission = require('../models/CodeSubmission');
 const User = require('../models/User');
 const Group = require('../models/Group');
@@ -67,29 +68,19 @@ router.get('/course/:courseId', authMiddleware, async (req, res) => {
       classwork = [...classwork, ...assignments.map(a => ({ ...a, type: 'assignment' }))];
     }
     
-    // NEW: Code Assignments (from Assignment model with type='code')
+    // NEW: Code Assignments (from CodeAssignment model)
     if (!filter || filter === 'code_assignments') {
       let codeAssignmentQuery = { 
         courseId,
-        type: 'code' // Only get code type assignments
+        isActive: true
       };
       
-      // Filter by group for students
-      if (user.role === 'student') {
-        if (studentGroupId) {
-          // Student has a group - show assignments for all groups OR their specific group
-          codeAssignmentQuery.$or = [
-            { groupIds: { $size: 0 } }, // All groups
-            { groupIds: studentGroupId } // Student's specific group
-          ];
-        } else {
-          // Student has no group - only show assignments for all groups
-          codeAssignmentQuery.groupIds = { $size: 0 };
-        }
-      }
+      // Students see all published code assignments
+      // (CodeAssignment doesn't have groups - all students see all assignments)
       
-      const codeAssignments = await Assignment.find(codeAssignmentQuery)
-        .sort({ deadline: -1 })
+      const codeAssignments = await CodeAssignment.find(codeAssignmentQuery)
+        .populate('createdBy', 'fullName')
+        .sort({ dueDate: -1 })
         .lean();
       console.log(`  Found ${codeAssignments.length} code assignments`);
         
@@ -97,7 +88,10 @@ router.get('/course/:courseId', authMiddleware, async (req, res) => {
       let codeAssignmentsWithStatus = codeAssignments.map(c => ({ 
         ...c, 
         type: 'code_assignment',
-        dueDate: c.deadline // Add dueDate alias for frontend compatibility
+        title: c.title,
+        description: c.description,
+        deadline: c.dueDate, // Map dueDate to deadline for frontend compatibility
+        createdAt: c.createdAt
       }));
       
       if (req.user.role === 'student') {
@@ -113,7 +107,10 @@ router.get('/course/:courseId', authMiddleware, async (req, res) => {
         codeAssignmentsWithStatus = codeAssignments.map(c => ({
           ...c,
           type: 'code_assignment',
-          dueDate: c.deadline, // Add dueDate alias
+          title: c.title,
+          description: c.description,
+          deadline: c.dueDate,
+          createdAt: c.createdAt,
           isSubmitted: submittedIds.has(c._id.toString())
         }));
       }

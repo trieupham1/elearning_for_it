@@ -58,7 +58,9 @@ class _ClassworkTabState extends State<ClassworkTab> {
   }
 
   Future<void> _loadClasswork() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+    });
     try {
       String? filterType;
       switch (_filter) {
@@ -83,9 +85,6 @@ class _ClassworkTabState extends State<ClassworkTab> {
         default:
           filterType = null;
       }
-
-      print('🎯 ClassworkTab: Loading classwork for course ${widget.course.id} (${widget.course.name})');
-      print('🎯 ClassworkTab: Filter type: $filterType');
       
       final items = await _classworkService.getClasswork(
         courseId: widget.course.id,
@@ -93,19 +92,24 @@ class _ClassworkTabState extends State<ClassworkTab> {
         filter: filterType,
       );
 
-      print('🎯 ClassworkTab: Received ${items.length} items');
-      for (var item in items) {
-        print('🎯 ClassworkTab: Item: ${item.type} - ${item.title}');
+      if (mounted) {
+        setState(() {
+          _items = items;
+          _isLoading = false;
+        });
       }
-
-      setState(() {
-        _items = items;
-        _isLoading = false;
-      });
-    } catch (e, stackTrace) {
-      print('❌ Error loading classwork: $e');
-      print('❌ Stack trace: $stackTrace');
-      setState(() => _isLoading = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading classwork: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -185,6 +189,7 @@ class _ClassworkTabState extends State<ClassworkTab> {
                     ],
                   ),
                 ),
+
               ],
             ),
           ),
@@ -207,7 +212,7 @@ class _ClassworkTabState extends State<ClassworkTab> {
                         Text(
                           _searchQuery.isNotEmpty
                               ? 'No results found'
-                              : 'No classwork yet',
+                              : 'No classwork yet (items: ${_items.length})',
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.grey.shade600,
@@ -842,13 +847,29 @@ class _ClassworkCard extends StatelessWidget {
   }
 
   void _navigateToVideoAnalytics(BuildContext context) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            VideoAnalyticsScreen(videoId: item.id, videoTitle: item.title),
-      ),
-    );
+    try {
+      print('📊 Navigating to video analytics: videoId=${item.id}, title=${item.title}');
+      if (item.id.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: Video ID is empty')),
+        );
+        return;
+      }
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              VideoAnalyticsScreen(videoId: item.id, videoTitle: item.title),
+        ),
+      );
+    } catch (e) {
+      print('❌ Error navigating to video analytics: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error opening analytics: $e')),
+        );
+      }
+    }
   }
 
   void _navigateToMaterial(BuildContext context, String materialId) async {

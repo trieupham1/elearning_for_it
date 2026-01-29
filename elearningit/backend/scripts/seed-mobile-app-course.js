@@ -16,6 +16,8 @@ async function seedData() {
     const Quiz = require('../models/Quiz');
     const Question = require('../models/Question');
     const Material = require('../models/Material');
+    const CodeAssignment = require('../models/CodeAssignment');
+    const TestCase = require('../models/TestCase');
 
     // 1. Create Announcements
     console.log('\n--- Creating Announcements ---');
@@ -107,7 +109,88 @@ Include screenshots showing your app on different devices.`,
     ]);
     console.log(`Created ${assignments.length} assignments`);
 
-    // 3. Create Materials
+    // 3. Create Code Assignments
+    console.log('\n--- Creating Code Assignments ---');
+    
+    // First create the code assignment
+    const codeAssignment = new CodeAssignment({
+      courseId: courseId,
+      createdBy: instructorId,
+      title: 'Add Two Numbers',
+      description: `Write a Python function called \`add_numbers\` that takes two integers as parameters and returns their sum.
+
+Your function should:
+- Accept two integer parameters: a and b
+- Return the sum of a and b
+- Handle both positive and negative numbers
+
+Example:
+add_numbers(3, 5) should return 8
+add_numbers(-2, 7) should return 5`,
+      language: 'python',
+      languageId: 71, // Judge0 Python language ID
+      starterCode: `def add_numbers(a, b):
+    # Write your code here
+    pass
+
+# Test your function
+if __name__ == "__main__":
+    result = add_numbers(3, 5)
+    print(f"Result: {result}")`,
+      solutionCode: `def add_numbers(a, b):
+    return a + b
+
+# Test the function
+if __name__ == "__main__":
+    result = add_numbers(3, 5)
+    print(f"Result: {result}")`,
+      points: 100,
+      difficulty: 'easy',
+      dueDate: new Date('2026-02-10'),
+      createdAt: new Date('2026-01-29')
+    });
+    
+    const savedCodeAssignment = await codeAssignment.save();
+    console.log('Created code assignment:', savedCodeAssignment.title);
+
+    // Create test cases for the code assignment
+    const testCases = await TestCase.insertMany([
+      {
+        assignmentId: savedCodeAssignment._id,
+        name: 'Basic Addition',
+        input: '3,5',
+        expectedOutput: '8',
+        weight: 25,
+        isHidden: false
+      },
+      {
+        assignmentId: savedCodeAssignment._id,
+        name: 'Negative Numbers',
+        input: '-2,7',
+        expectedOutput: '5',
+        weight: 25,
+        isHidden: true
+      },
+      {
+        assignmentId: savedCodeAssignment._id,
+        name: 'Zero Addition',
+        input: '0,10',
+        expectedOutput: '10',
+        weight: 25,
+        isHidden: true
+      },
+      {
+        assignmentId: savedCodeAssignment._id,
+        name: 'Both Negative',
+        input: '-3,-7',
+        expectedOutput: '-10',
+        weight: 25,
+        isHidden: true
+      }
+    ]);
+    console.log(`Created ${testCases.length} test cases`);
+
+    // 4. Create Materials
     console.log('\n--- Creating Materials ---');
     const materials = await Material.insertMany([
       {
@@ -347,6 +430,8 @@ Include screenshots showing your app on different devices.`,
     console.log('Summary:');
     console.log(`- Announcements: ${announcements.length}`);
     console.log(`- Assignments: ${assignments.length}`);
+    console.log(`- Code Assignments: 1`);
+    console.log(`- Test Cases: ${testCases.length}`);
     console.log(`- Materials: ${materials.length}`);
     console.log(`- Questions: ${questions.length}`);
     console.log(`- Quizzes: ${quizzes.length}`);

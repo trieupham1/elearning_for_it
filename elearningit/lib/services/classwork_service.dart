@@ -1,6 +1,14 @@
 import 'dart:convert';
 import 'api_service.dart';
 
+/// Debug result class to pass both items and debug info
+class ClassworkResult {
+  final List<ClassworkItem> items;
+  final String debugInfo;
+  
+  ClassworkResult({required this.items, required this.debugInfo});
+}
+
 class ClassworkItem {
   final String id;
   final String type; // 'assignment', 'quiz', 'material'
@@ -43,12 +51,21 @@ class ClassworkItem {
       return DateTime.now().toLocal();
     }
     
+    // Helper to safely convert number to int (JSON can return double for integers)
+    int? toInt(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is double) return value.toInt();
+      if (value is String) return int.tryParse(value);
+      return null;
+    }
+    
     return ClassworkItem(
-      id: json['_id'] ?? '',
-      type: json['type'] ?? '',
+      id: json['_id']?.toString() ?? '',
+      type: json['type']?.toString() ?? '',
       courseId: json['courseId']?.toString() ?? json['course']?.toString() ?? '',
-      title: json['title'] ?? json['name'] ?? '',
-      description: json['description'],
+      title: json['title']?.toString() ?? json['name']?.toString() ?? '',
+      description: json['description']?.toString(),
       deadline: json['deadline'] != null
           ? DateTime.parse(json['deadline']).toLocal()
           : (json['dueDate'] != null // for code assignments
@@ -60,9 +77,9 @@ class ClassworkItem {
               ? DateTime.parse(json['endTime']).toLocal()
               : null),
       createdAt: parseCreatedAt(),
-      maxAttempts: json['maxAttempts'],
+      maxAttempts: toInt(json['maxAttempts']),
       allowLateSubmission: json['allowLateSubmission'],
-      duration: json['duration'],
+      duration: toInt(json['duration']),
       files: json['files'],
       isCompleted: json['isCompleted'],
     );
@@ -73,6 +90,77 @@ class ClassworkItem {
 
 class ClassworkService {
   final ApiService _apiService = ApiService();
+
+  /// Returns ClassworkResult with items and debug info for troubleshooting
+  Future<ClassworkResult> getClassworkWithDebug({
+    required String courseId,
+    String? search,
+    String? filter,
+  }) async {
+    final debugLines = <String>[];
+    try {
+      String endpoint = '/api/classwork/course/$courseId';
+      List<String> queryParams = [];
+
+      if (search != null && search.isNotEmpty) {
+        queryParams.add('search=$search');
+      }
+
+      if (filter != null && filter.isNotEmpty) {
+        queryParams.add('filter=$filter');
+      }
+
+      if (queryParams.isNotEmpty) {
+        endpoint += '?${queryParams.join('&')}';
+      }
+
+      debugLines.add('📡 Endpoint: $endpoint');
+      print('📚 ClassworkService: Fetching classwork from $endpoint');
+      
+      final response = await _apiService.get(endpoint);
+      debugLines.add('📊 Status: ${response.statusCode}');
+      debugLines.add('📏 Body length: ${response.body.length}');
+      
+      // Show first 200 chars of response for debugging
+      final bodyPreview = response.body.length > 200 
+          ? response.body.substring(0, 200) + '...' 
+          : response.body;
+      debugLines.add('📝 Preview: $bodyPreview');
+      
+      print('📚 ClassworkService: Response status ${response.statusCode}');
+      print('📚 ClassworkService: Response body length ${response.body.length}');
+      print('📚 ClassworkService: Response body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}');
+      
+      final List<dynamic> data = json.decode(response.body);
+      debugLines.add('✅ Parsed JSON: ${data.length} items');
+      print('📚 ClassworkService: Parsed ${data.length} items from JSON');
+      
+      final items = <ClassworkItem>[];
+      for (int i = 0; i < data.length; i++) {
+        try {
+          print('📚 ClassworkService: Parsing item $i: type=${data[i]['type']}, title=${data[i]['title']}');
+          final item = ClassworkItem.fromJson(data[i]);
+          items.add(item);
+          debugLines.add('  ✓ Item $i: ${data[i]['type']} - ${data[i]['title']}');
+          print('📚 ClassworkService: Successfully added item: ${item.type} - ${item.title}');
+        } catch (parseError, parseStack) {
+          debugLines.add('  ✗ Item $i parse error: $parseError');
+          print('📚 ClassworkService: Error parsing item $i: $parseError');
+          print('📚 ClassworkService: Parse stack: $parseStack');
+          print('📚 ClassworkService: Raw item data: ${data[i]}');
+        }
+      }
+      
+      debugLines.add('🎯 Final: ${items.length} items returned');
+      print('📚 ClassworkService: Returning ${items.length} items');
+      return ClassworkResult(items: items, debugInfo: debugLines.join('\n'));
+    } catch (e, stackTrace) {
+      debugLines.add('❌ ERROR: $e');
+      print('❌ ClassworkService Error: $e');
+      print('❌ ClassworkService Stack trace: $stackTrace');
+      return ClassworkResult(items: [], debugInfo: debugLines.join('\n') + '\n❌ EXCEPTION: $e');
+    }
+  }
 
   Future<List<ClassworkItem>> getClasswork({
     required String courseId,
@@ -99,27 +187,32 @@ class ClassworkService {
       final response = await _apiService.get(endpoint);
       print('📚 ClassworkService: Response status ${response.statusCode}');
       print('📚 ClassworkService: Response body length ${response.body.length}');
+      print('📚 ClassworkService: Response body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}');
       
       final List<dynamic> data = json.decode(response.body);
-      print('📚 ClassworkService: Parsed ${data.length} items');
+      print('📚 ClassworkService: Parsed ${data.length} items from JSON');
       
       final items = <ClassworkItem>[];
       for (int i = 0; i < data.length; i++) {
         try {
+          print('📚 ClassworkService: Parsing item $i: type=${data[i]['type']}, title=${data[i]['title']}');
           final item = ClassworkItem.fromJson(data[i]);
           items.add(item);
-        } catch (parseError) {
+          print('📚 ClassworkService: Successfully added item: ${item.type} - ${item.title}');
+        } catch (parseError, parseStack) {
           print('📚 ClassworkService: Error parsing item $i: $parseError');
+          print('📚 ClassworkService: Parse stack: $parseStack');
           print('📚 ClassworkService: Raw item data: ${data[i]}');
         }
       }
       
-      print('📚 ClassworkService: Successfully parsed ${items.length} items');
+      print('📚 ClassworkService: Returning ${items.length} items');
       return items;
     } catch (e, stackTrace) {
-      print('❌ Error loading classwork: $e');
-      print('❌ Stack trace: $stackTrace');
-      return [];
+      print('❌ ClassworkService Error: $e');
+      print('❌ ClassworkService Stack trace: $stackTrace');
+      // Rethrow so the UI can show the error
+      rethrow;
     }
   }
 
