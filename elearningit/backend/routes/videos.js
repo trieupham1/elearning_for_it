@@ -113,7 +113,7 @@ router.post('/upload', auth, instructorOnly, upload.single('video'), async (req,
       size: req.file.size,
       duration: cloudinaryResult.duration || duration || 0,
       tags: tags ? JSON.parse(tags) : [],
-      isPublished: false,
+      isPublished: true, // Auto-publish videos when uploaded
       storageType: 'cloudinary'
     });
 

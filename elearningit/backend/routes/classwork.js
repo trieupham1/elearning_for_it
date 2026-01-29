@@ -20,6 +20,8 @@ router.get('/course/:courseId', authMiddleware, async (req, res) => {
     const { courseId } = req.params;
     const { search, filter } = req.query; // filter: 'assignments', 'quizzes', 'materials', 'videos', 'attendance', 'code_assignments'
     
+    console.log(`📚 Classwork request - courseId: ${courseId}, filter: ${filter || 'ALL'}, search: ${search || 'none'}`);
+    
     let classwork = [];
     
     // Get user and their group for filtering
@@ -157,9 +159,17 @@ router.get('/course/:courseId', authMiddleware, async (req, res) => {
     
     // NEW: Videos
     if (!filter || filter === 'videos') {
-      const videos = await Video.find({ courseId })
-        .sort({ uploadedAt: -1 })
+      let videoQuery = { courseId };
+      
+      // Students can only see published videos
+      if (user.role === 'student') {
+        videoQuery.isPublished = true;
+      }
+      
+      const videos = await Video.find(videoQuery)
+        .sort({ createdAt: -1 })
         .lean();
+      console.log(`  Found ${videos.length} videos (filter: ${filter || 'all'})`);
       classwork = [...classwork, ...videos.map(v => ({ ...v, type: 'video' }))];
     }
     
