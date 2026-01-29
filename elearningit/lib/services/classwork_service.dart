@@ -33,24 +33,33 @@ class ClassworkItem {
   });
 
   factory ClassworkItem.fromJson(Map<String, dynamic> json) {
+    // Handle different date field names for different types
+    DateTime parseCreatedAt() {
+      // Try different field names used by different models
+      final dateField = json['createdAt'] ?? json['uploadedAt'] ?? json['sessionDate'];
+      if (dateField != null) {
+        return DateTime.parse(dateField.toString()).toLocal();
+      }
+      return DateTime.now().toLocal();
+    }
+    
     return ClassworkItem(
       id: json['_id'] ?? '',
       type: json['type'] ?? '',
-      courseId: json['courseId'] ?? '',
-      title: json['title'] ?? '',
+      courseId: json['courseId']?.toString() ?? json['course']?.toString() ?? '',
+      title: json['title'] ?? json['name'] ?? '',
       description: json['description'],
       deadline: json['deadline'] != null
           ? DateTime.parse(json['deadline']).toLocal()
-          : (json['dueDate'] !=
-                    null // for code assignments
+          : (json['dueDate'] != null // for code assignments
                 ? DateTime.parse(json['dueDate']).toLocal()
                 : null),
       closeDate: json['closeDate'] != null
           ? DateTime.parse(json['closeDate']).toLocal()
-          : null,
-      createdAt: DateTime.parse(
-        json['createdAt'] ?? DateTime.now().toUtc().toIso8601String(),
-      ).toLocal(),
+          : (json['endTime'] != null // for attendance sessions
+              ? DateTime.parse(json['endTime']).toLocal()
+              : null),
+      createdAt: parseCreatedAt(),
       maxAttempts: json['maxAttempts'],
       allowLateSubmission: json['allowLateSubmission'],
       duration: json['duration'],
@@ -86,11 +95,30 @@ class ClassworkService {
         endpoint += '?${queryParams.join('&')}';
       }
 
+      print('📚 ClassworkService: Fetching classwork from $endpoint');
       final response = await _apiService.get(endpoint);
+      print('📚 ClassworkService: Response status ${response.statusCode}');
+      print('📚 ClassworkService: Response body length ${response.body.length}');
+      
       final List<dynamic> data = json.decode(response.body);
-      return data.map((json) => ClassworkItem.fromJson(json)).toList();
-    } catch (e) {
-      print('Error loading classwork: $e');
+      print('📚 ClassworkService: Parsed ${data.length} items');
+      
+      final items = <ClassworkItem>[];
+      for (int i = 0; i < data.length; i++) {
+        try {
+          final item = ClassworkItem.fromJson(data[i]);
+          items.add(item);
+        } catch (parseError) {
+          print('📚 ClassworkService: Error parsing item $i: $parseError');
+          print('📚 ClassworkService: Raw item data: ${data[i]}');
+        }
+      }
+      
+      print('📚 ClassworkService: Successfully parsed ${items.length} items');
+      return items;
+    } catch (e, stackTrace) {
+      print('❌ Error loading classwork: $e');
+      print('❌ Stack trace: $stackTrace');
       return [];
     }
   }
