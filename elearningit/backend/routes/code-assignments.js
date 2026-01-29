@@ -199,17 +199,22 @@ router.get('/assignments/:id', auth, async (req, res) => {
         courseId: isCodeAssignmentModel ? assignment.courseId : assignment.courseId._id,
         courseName: isCodeAssignmentModel ? course.name : assignment.courseId.title,
         createdBy: assignment.createdBy,
+        type: 'code',
+        startDate: isCodeAssignmentModel ? assignment.createdAt : assignment.startDate,
         deadline: isCodeAssignmentModel ? assignment.dueDate : assignment.deadline,
         points: assignment.points,
-        maxAttempts: isCodeAssignmentModel ? assignment.allowedAttempts : assignment.maxAttempts,
-        language: isCodeAssignmentModel ? assignment.language : assignment.codeConfig?.language,
-        languageId: isCodeAssignmentModel ? assignment.languageId : assignment.codeConfig?.languageId,
-        starterCode: isCodeAssignmentModel ? assignment.starterCode : assignment.codeConfig?.starterCode,
-        timeLimit: isCodeAssignmentModel ? assignment.timeLimit : assignment.codeConfig?.timeLimit,
-        memoryLimit: isCodeAssignmentModel ? assignment.memoryLimit : assignment.codeConfig?.memoryLimit,
-        difficulty: assignment.difficulty || 'medium',
-        isActive: isCodeAssignmentModel ? assignment.isActive : true,
-        createdAt: assignment.createdAt
+        createdAt: assignment.createdAt,
+        updatedAt: isCodeAssignmentModel ? assignment.updatedAt : assignment.createdAt,
+        codeConfig: {
+          language: isCodeAssignmentModel ? assignment.language : assignment.codeConfig?.language,
+          languageId: isCodeAssignmentModel ? assignment.languageId : assignment.codeConfig?.languageId,
+          starterCode: isCodeAssignmentModel ? assignment.starterCode : assignment.codeConfig?.starterCode,
+          solutionCode: isCodeAssignmentModel && isInstructor ? assignment.solutionCode : null,
+          allowedLanguages: isCodeAssignmentModel ? [assignment.language] : assignment.codeConfig?.allowedLanguages,
+          timeLimit: isCodeAssignmentModel ? assignment.timeLimit : assignment.codeConfig?.timeLimit,
+          memoryLimit: isCodeAssignmentModel ? assignment.memoryLimit : assignment.codeConfig?.memoryLimit,
+          showTestCases: isCodeAssignmentModel ? assignment.showTestCases : assignment.codeConfig?.showTestCases
+        }
       },
       testCases: visibleTestCases,
       mySubmission
