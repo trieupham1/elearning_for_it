@@ -88,7 +88,7 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
   Future<void> _loadSemesterData(Semester semester) async {
     try {
       // Always load fresh courses for the selected semester to ensure correct filtering
-      print('📚 Loading courses for semester: ${semester.displayName}');
+      print('📚 Loading courses for semester: ${semester.displayName} (ID: ${semester.id})');
       final courses = await _courseService.getCourses(semester: semester.id);
 
       print(
@@ -128,12 +128,21 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
           );
 
           // Fetch quizzes for all courses in parallel
+          print('🔍 Dashboard: Loading quizzes for ${courses.length} courses');
+          for (var course in courses) {
+            print('🔍 Dashboard: Course ID=${course.id}, Name=${course.name}');
+          }
           final quizFutures = courses
               .map((course) => _quizService.getQuizzesForCourse(course.id))
               .toList();
 
           final quizLists = await Future.wait(quizFutures);
+          print('🔍 Dashboard: Got ${quizLists.length} quiz lists');
+          for (int i = 0; i < quizLists.length; i++) {
+            print('🔍 Dashboard: Course ${i} has ${quizLists[i].length} quizzes');
+          }
           totalQuizzes = quizLists.fold(0, (sum, list) => sum + list.length);
+          print('🔍 Dashboard: Total quizzes calculated: $totalQuizzes');
 
           print('✅ Loaded assignments and quizzes for semester');
         } catch (e) {

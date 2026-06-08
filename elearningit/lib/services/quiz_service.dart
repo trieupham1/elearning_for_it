@@ -5,10 +5,32 @@ import 'api_service.dart';
 class QuizService extends ApiService {
   // Quiz methods
   Future<List<Quiz>> getQuizzesForCourse(String courseId) async {
-    final response = await get('/api/quizzes/course/$courseId');
-    final data = parseResponse(response);
-    final List<dynamic> quizzes = data is List ? data : data['quizzes'] ?? [];
-    return quizzes.map((json) => Quiz.fromJson(json)).toList();
+    print('🧪 QuizService: Getting quizzes for course $courseId');
+    try {
+      final response = await get('/api/quizzes/course/$courseId');
+      print('🧪 QuizService: Response status: ${response.statusCode}');
+      final data = parseResponse(response);
+      print('🧪 QuizService: Parsed data type: ${data.runtimeType}');
+      final List<dynamic> quizzes = data is List ? data : data['quizzes'] ?? [];
+      print('🧪 QuizService: Found ${quizzes.length} quizzes in JSON');
+      
+      final List<Quiz> result = [];
+      for (int i = 0; i < quizzes.length; i++) {
+        try {
+          final quiz = Quiz.fromJson(quizzes[i]);
+          result.add(quiz);
+          print('🧪 QuizService: Successfully parsed quiz ${i + 1}: ${quiz.title}');
+        } catch (parseError) {
+          print('❌ QuizService: Error parsing quiz $i: $parseError');
+          print('❌ QuizService: Quiz JSON: ${quizzes[i]}');
+        }
+      }
+      print('🧪 QuizService: Returning ${result.length} parsed quizzes');
+      return result;
+    } catch (e) {
+      print('❌ QuizService: Error getting quizzes for course $courseId: $e');
+      rethrow;
+    }
   }
 
   Future<Quiz> getQuiz(String quizId) async {

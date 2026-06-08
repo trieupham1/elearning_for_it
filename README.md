@@ -1,3 +1,13 @@
+## 🚀 Demo Accounts (Ready to Use)
+
+Use these accounts to run and review the demo quickly:
+
+| Role | Username | Password |
+|------|----------|----------|
+| Student | phamquoctrieu | student123 |
+| Instructor | nguyenvanb | admin |
+| Admin | nguyenvanan | admin123 |
+
 # 🎓 E-Learning Management System for IT Faculty
 
 A comprehensive e-learning platform built with **Flutter** (frontend) and **Node.js/Express** (backend), designed for IT faculty to manage courses, assignments, quizzes, and student interactions.
